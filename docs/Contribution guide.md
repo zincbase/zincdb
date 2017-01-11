@@ -14,7 +14,8 @@ npm run build
 
 ## Editing the code
 
-* The code is written entirely in TypeScript. It is highly recommended to use [Visual Studio Code]() to edit it. * Once the workspace is opened in the editor, it is pre-configured for instant TypeScript compilation and type checking feedback.
+* The code is written entirely in TypeScript. It is highly recommended to use [Visual Studio Code](https://code.visualstudio.com/) to edit it.
+* Once the workspace is opened in the editor, it is pre-configured for instant TypeScript compilation and type checking feedback.
 
 ## Running the tests
 
