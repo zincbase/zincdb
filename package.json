@@ -1,7 +1,7 @@
 {
   "name": "zincdb",
   "version": "0.1.1",
-  "description": "A database and synchronization library for web applications and beyond.",
+  "description": "A database and synchronization library for Javascript applications.",
   "keywords": [
     "database",
     "synchronization",

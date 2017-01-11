@@ -1,6 +1,6 @@
 # ZincDB
 
-ZincDB is a database and synchronization library for web applications and beyond. It consists of two 
+ZincDB is a database and synchronization library for Javascript applications. It consists of two 
 independent components:
 
 * **A local database**: in-browser object database managed through a high-level API. Provides local storage using either browser based persistence (IndexedDB/WebSQL) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
@@ -10,7 +10,7 @@ Read more about the client and server design, capabilities and target use cases 
 
 ## Status
 
-The library is mostly feature complete, but still at an alpha level of stability. To help turn this into a mature, stable product, please report any error or unexpected behavior at the [issue tracker](https://github.com/zincbase/zincdb/issues).
+The library is mostly feature complete, but still at an alpha level of stability. To help turn this into a mature, stable product, please report any unexpected error or behavior at the [issue tracker](https://github.com/zincbase/zincdb/issues).
 
 ## Installation
 
@@ -20,9 +20,11 @@ For Node.js/Webpack:
 npm install zincdb
 ```
 
-For the browser: 
+For the browser. Download the latest stable release [here](), then:
 
-Download the latest stable release [here]().
+```html
+<script id="zincdb" src="path/to/zincdb.js"></script>
+```
 
 ## Documentation
 
@@ -32,7 +34,7 @@ Download the latest stable release [here]().
 * [Technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md)
 * [Contribution guide](https://github.com/zincbase/zincdb/blob/master/docs/Contribution%20guide.md)
 
-For detailed guides on server installation, configuration, API and other reference documents head over to the [ZincServer repository](https://github.com/zincbase/zincserver).
+For instruction on installing and configuring a server see the [ZincServer getting started guided](https://github.com/zincbase/zincserver/blob/master/docs/Getting%20started.md).
 
 ## License
 
