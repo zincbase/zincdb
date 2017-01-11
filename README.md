@@ -28,7 +28,7 @@ Download the latest stable release [here]().
 * [Technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md)
 * [Contribution guide](https://github.com/zincbase/zincdb/blob/master/docs/Contribution%20guide.md)
 
-For detailed guides on server installation, configuration, API and other reference documents head over to the [ZincServer repository]()
+For detailed guides on server installation, configuration, API and other reference documents head over to the [ZincServer repository](https://github.com/zincbase/zincserver).
 
 ## License
 
