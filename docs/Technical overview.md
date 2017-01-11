@@ -1,22 +1,35 @@
 # Technical overview
 
-## Local database:
+ZincBase is a distributed database platform aiming to provide a full solution for the storage and retrieval of application data, both locally and on the cloud. It consists of two independents components:
+
+## [ZincDB]( )
+
+A Javascript object database managed through a high-level API, available as a library. Provides local storage using either browser based persistence (IndexedDB/WebSQL) an external library (SQLite in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
+
+Features:
 
 * Hierarchal data model. Compatible with plain JavaScript objects.
 * Fully asynchronous (promise based).
 * Selectable IndexedDB/WebSQL/In-memory storage adapters with automatic fallbacks based on availability.
-* Runs in a web worker (when available). Designed for fast load times and minimal impact over the responsiveness of the main application or web-page.
-* Supports storing binary data.
+* Runs in a web worker (if available). Designed for fast load times and minimal impact over the responsiveness of the main application or web-page.
+* Supports raw binary data.
 * Fine-grained customization of background synchronization types (manual, automatic, unidirectional, bidirectional, WebSocket, COMET etc.).
 * Asynchronous, sophisticated interactive conflict resolution.
 * Built-in end-to-end encryption (optional).
 * Supports Chrome, Firefox, IE 10+, Edge, Opera, Android 4+, Safari 5.1+, Node.js 4+, Apache Cordova (not yet tested), nw.js (not yet tested), electron (not yet tested).
 
-## Server:
 
-* Chronological key-value datastore.
+## [ZincServer]()
+
+A secondary, optional server back-end providing a very thin and efficient remote persistence service for single and multi-client synchronization. A single server instance can serve up to tens of thousands of concurrent clients and provide real-time synchronization between them. The server can be run anywhere: in the cloud, at a local network, locally on the same computer, or possibly even in an embedded device, tablet or a smartphone.
+
+ZincServer is highly configurable and can provide a partial or even full replacement for custom application servers. Unlike most database servers it was designed to be fully open to the global internet and interfaced directly from browsers, mobile or desktop applications.
+
+Features:
+
+* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md).
 * Built on a custom, on-disk, fully ACID, high performance storage engine based on append-only files. Written in Go.
-* Can serve an arbitrary number of datastores and up to several tens of thousands requests in parallel on consumer hardware, with low memory footprint for any given instance (data is mostly read from disk: only a minimal lookup table is stored in memory).
+* Can serve an arbitrary number of datastores and up to several tens of thousands concurrent requests on consumer hardware, with low memory footprint for any given instance.
 * WebSocket and COMET support for real-time synchronization.
 * Per datastore, per user access control, permissions, rate limits and quotas.
 * Fully live reconfiguration without any need for server restarts.
