@@ -26,7 +26,7 @@
     "websql": "^0.4.4"
   },
   "devDependencies": {
-    "@types/react": "15.0.0",
+    "@types/react": "^15.0.0",
     "@types/react-dom": "^0.14.20",
     "expectations": "^0.6.0",
     "font-awesome": "^4.7.0",
@@ -42,7 +42,7 @@
     "mocha": "^3.2.0",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
-    "typescript": "^2.2.0-dev.20170110"
+    "typescript": "next"
   },
   "scripts": {
     "build": "grunt",
