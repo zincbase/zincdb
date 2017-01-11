@@ -2,7 +2,7 @@
 
 ZincBase is a distributed database platform aiming to provide a full solution for the storage and retrieval of application data, both locally and on the cloud. It consists of two independents components:
 
-## [ZincDB]( )
+## [ZincDB](https://github.com/zincbase/zincdb)
 
 A Javascript object database managed through a high-level API, available as a library. Provides local storage using either browser based persistence (IndexedDB/WebSQL) an external library (SQLite in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
 
@@ -19,7 +19,7 @@ Features:
 * Supports Chrome, Firefox, IE 10+, Edge, Opera, Android 4+, Safari 5.1+, Node.js 4+, Apache Cordova (not yet tested), nw.js (not yet tested), electron (not yet tested).
 
 
-## [ZincServer]()
+## [ZincServer](https://github.com/zincbase/zincserver)
 
 A secondary, optional server back-end providing a very thin and efficient remote persistence service for single and multi-client synchronization. A single server instance can serve up to tens of thousands of concurrent clients and provide real-time synchronization between them. The server can be run anywhere: in the cloud, at a local network, locally on the same computer, or possibly even in an embedded device, tablet or a smartphone.
 
@@ -36,7 +36,7 @@ Features:
 * IP filters and loopback only mode.
 * Flood protection.
 
-## Use cases:
+## Use cases
 
 * Web applications that require per-user storage, either local-only, or in the cloud (one remote datastore per user).
 * Web applications that provide online collaboration between multiple concurrent participants (one datastore per group).
