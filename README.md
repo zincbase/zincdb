@@ -8,6 +8,10 @@ independent components:
 
 Read more about the client and server design, capabilities and target use cases at the [technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md).
 
+## Status
+
+The library is mostly feature complete, but still at an alpha level of stability. To help turn this into a mature, stable product, please report any error or unexpected behavior at the [issue tracker](https://github.com/zincbase/zincdb/issues).
+
 ## Installation
 
 For Node.js/Webpack:
