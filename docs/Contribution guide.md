@@ -19,12 +19,12 @@ npm run build
 
 ## Running the tests
 
-The tests are performed with (mocha)[https://github.com/mochajs/mocha] test runner and the (expectations)[https://github.com/spmason/expectations] assertion library.
+The tests are performed with [mocha](https://github.com/mochajs/mocha) test runner and the [expectations](https://github.com/spmason/expectations) assertion library.
 
 * Before running the tests. Make sure you have an installed and running ZincServer instance. Server installation instruction are described [here](https://github.com/zincbase/zincserver/blob/master/docs/Getting%20started%20guide.md).
 * At the root directory, create a new file named `testconfig.js` with content similar to `ZincDBTestConfig = { host: "http://localhost:8002", accessKey: "4d2d3fb0356cf6a66617e6454641697b"}`. Replace the `host` and `accessKey` values with their appropriate values for your server instance.
 * To test in Node.js, run `npm test` at the repository root.
-* To test in Phantomjs, run `npm run testphantom`.
+* To test in [Phantomjs](http://phantomjs.org/), run `npm run testphantom`.
 * To test in web browsers, run `npm run devserver` at the repository root and open `http://localhost:8888/tests` in a web browser.
 
 ## Directory structure
