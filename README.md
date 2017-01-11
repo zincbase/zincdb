@@ -14,17 +14,18 @@ The library is mostly feature complete, but still at an alpha level of stability
 
 ## Installation
 
-For Node.js/Webpack:
+Node.js/Webpack:
 
 ```
 npm install zincdb
 ```
 
-For the browser. Download the latest stable release [here](), then:
+Browser.:
 
 ```html
 <script id="zincdb" src="path/to/zincdb.js"></script>
 ```
+Download the latest stable release [here]().
 
 ## Documentation
 
