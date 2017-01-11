@@ -9,19 +9,17 @@
   ],
   "author": "Rotem Dan <rotemdan@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/zincdb/zincdb",
+  "homepage": "https://github.com/zincbase/zincdb",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zincdb/zincdb.git"
+    "url": "https://github.com/zincbase/zincdb.git"
   },
   "bugs": {
-    "url": "https://github.com/zincdb/zincdb/issues"
+    "url": "https://github.com/zincbase/zincdb/issues"
   },
   "main": "build/production/zincdb.js",
   "files": [
-    "build/production/zincdb.js",
-    "README.md",
-    "LICENSE"
+    "build/production/zincdb.js"
   ],
   "dependencies": {
     "ws": "^1.1.1",
