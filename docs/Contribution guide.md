@@ -2,7 +2,7 @@
 
 ## Building from source
 
-Make sure that both [Git](https://git-scm.com/downloads] and latest [Node.js](https://nodejs.org/en/) are installed.
+Make sure that both [Git](https://git-scm.com/downloads) and latest [Node.js](https://nodejs.org/en/) are installed.
 
 Run:
 ```
