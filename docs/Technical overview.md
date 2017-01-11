@@ -1,0 +1,35 @@
+# Technical overview
+
+## Local database:
+
+* Hierarchal data model. Compatible with plain JavaScript objects.
+* Fully asynchronous (promise based).
+* Selectable IndexedDB/WebSQL/In-memory storage adapters with automatic fallbacks based on availability.
+* Runs in a web worker (when available). Designed for fast load times and minimal impact over the responsiveness of the main application or web-page.
+* Supports storing binary data.
+* Fine-grained customization of background synchronization types (manual, automatic, unidirectional, bidirectional, WebSocket, COMET etc.).
+* Asynchronous, sophisticated interactive conflict resolution.
+* Built-in end-to-end encryption (optional).
+* Supports Chrome, Firefox, IE 10+, Edge, Opera, Android 4+, Safari 5.1+, Node.js 4+, Apache Cordova (not yet tested), nw.js (not yet tested), electron (not yet tested).
+
+## Server:
+
+* Chronological key-value datastore.
+* Built on a custom, on-disk, fully ACID, high performance storage engine based on append-only files. Written in Go.
+* Can serve an arbitrary number of datastores and up to several tens of thousands requests in parallel on consumer hardware, with low memory footprint for any given instance (data is mostly read from disk: only a minimal lookup table is stored in memory).
+* WebSocket and COMET support for real-time synchronization.
+* Per datastore, per user access control, permissions, rate limits and quotas.
+* Fully live reconfiguration without any need for server restarts.
+* IP filters and loopback only mode.
+* Flood protection.
+
+## Use cases:
+
+* Web applications that require per-user storage, either local-only, or in the cloud (one remote datastore per user).
+* Web applications that provide online collaboration between multiple concurrent participants (one datastore per group).
+* Single-page web sites, that may be dynamically generated and updated according to raw data cached locally or fetched from a remote server (one or several datastores for the whole website). This may include binary data like images or raw resources.
+* Caching of database query result sets or other types of structured data.
+* Browser extensions that require synchronization of data.
+* Desktop or mobile applications developed in frameworks like electron, nw.js, UWP or Apache Cordova.
+* Web-based enterprise applications.
+* IoT and embedded applications, especially ones requiring real-time tracking and monitoring (one or several datastores per device).

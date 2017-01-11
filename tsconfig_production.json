@@ -1,0 +1,14 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outFile": "build/production/zincdb.js",
+		"sourceMap": false,
+		"removeComments": true
+	},
+	"exclude": [
+		"testconfig.js",		
+		"tests/src/**/*",
+		"benchmarks/src/**/*",
+		"editor/src/**/*"
+	]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "zincdb",
+  "version": "0.1.0",
+  "description": "A database and synchronization library for web applications and beyond.",
+  "keywords": [
+    "database",
+    "synchronization",
+    "storage"
+  ],
+  "author": "Rotem Dan <rotemdan@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/zincdb/zincdb",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zincdb/zincdb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zincdb/zincdb/issues"
+  },
+  "main": "build/production/zincdb.js",
+  "files": [
+    "build/production/zincdb.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "ws": "^1.1.1",
+    "websql": "^0.4.4"
+  },
+  "devDependencies": {
+    "@types/react": "15.0.0",
+    "@types/react-dom": "^0.14.20",
+    "expectations": "^0.6.0",
+    "font-awesome": "^4.7.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-mocha-phantomjs": "^4.0.0",
+    "grunt-mocha-test": "^0.13.2",
+    "grunt-shell": "^2.1.0",
+    "load-grunt-tasks": "^3.5.2",
+    "mocha": "^3.2.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "typescript": "^2.2.0-dev.20170110"
+  },
+  "scripts": {
+    "build": "grunt",
+    "test": "grunt test",
+    "testphantom": "grunt testPhantomjs",
+    "devserver": "grunt startDevServer"
+  },
+  "engines": {
+    "node": ">=4.0.0"
+  }
+}

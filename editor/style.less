@@ -1,0 +1,125 @@
+.breakWords() {
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;	
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+
+	margin-left: 1em;
+	margin-right: 1em;	
+}
+
+button {
+	font-size: 1em;
+}
+
+div#TopBar {
+	top: 0;
+	left: 0;
+
+	//margin-left: 1em;
+	//margin-right: 1em;
+
+	width: 100%;
+	position: fixed;
+	
+	table {
+		width: 100%;
+		background-color: #f4f4f4;
+		border: 1px solid #999;
+		border-collapse: collapse;
+	}
+
+	td, th {
+		padding: 0.5em;
+		border: 1px solid #999;
+	}
+	
+	input {
+		&[type=text], &[type=password] {
+			margin: 0;
+		}
+	}
+
+	input[type=text], div#TopBar button {
+		font-size: 1em;
+		margin-left: 0.2em;
+		margin-right: 0.2em;
+	}
+
+	td {
+		white-space: nowrap;
+		
+		&:nth-child(1) {
+			input {
+				width: 80%;
+			}
+
+			text-align: center;
+		}
+		
+		&:nth-child(2) {
+			width: 25em;
+			input {
+				width: 20em;
+			}
+
+			text-align: center;
+		}
+
+		&:nth-child(3), &:nth-child(4), &:nth-child(5) {
+			width: 3em;
+			text-align: center;
+		}
+	}
+}
+
+table.MainTable {
+	margin-top: 6em;
+	margin-left: 0px;
+	margin-right: 0px;
+
+	width: 100%;
+	background-color: #f4f4f4;
+	border: 1px solid #999;
+	border-collapse: collapse;
+
+	td, th {
+		padding: 0.5em;
+		border: 1px solid #999;
+	}	
+
+	td {
+		&:nth-child(1), &:nth-child(2) {
+			width: 11em;
+			text-align: center;
+		}
+
+		&:nth-child(3) {
+			width: 22em;
+			.breakWords();
+		}
+
+		&:nth-child(4) {
+			background: white;
+			div {
+				.breakWords();
+			}
+		}
+
+		&:nth-child(5) {
+			width: 5em;
+			text-align: center;
+			span { 
+				color: darkred;
+				cursor: pointer;
+			}
+		}		
+	}
+}
+

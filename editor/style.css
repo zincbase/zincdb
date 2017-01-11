@@ -1,0 +1,103 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+button {
+  font-size: 1em;
+}
+div#TopBar {
+  top: 0;
+  left: 0;
+  width: 100%;
+  position: fixed;
+}
+div#TopBar table {
+  width: 100%;
+  background-color: #f4f4f4;
+  border: 1px solid #999;
+  border-collapse: collapse;
+}
+div#TopBar td,
+div#TopBar th {
+  padding: 0.5em;
+  border: 1px solid #999;
+}
+div#TopBar input[type=text],
+div#TopBar input[type=password] {
+  margin: 0;
+}
+div#TopBar input[type=text],
+div#TopBar div#TopBar button {
+  font-size: 1em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+div#TopBar td {
+  white-space: nowrap;
+}
+div#TopBar td:nth-child(1) {
+  text-align: center;
+}
+div#TopBar td:nth-child(1) input {
+  width: 80%;
+}
+div#TopBar td:nth-child(2) {
+  width: 25em;
+  text-align: center;
+}
+div#TopBar td:nth-child(2) input {
+  width: 20em;
+}
+div#TopBar td:nth-child(3),
+div#TopBar td:nth-child(4),
+div#TopBar td:nth-child(5) {
+  width: 3em;
+  text-align: center;
+}
+table.MainTable {
+  margin-top: 6em;
+  margin-left: 0px;
+  margin-right: 0px;
+  width: 100%;
+  background-color: #f4f4f4;
+  border: 1px solid #999;
+  border-collapse: collapse;
+}
+table.MainTable td,
+table.MainTable th {
+  padding: 0.5em;
+  border: 1px solid #999;
+}
+table.MainTable td:nth-child(1),
+table.MainTable td:nth-child(2) {
+  width: 11em;
+  text-align: center;
+}
+table.MainTable td:nth-child(3) {
+  width: 22em;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  word-break: break-word;
+  hyphens: auto;
+}
+table.MainTable td:nth-child(4) {
+  background: white;
+}
+table.MainTable td:nth-child(4) div {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  word-break: break-word;
+  hyphens: auto;
+}
+table.MainTable td:nth-child(5) {
+  width: 5em;
+  text-align: center;
+}
+table.MainTable td:nth-child(5) span {
+  color: darkred;
+  cursor: pointer;
+}
