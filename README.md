@@ -22,7 +22,7 @@ Download the latest stable release [here]().
 
 ## Documentation
 
-* [Getting started guide](https://github.com/zincbase/zincdb/blob/master/docs/Getting%20started.md)
+* [Getting started](https://github.com/zincbase/zincdb/blob/master/docs/Getting%20started.md)
 * [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md)
 * [Client API Reference](https://github.com/zincbase/zincdb/blob/master/docs/Client%20API%20Reference.md)
 * [Technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md)
