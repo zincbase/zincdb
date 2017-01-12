@@ -1,4 +1,5 @@
 .vscode
+.travis.yml
 benchmarks
 build/development
 docs
