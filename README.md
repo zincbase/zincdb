@@ -1,6 +1,7 @@
 # ZincDB
 
 [![Build status](https://travis-ci.org/zincbase/zincdb.svg?branch=master)](https://travis-ci.org/zincbase/zincdb)
+[![npm version](https://badge.fury.io/js/zincdb.svg)](https://badge.fury.io/js/zincdb)
 
 ZincDB is a database and synchronization library for Javascript applications. It provides a client side component for the ZincBase data framework, and can be used independently as well.
 
