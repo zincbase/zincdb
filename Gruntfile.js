@@ -1,7 +1,7 @@
 path = require("path");
 
 module.exports = function (grunt) {
-	const banner = '/*!\n ZincDB v<%=pkg.version%>\n\n Copyright (c) 2017, Rotem Dan\n Released under the MIT license.\n\n Build date: <%= grunt.template.today("yyyy-mm-dd") %> \n\n Please report any issues at https://github.com/rotemdan/zincdb/issues\n*/\n';
+	const banner = '/*!\n ZincDB v<%=pkg.version%>\n\n Copyright (c) 2017, Rotem Dan\n Released under the MIT license.\n\n Build date: <%= grunt.template.today("yyyy-mm-dd") %> \n\n Please report any issues at https://github.com/zincbase/zincdb/issues\n*/\n';
 	const tsc = 'node node_modules/typescript/lib/tsc';
 
 	// Project configuration.
