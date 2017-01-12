@@ -123,7 +123,7 @@ namespace ZincDB {
 						readIndex += 4;
 					}
 					else
-						throw "Invalid UTF-8 stream: An invalid lead byte value encountered at position " + readIndex;
+						throw new Error("Invalid UTF-8 stream: An invalid lead byte value encountered at position " + readIndex);
 
 					output.appendCodePoint(outputCodePoint);
 				}

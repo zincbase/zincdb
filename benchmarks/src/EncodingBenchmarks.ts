@@ -100,8 +100,9 @@ namespace ZincDB {
 		}
 
 		encodeStringToUTF8_Node() {
+			let _;
 			if (runningInNodeJS())
-				new Buffer(this.randomUTF16String, "utf8");
+				_ = new Buffer(this.randomUTF16String, "utf8");
 		}
 
 		decodeBytesFromUTF8() {
@@ -154,8 +155,9 @@ namespace ZincDB {
 		}
 
 		decodeBytesFromBase64_Node() {
+			let _;
 			if (runningInNodeJS())
-				new Buffer(this.base64String, "base64");
+				_ = new Buffer(this.base64String, "base64");
 		}
 
 		// Hex
@@ -173,8 +175,9 @@ namespace ZincDB {
 		}
 
 		decodeBytesFromHex_Node() {
+			let _;
 			if (runningInNodeJS())
-				new Buffer(this.hexString, "hex");
+				_ = new Buffer(this.hexString, "hex");
 		}
 
 		// Jenkins one at a time
