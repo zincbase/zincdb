@@ -6,7 +6,7 @@ Read more about the ZincBase client and server design, capabilities and target u
 
 ## Status
 
-The library is mostly feature complete, but still at an alpha level of stability. To help turn this into a mature, stable product, please report any unexpected error or behavior at the [issue tracker](https://github.com/zincbase/zincdb/issues).
+The library is mostly feature complete, but still at an alpha level of stability, and is not ready for production use just yet. To help turn this into a mature, stable product, please report any unexpected error or behavior at the [issue tracker](https://github.com/zincbase/zincdb/issues).
 
 ## Installation
 
