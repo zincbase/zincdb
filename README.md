@@ -1,5 +1,7 @@
 # ZincDB
 
+[![Build status](https://travis-ci.org/zincbase/zincdb.svg?branch=master)](https://travis-ci.org/zincbase/zincdb)
+
 ZincDB is a database and synchronization library for Javascript applications. It provides a client side component for the ZincBase data framework, and can be used independently as well.
 
 Read more about the ZincBase client and server design, capabilities and target use cases at the [technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md).
