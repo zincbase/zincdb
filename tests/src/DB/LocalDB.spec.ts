@@ -327,11 +327,20 @@ namespace ZincDB {
 								});
 
 
-								const transaction = db.transaction();
-								transaction.put(["a", "b"], { yo: "go", do: 123 });
-								transaction.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }]);
-								transaction.commit();
+								const t = db.transaction();
+								t.put(["a", "b"], { yo: "go", do: 123 });
+								t.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }]);
+								t.commit();
 							});
+						});
+
+						it("Rejects less than two arguments to 'put'", async () => {
+							await expectPromiseToReject(db.put.call(db, ["a", "b"]));
+						});
+
+						it("Rejects less than two arguments to 'update'", async () => {
+							await db.put(["a", "b"], 321);
+							await expectPromiseToReject(db.update.call(db, ["a", "b"]));
 						});
 					});
 

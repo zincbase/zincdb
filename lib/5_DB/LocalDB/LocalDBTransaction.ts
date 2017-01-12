@@ -7,17 +7,19 @@ namespace ZincDB {
 			constructor(private readonly containerDB: LocalDB) {
 			}
 
-			put(path: NodePath, value: any) {
+			put(path: NodePath, value: any): void
+			put(...args: any[]) {
+				if (args.length !== 2)
+					throw new Error("Expected exactly two arguments.");
+
 				if (this.transactionCommited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containerDB.isClosed)
 					throw new Error("Database has been closed.");
 
+				const [path, value] = <[NodePath, any]> args;
 				LocalDBOperations.validateNodePath(path, true);
-
-				if (value === undefined)
-					throw new TypeError(`An undefined value supplied. To delete nodes please use the delete() method instead.`);
 
 				this.transaction.push({ type: OperationType.Put, path, value });
 			}
@@ -33,15 +35,20 @@ namespace ZincDB {
 
 				this.transaction.push({ type: OperationType.Delete, path });
 			}
+			
+			update(path: NodePath, newValue: any): void
+			update(...args: any[]): void {
+				if (args.length !== 2)
+					throw new Error("Expected exactly two arguments.");
 
-			update(path: NodePath, value: any) {
 				if (this.transactionCommited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containerDB.isClosed)
 					throw new Error("Database has been closed.");
-
-				LocalDBOperations.validateNodePath(path, true);
+				
+				const [path, value] = <[NodePath, any]> args;
+				LocalDBOperations.validateNodePath(path, false);
 
 				this.transaction.push({ type: OperationType.Update, path, value });
 			}
@@ -52,6 +59,8 @@ namespace ZincDB {
 
 				if (this.containerDB.isClosed)
 					throw new Error("Database has been closed.");
+				
+				LocalDBOperations.validateNodePath(listPath, false);
 
 				const itemKey = randKey();
 				this.transaction.push({ type: OperationType.Put, path: [...listPath, itemKey], value });

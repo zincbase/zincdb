@@ -58,37 +58,31 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Write operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async put(path: NodePath, newValue: any): Promise<void> {
-				if (this.isClosed)
-					throw new Error("Database has been closed.");
-
-				if (newValue === undefined)
-					throw new TypeError(`An undefined value supplied. To delete nodes please use the delete() method instead.`);
-
-				await this.commitLocalTransaction([{ type: OperationType.Put, path: path, value: newValue }]);
+			async put(path: NodePath, value: any): Promise<void>
+			async put(...args: any[]): Promise<void> {
+				const t = this.transaction();
+				t.put.apply(t, args);
+				return await t.commit();
 			}
 
 			async delete(path: NodePath): Promise<void> {
-				if (this.isClosed)
-					throw new Error("Database has been closed.");
-
-				await this.commitLocalTransaction([{ type: OperationType.Delete, path: path }]);
+				const t = this.transaction();
+				t.delete(path);
+				return await t.commit();
 			}
 
-			async update(path: EntityPath, newValue: any): Promise<void> {
-				if (this.isClosed)
-					throw new Error("Database has been closed.");
-
-				await this.commitLocalTransaction([{ type: OperationType.Update, path: path, value: newValue }]);
+			async update(path: EntityPath, newValue: any): Promise<void>
+			async update(...args: any[]): Promise<void> {
+				const t = this.transaction();
+				t.update.apply(t, args);
+				return await t.commit();
 			}
 
 			async addListItem(listPath: NodePath, value: any): Promise<string> {
-				if (this.isClosed)
-					throw new Error("Database has been closed.");
-
-				const newItemKey = randKey();
-				await this.commitLocalTransaction([{ type: OperationType.Put, path: [...listPath, newItemKey], value }]);
-				return newItemKey;
+				const t = this.transaction();
+				const key = t.addListItem(listPath, value);
+				await t.commit();
+				return key;
 			}
 
 			transaction() {
