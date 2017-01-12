@@ -231,12 +231,12 @@ const key3 = await db.addListItem("Guest List", { name: "John"}); // returns "tb
 
 The database now looks like:
 
-```json
+```ts
 {
 	"Guest List": {
-		"YJ5xGKqrCckRKqlZ": { name: "John"},
-		"lNK7CbxfNxFAc1hj": { name: "Dana"},
-		"tb0Ve0S3JTVURswh": { name: "John"}
+		"YJ5xGKqrCckRKqlZ": { name: "John" },
+		"lNK7CbxfNxFAc1hj": { name: "Dana" },
+		"tb0Ve0S3JTVURswh": { name: "John" }
 	}
 }
 ```
@@ -307,7 +307,7 @@ let person = await db.get(["people", "John Doe"]);
 ```
 Returns:
 
-```json
+```ts
 {
 	age: 25,
 	height: 178,
@@ -322,7 +322,7 @@ let root = await db.get([]);
 ```
 Returns:
 
-```json
+```ts
 { 
 	people: {
 		"John Doe": {
@@ -346,7 +346,7 @@ let person = await db.get(["people", "Jane Doe", "age"]);
 ```
 Returns: 
 
-```json
+```ts
 27
 ```
 
@@ -357,7 +357,7 @@ let person = await db.get(["people", "John Doe", "medals", 1]);
 ```
 Returns: 
 
-```json
+```ts
 "Airman's Medal"
 ```
 
@@ -371,7 +371,7 @@ let results = await db.get([
 ```
 Returns: 
 
-```json
+```ts
 [
 	["Navy Cross", "Airman's Medal"],
 	27
@@ -395,7 +395,7 @@ store.observe(path, handler)
 * `path` (string or array, required): the path of the entity to watch. This can be any path supported by `get()`.
 * `handler` (function, required): a handler function to be called when a relevant modification occurred. The handler function receives single argument representing a `changes` object of the form:
 
-```json
+```ts
 {
 	origin, // string, either "local" or "remote"
 	revisions, // array of revision objects
@@ -405,7 +405,7 @@ store.observe(path, handler)
 
 Where the `revisions` array is of the form:
 
-```json
+```ts
 [
 	{ path: ..., value: ..., metadata: ... },
 	{ path: ..., value: ..., metadata: ... },
@@ -578,7 +578,7 @@ The handler's return value must be a promise. Returning a promise allows to defe
 
 `conflictInfo` is an object of the form:
 
-```json
+```ts
 {
 	path, // string array
 	key, // string
