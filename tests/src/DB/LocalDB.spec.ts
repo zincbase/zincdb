@@ -338,11 +338,15 @@ namespace ZincDB {
 					describe("Basic operations involving a remote server:", () => {
 						let db: LocalDB;
 
-						if (typeof ZincDBTestConfig === "undefined")
-							throw new Error("Global ZincDB test configuration object was not found in scope.");
+						if (typeof ZincDBTestConfig === "undefined") {
+							log("Skipped tests requiring a remote server as a global ZincDB test configuration object was not found in scope.");
+							return;
+						}
 
-						if (ZincDBTestConfig.host == null ||  ZincDBTestConfig.accessKey == null)
-							throw new Error("Global ZincDB test configuration object was found but did not contain a 'host' or 'accessKey' properties.");
+						if (ZincDBTestConfig.host == null ||  ZincDBTestConfig.accessKey == null) {
+							log("Skipped tests requiring a remote server as a g as a global ZincDB test configuration object was found but did not contain a 'host' or 'accessKey' properties.");
+							return;
+						}
 
 						beforeEach(async () => {
 							const dbName = JSRandom.getWordCharacterString(10);
