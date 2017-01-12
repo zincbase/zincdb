@@ -109,7 +109,7 @@ A promise that resolves when the websocket has been closed or rejects when an er
 **Remarks:**
 To close the websocket, call the `abortActiveRequests` method, documented below, which would also abort all other active requests. There is currently no specialized method to individually close the websocket. To achieve that, instead create a dedicated `Client` object for the websocket connection(s).
 
-## `openRawsocketReader`
+## `openRawWebsocketReader`
 
 _Not documented yet._
 
