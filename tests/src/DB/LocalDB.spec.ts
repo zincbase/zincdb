@@ -506,7 +506,7 @@ namespace ZincDB {
 
 						it("Resolves conflicts using the default conflict handler", async () => {
 							await db.put(["a", "b"], 23);
-
+							await PromiseX.delay(50);
 							const updateTime = Timer.getMicrosecondTimestamp();
 
 							const entries1: EntryArray<any> = [
@@ -525,7 +525,7 @@ namespace ZincDB {
 
 						it("Resolves conflicts using the a custom conflict handler", async () => {
 							await db.put(["a", "b"], 23);
-
+							await PromiseX.delay(50);
 							const remoteUpdateTime = Timer.getMicrosecondTimestamp();
 
 							const entries1: EntryArray<any> = [
