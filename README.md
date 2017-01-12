@@ -24,7 +24,8 @@ Browser:
 ```html
 <script id="zincdb" src="path/to/zincdb.js"></script>
 ```
-Download the latest stable release [here]().
+Download the latest release [here]().
+_(CDN URLs would be made available in the future)_
 
 ## Documentation
 
