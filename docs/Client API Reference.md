@@ -1,6 +1,6 @@
 # Low-level Client API Reference
 
-The `Client` object provides a lightweight abstractions that for the [ZincServer REST interface](https://github.com/zincbase/zincserver/blob/master/docs/REST%20API%20reference.md).
+The `Client` object provides a set lightweight abstractions for the [ZincServer REST interface](https://github.com/zincbase/zincserver/blob/master/docs/REST%20API%20reference.md).
 
 ## Construction and initialization
 
