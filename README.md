@@ -35,7 +35,7 @@ _(CDN URLs would be made available in the future)_
 * [Technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md)
 * [Contribution guide](https://github.com/zincbase/zincdb/blob/master/docs/Contribution%20guide.md)
 
-For instruction on installing and configuring a server see the [ZincServer getting started guide](https://github.com/zincbase/zincserver/blob/master/docs/Getting%20started.md).
+For instructions on installing and configuring a server see the [ZincServer getting started guide](https://github.com/zincbase/zincserver/blob/master/docs/Getting%20started.md).
 
 ## License
 
