@@ -519,13 +519,12 @@ namespace ZincDB {
 
 						it("Resolves conflicts using the default conflict handler", async () => {
 							await db.put(["a", "b"], 23);
-							await PromiseX.delay(50);
-							const updateTime = Timer.getMicrosecondTimestamp();
+							const remoteUpdateTime = Timer.getMicrosecondTimestamp() + (1000 * 1000);
 
 							const entries1: EntryArray<any> = [
-								{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: { updateTime } },
-								{ key: "['a']['c']['d']", value: ["ba", 21, { molo: "kkkk" }], metadata: { updateTime } },
-								{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 4]), metadata: { updateTime } },
+								{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: { updateTime: remoteUpdateTime } },
+								{ key: "['a']['c']['d']", value: ["ba", 21, { molo: "kkkk" }], metadata: { updateTime: remoteUpdateTime } },
+								{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 4]), metadata: { updateTime: remoteUpdateTime } },
 							]
 
 							await db.syncClient.write(entries1);
@@ -538,8 +537,7 @@ namespace ZincDB {
 
 						it("Resolves conflicts using the a custom conflict handler", async () => {
 							await db.put(["a", "b"], 23);
-							await PromiseX.delay(50);
-							const remoteUpdateTime = Timer.getMicrosecondTimestamp();
+							const remoteUpdateTime = Timer.getMicrosecondTimestamp() + (1000 * 1000);
 
 							const entries1: EntryArray<any> = [
 								{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: { updateTime: remoteUpdateTime } },
