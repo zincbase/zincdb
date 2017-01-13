@@ -126,7 +126,12 @@ namespace ZincDB {
 										spellCheck={false}
 										onChange={(event) => updateHostField(event.target["value"])}
 										onKeyPress={(event) => { if (event.key === "Enter") { reloadDatastoreAndRender() } }} /></td>
-									<td>Access key: <input type="password" value={this.props.topBarState.accessKey} onChange={(event) => updateAccessKeyField(event.target["value"])} /></td>
+									<td>Access key: <input 
+										type="password" 
+										value={this.props.topBarState.accessKey} 
+										onChange={(event) => updateAccessKeyField(event.target["value"])}
+										onKeyPress={(event) => { if (event.key === "Enter") { reloadDatastoreAndRender() } }} />
+									</td>
 									<td><button onClick={pushChanges}>Push changes</button></td>
 									<td><button onClick={revertChanges}>Revert changes</button></td>
 								</tr>
