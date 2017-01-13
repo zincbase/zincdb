@@ -122,18 +122,21 @@ namespace ZincDB {
 								<tr>
 									<td>Datastore URL: <input
 										type="text"
+										title="Press enter to load target datastore"
+										placeholder="https://example.com:1337/datastore/datastorename"
 										value={this.props.topBarState.host}
 										spellCheck={false}
 										onChange={(event) => updateHostField(event.target["value"])}
 										onKeyPress={(event) => { if (event.key === "Enter") { reloadDatastoreAndRender() } }} /></td>
 									<td>Access key: <input 
-										type="password" 
+										type="password"
+										title="Press enter to load target datastore"
 										value={this.props.topBarState.accessKey} 
 										onChange={(event) => updateAccessKeyField(event.target["value"])}
 										onKeyPress={(event) => { if (event.key === "Enter") { reloadDatastoreAndRender() } }} />
 									</td>
-									<td><button onClick={pushChanges}>Push changes</button></td>
-									<td><button onClick={revertChanges}>Revert changes</button></td>
+									<td><button onClick={pushChanges} title="Push all pending changes to remote datastore">Push changes</button></td>
+									<td><button onClick={revertChanges} title="Revert all pending changes">Revert changes</button></td>
 								</tr>
 							</tbody>
 						</table>
@@ -142,6 +145,8 @@ namespace ZincDB {
 								<tr>
 								<td>Add new path: <input 
 								type="text" 
+								title="Press enter to add new path"
+								placeholder='["branch", "leaf"]'
 								value={this.props.topBarState.newEntryPath}
 								spellCheck={false}
 								onChange={(event) => updateNewEntryPathField(event.target["value"])}
