@@ -422,15 +422,17 @@ namespace ZincDB {
 						});
 
 						it("Pulls from a remote server", async () => {
+							const updateTime = Timer.getMicrosecondTimestamp();
+
 							const entries1: EntryArray<any> = [
-								{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: [] },
-								{ key: "['a']['c']['d']", value: ["ba", 21, { molo: "kkkk" }], metadata: [] },
-								{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 4]), metadata: [] },
+								{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: { updateTime } },
+								{ key: "['a']['c']['d']", value: ["ba", 21, { molo: "kkkk" }], metadata: { updateTime } },
+								{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 4]), metadata: { updateTime } },
 							];
 
 							const entries2: EntryArray<any> = [
-								{ key: "['a']['b']", value: { yo: "so", do: 123 }, metadata: [] },
-								{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 5]), metadata: [] },
+								{ key: "['a']['b']", value: { yo: "so", do: 123 }, metadata: { updateTime } },
+								{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 5]), metadata: { updateTime } },
 							];
 
 							await db.syncClient.write(entries1);
@@ -464,16 +466,18 @@ namespace ZincDB {
 
 						function testContinuousPull(useWebSocket: boolean) {
 							it(`Continuously pulls from a remote server. Websocket enabled: ${useWebSocket}.`, () => {
+								const updateTime = Timer.getMicrosecondTimestamp();
+
 								return new Promise(async (resolve) => {
 									const entries1: EntryArray<any> = [
-										{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: [] },
-										{ key: "['a']['c']['d']", value: ["ba", 21, { molo: "kkkk" }], metadata: [] },
-										{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 4]), metadata: [] },
+										{ key: "['a']['b']", value: { yo: "go", do: 123 }, metadata: { updateTime } },
+										{ key: "['a']['c']['d']", value: ["ba", 21, { molo: "kkkk" }], metadata: { updateTime } },
+										{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 4]), metadata: { updateTime } },
 									]
 
 									const entries2: EntryArray<any> = [
-										{ key: "['a']['b']", value: { yo: "so", do: 123 }, metadata: [] },
-										{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 5]), metadata: [] }
+										{ key: "['a']['b']", value: { yo: "so", do: 123 }, metadata: { updateTime } },
+										{ key: "['a']['c']['e']", value: new Uint8Array([1, 2, 3, 5]), metadata: { updateTime } }
 									]
 
 									let iteration = 1;
