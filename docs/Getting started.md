@@ -6,7 +6,7 @@ ZincDB is a general purpose database and synchronization library especially suit
 
 ## Some notes on the use of promises and async/await
 
-This guide, as well as the [API Reference]() heavily rely on ES2015 and ES2016 features like [arrow functions](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Functions/Arrow_functions), [promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) and [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). It is highly recommended to use a transpiler like TypeScript or Babel to make the library as easy and convenient to use as possible, while still maintaining support for older browsers. To enable support for promises on older browsers, the library is internally bundled with a polyfill (based on [es6-promise](https://github.com/stefanpenner/es6-promise)) and will install it globally and in its web workers if needed.
+This guide, as well as the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md) heavily rely on ES2015 and ES2016 features like [arrow functions](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Functions/Arrow_functions), [promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) and [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). It is highly recommended to use a transpiler like TypeScript or Babel to make the library as easy and convenient to use as possible, while still maintaining support for older browsers. To enable support for promises on older browsers, the library is internally bundled with a polyfill (based on [es6-promise](https://github.com/stefanpenner/es6-promise)) and will install it globally and in its web workers if needed.
 
 ## Initializing the library
 
@@ -23,7 +23,7 @@ Or in the browser:
 ```html
 <script id="zincdb" src="path/to/zincdb.js"></script>
 ```
-(note setting the `id` to `zincdb` is necessary to allow the library to run in a web worker)
+(note setting the `id` attribute to `zincdb` is necessary to allow the library to run in a web worker)
 
 ## Opening a database
 
@@ -80,7 +80,7 @@ await db.get(["a", "b", "c"]);
 ```
 returns:
 
-```json
+```ts
 {
 	"Hello World": [
 		1, 2, 3, 4
@@ -97,7 +97,7 @@ await db.get([]);
 ```
 returning:
 
-```json
+```ts
 {
 	a: {
 		b: {
@@ -119,7 +119,7 @@ await db.get(["a", "b"]);
 
 returning:
 
-```json
+```ts
 {
 	c: {
 		"Hello World": [
@@ -137,7 +137,7 @@ await db.get(["a", "b", "C", "Hello World"]);
 
 returning:
 
-```json
+```ts
 [11, 22, 33, 44]
 ```
 
@@ -149,7 +149,7 @@ await db.get(["a", "b", "C", "Hello World", 2]);
 
 returning:
 
-```json
+```ts
 33
 ```
 
