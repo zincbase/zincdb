@@ -315,7 +315,7 @@ The data is first stored only locally. To transmit these as updates to the serve
 await db.pushLocalChanges();
 ```
 
-It is also possible to only transmit a subset the updates made, by setting the `path` option:
+It is also possible to only transmit a subset of the updates made, by specifying the `path` option:
 
 ```ts
 await db.pushLocalChanges({ path: ["hi"] });
