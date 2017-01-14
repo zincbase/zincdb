@@ -31,13 +31,13 @@ namespace ZincDB {
 			remoteCommitTime: number;
 		}
 		
-		export type ChangesObject = { 
+		export type SubscriberEventObject = { 
 			origin: "local" | "remote", 
-			revisions: PathEntries, 
+			changes: PathEntries, 
 			newValue?: any 
 		}
 
-		export type SubscriberHandler = (changes: ChangesObject) => void;
+		export type SubscriberHandler = (changes: SubscriberEventObject) => void;
 		export type Subscriber = {
 			handler: SubscriberHandler;
 			isObserver: boolean;

@@ -296,43 +296,43 @@ const db = await ZincDB.open("MyDB", {
 });
 ```
 
-This will set the given URI as the remote host to synchronize with. To update the local database with any unreceived remote changes, call `pullRemoteRevisions`:
+This will set the given URI as the remote host to synchronize with. To update the local database with any unreceived remote changes, call `pullRemoteChanges`:
 
 ```ts
-await db.pullRemoteRevisions();
+await db.pullRemoteChanges();
 ```
 
-When changes (or more formally "revisions") are made locally, like:
+When entries are updated, like:
 
 ```ts
 await db.put(["hi", "there"], [9, 8, 7])
 await db.delete(["yo", "mate"]);
 ```
 
-The data is first stored only locally. To transmit any pending local changes, call `pushLocalRevisions`:
+The data is first stored only locally. To transmit these as updates to the server, call `pushLocalChanges`:
 
 ```ts
-await db.pushLocalRevisions();
+await db.pushLocalChanges();
 ```
 
-It is also possible to only transmit a subset of the pending changes, by setting the `path` option:
+It is also possible to only transmit a subset the updates made, by setting the `path` option:
 
 ```ts
-await db.pushLocalRevisions({ path: ["hi"] });
+await db.pushLocalChanges({ path: ["hi"] });
 ```
 
-This will only transmit revisions applied to descendants of the path `["hi"]`. In this case it will only transmit the revision made to `["hi", "there"]`, and the revision to `["yo", "mate"]` would remain as a pending local change.
+This will only transmit updates applied to descendants of the path `["hi"]`. The update made to `["hi", "there"]`, and the update to `["yo", "mate"]` would remain as a pending local changes.
 
 ## Handling conflicts
 
-A conflict happens when a local revision is made, but is not transmitted to the server, then a remote revision for the same path is received. In most other synchronizing databases, this would usually require to resolve the conflict immediately before the received data can be written locally.
+A conflict happens when a local update is made, but is not transmitted to the server, then a remote update for the same node is received. In most other synchronizing databases, this would usually require to resolve the conflict immediately before the received data can be written locally.
 
-ZincDB deals with these scenarios a bit differently. It has a mechanism that allows remote data to be safely, and continuously pulled from the server even if conflicting data exists locally. In such cases, both the local and remote revisions would coexist internally, with the local revisions temporarily "shadowing" the conflicting remote ones. The conflict is only resolved when `pushLocalRevisions()` is finally called.
+ZincDB deals with these scenarios a bit differently. It has a mechanism that allows remote data to be safely, and continuously pulled from the server even if conflicting data exists locally. In such cases, both the local and remote updates would coexist internally, with the local entries temporarily "shadowing" the conflicting remote ones. The conflict is only resolved when `pushLocalChanges()` is finally called.
 
-If no special resolution method is given to `pushLocalRevisions`, any conflicts would be resolved by always selecting the revision with the later update time. To override this behavior, a custom handler can be specified, by specifying a `conflictHandler` option to `pushLocalRevisions`:
+If no special resolution method is given to `pushLocalChanges`, any conflicts would be resolved by always selecting the entry with the later update time. To override this behavior, a custom handler can be specified with the `conflictHandler` option:
 
 ```ts
-await db.pushLocalRevisions({ conflictHandler: (conflictInfo) => {
+await db.pushLocalChanges({ conflictHandler: (conflictInfo) => {
 	if (conflictInfo.localValue.age > conflictInfo.remoteValue.age) {
 		return Promise.resolve(conflictInfo.localValue);
 	} else {

@@ -99,7 +99,7 @@ namespace ZincDB {
 
 			if (host !== "") {
 				try {
-					await db.pullRemoteRevisions();
+					await db.pullRemoteChanges();
 				} catch (e) {
 				}
 			}
@@ -108,25 +108,25 @@ namespace ZincDB {
 
 			const state = viewState;
 
-			db.subscribe([], async (changes) => {
-				if (changes.origin !== "remote")
+			db.subscribe([], async (event) => {
+				if (event.origin !== "remote")
 					return;
 
 				const patches: Keypath.KeypathAndValue[] = [];
 
-				for (const revision of changes.revisions) {
+				for (const entry of event.changes) {
 					let foundExistingMatch = false;
 
 					state.rows.forEach((row, index) => {
-						if (Keypath.areEqual(revision.path, row.entry.path)) {
-							if (revision.value === undefined)
+						if (Keypath.areEqual(entry.path, row.entry.path)) {
+							if (entry.value === undefined)
 								return;
 							
 							foundExistingMatch = true;
 
 							patches.push(
-								{ path: ["rows", index, "entry"], value: revision },
-								{ path: ["rows", index, "formattedValue"], value: DB.LocalDBOperations.formatValue(revision.value) }
+								{ path: ["rows", index, "entry"], value: entry },
+								{ path: ["rows", index, "formattedValue"], value: DB.LocalDBOperations.formatValue(entry.value) }
 							);
 						}
 					})
@@ -141,7 +141,7 @@ namespace ZincDB {
 			});
 
 			if (host !== "")
-				db.pullRemoteRevisions({ continuous: true });
+				db.pullRemoteChanges({ continuous: true });
 		}
 
 		export const updateHostField = function(newValue: string) {
@@ -160,12 +160,12 @@ namespace ZincDB {
 		}
 
 		export const pushChanges = async function() {
-			await db.pushLocalRevisions();
+			await db.pushLocalChanges();
 			await reloadAllRowsAndRender();
 		}
 
 		export const revertChanges = async function() {
-			await db.discardLocalRevisions();
+			await db.discardLocalChanges();
 			await reloadAllRowsAndRender();
 		}
 

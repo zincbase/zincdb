@@ -1,9 +1,9 @@
 namespace ZincDB {
 	export namespace DB {
-		const RemoteRevisionsStoreName = "RemoteRevisions";
-		const LocalRevisionsStoreName = "LocalRevisions";
+		const RemoteEntriesStoreName = "RemoteEntries";
+		const LocalEntriesStoreName = "LocalEntries";
 		const GlobalMetadataStoreName = "GlobalMetadata";
-		const ObjectStoreNames = [GlobalMetadataStoreName, LocalRevisionsStoreName, RemoteRevisionsStoreName];
+		const ObjectStoreNames = [GlobalMetadataStoreName, LocalEntriesStoreName, RemoteEntriesStoreName];
 
 		export class LocalDBOperations {
 			private db: StorageAdapter;
@@ -90,7 +90,7 @@ namespace ZincDB {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const results = await this.db.get<any>(keys, LocalRevisionsStoreName);
+				const results = await this.db.get<any>(keys, LocalEntriesStoreName);
 				const remainingKeysReversed: string[] = [];
 
 				for (let i = results.length - 1; i >= 0; i--) {
@@ -101,13 +101,13 @@ namespace ZincDB {
 				if (remainingKeysReversed.length === 0)
 					return results;
 
-				const matchingRemoteRevisions = await this.db.get<any>(remainingKeysReversed, RemoteRevisionsStoreName);
+				const matchingRemoteEntries = await this.db.get<any>(remainingKeysReversed, RemoteEntriesStoreName);
 
 				for (let i = 0; i < results.length; i++) {
 					if (results[i] === undefined) {
-						const matchingRemoteRevision = matchingRemoteRevisions.pop();
-						if (matchingRemoteRevision && matchingRemoteRevision.value !== undefined)
-							results[i] = matchingRemoteRevision;
+						const matchingRemoteEntry = matchingRemoteEntries.pop();
+						if (matchingRemoteEntry && matchingRemoteEntry.value !== undefined)
+							results[i] = matchingRemoteEntry;
 					} else {
 						if (results[i].value === undefined)
 							results[i] = <any>undefined;
@@ -123,7 +123,7 @@ namespace ZincDB {
 
 				const seenLocalKeys = new StringSet();
 				const allEntries: Entry<any>[] = [];
-				const allLocalEntries = await this.db.getAll<any>(LocalRevisionsStoreName);
+				const allLocalEntries = await this.db.getAll<any>(LocalEntriesStoreName);
 
 				for (const entry of allLocalEntries) {
 					seenLocalKeys.add(entry.key);
@@ -132,7 +132,7 @@ namespace ZincDB {
 						allEntries.push(entry);
 				}
 
-				const allRemoteEntries = await this.db.getAll<any>(RemoteRevisionsStoreName);
+				const allRemoteEntries = await this.db.getAll<any>(RemoteEntriesStoreName);
 				for (const entry of allRemoteEntries) {
 					if (!seenLocalKeys.has(entry.key) && entry.value !== undefined) {
 						allEntries.push(entry);
@@ -148,14 +148,14 @@ namespace ZincDB {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const allLocalKeys = await this.db.getAllKeys(LocalRevisionsStoreName);
+				const allLocalKeys = await this.db.getAllKeys(LocalEntriesStoreName);
 				const allKeysSet = new StringSet();
 
 				for (const key of allLocalKeys) {
 					allKeysSet.add(key);
 				}
 
-				const allRemoteKeys = await this.db.getAllKeys(RemoteRevisionsStoreName);
+				const allRemoteKeys = await this.db.getAllKeys(RemoteEntriesStoreName);
 
 				for (const key of allRemoteKeys) {
 					allKeysSet.add(key)
@@ -317,23 +317,23 @@ namespace ZincDB {
 					}
 				}
 
-				return this.commitLocalRevisions(transactionEntries);
+				return this.commitLocalEntries(transactionEntries);
 			}
 
-			async commitLocalRevisions(newRevisions: EntryArray<any>): Promise<EntryArray<any>> {
+			async commitLocalEntries(newEntries: EntryArray<any>): Promise<EntryArray<any>> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				if (!Array.isArray(newRevisions))
-					throw new TypeError("New revisions argument is not an array");
+				if (!Array.isArray(newEntries))
+					throw new TypeError("Entries argument must be an array");
 
-				if (newRevisions.length === 0)
+				if (newEntries.length === 0)
 					return [];
 
-				const entryKeys = newRevisions.map((entry) => entry.key);
+				const entryKeys = newEntries.map((entry) => entry.key);
 
-				const [existingRevisions, latestServerMetadata] = await Promise.all([
-					this.db.get<any>(entryKeys, LocalRevisionsStoreName),
+				const [existingEntries, latestServerMetadata] = await Promise.all([
+					this.db.get<any>(entryKeys, LocalEntriesStoreName),
 					this.getLatestServerMetadata()])
 
 				const commitObject: EntryObject<any> = {};
@@ -341,60 +341,60 @@ namespace ZincDB {
 				const timestamp = Timer.getMicrosecondTimestamp();
 
 				for (let i = 0; i < entryKeys.length; i++) {
-					const newRevision = newRevisions[i];
-					const existingRevision = existingRevisions[i];
+					const newEntry = newEntries[i];
+					const existingEntry = existingEntries[i];
 
-					if (existingRevision && LocalDBOperations.valuesAreEqual(newRevision.value, existingRevision.value))
+					if (existingEntry && LocalDBOperations.valuesAreEqual(newEntry.value, existingEntry.value))
 						continue;
 
-					if (!newRevision.metadata)
-						newRevision.metadata = {};
+					if (!newEntry.metadata)
+						newEntry.metadata = {};
 
-					if (existingRevision && existingRevision.metadata && existingRevision.metadata.referenceSyncTimestamp > 0) {
-						newRevision.metadata.referenceSyncTimestamp = existingRevision.metadata.referenceSyncTimestamp;
+					if (existingEntry && existingEntry.metadata && existingEntry.metadata.referenceSyncTimestamp > 0) {
+						newEntry.metadata.referenceSyncTimestamp = existingEntry.metadata.referenceSyncTimestamp;
 					} else {
-						newRevision.metadata.referenceSyncTimestamp = latestServerMetadata.lastModified;
+						newEntry.metadata.referenceSyncTimestamp = latestServerMetadata.lastModified;
 					}
 
-					newRevision.metadata.updateTime = timestamp;
+					newEntry.metadata.updateTime = timestamp;
 
-					commitObject[newRevision.key] = newRevision;
-					diff.push(newRevision);
+					commitObject[newEntry.key] = newEntry;
+					diff.push(newEntry);
 				}
 
 				if (diff.length === 0)
 					return [];
 
 				await this.db.set({
-					[LocalRevisionsStoreName]: commitObject,
+					[LocalEntriesStoreName]: commitObject,
 				});
 
 				this.nodeLookup.addPathStrings(diff.map((entry) => entry.key));
 				return diff;
 			}
 
-			async commitSerializedRemoteRevisions(serializedRevisions: Uint8Array, decryptionKeyHex?: string): Promise<EntryArray<any>> {
-				if (!(serializedRevisions instanceof Uint8Array))
+			async commitSerializedRemoteEntries(serializedEntries: Uint8Array, decryptionKeyHex?: string): Promise<EntryArray<any>> {
+				if (!(serializedEntries instanceof Uint8Array))
 					throw new TypeError("The given argument is not a Uint8Array");
 
-				const deserializedRevisions = EntrySerializer.compactAndDeserializeEntries(serializedRevisions, decryptionKeyHex);
-				return this.commitRemoteRevisions(deserializedRevisions);
+				const deserializedEntries = EntrySerializer.compactAndDeserializeEntries(serializedEntries, decryptionKeyHex);
+				return this.commitRemoteEntries(deserializedEntries);
 			}
 
-			async commitRemoteRevisions(newRevisions: Entry<any>[]): Promise<EntryArray<any>> {
+			async commitRemoteEntries(newEntries: Entry<any>[]): Promise<EntryArray<any>> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				if (!Array.isArray(newRevisions))
-					throw new TypeError("New revisions argument is not an array");
+				if (!Array.isArray(newEntries))
+					throw new TypeError("Entries argument must be an array");
 				
-				if (newRevisions.length === 0)
+				if (newEntries.length === 0)
 					return [];
 
-				const keys: string[] = newRevisions.map((entry) => entry.key);
-				let [existingRemoteRevisions, matchingLocalRevisionsExist, serverMetadata] = await Promise.all([
-					this.db.get<any>(keys, RemoteRevisionsStoreName),
-					this.db.has(keys, LocalRevisionsStoreName),
+				const keys: string[] = newEntries.map((entry) => entry.key);
+				let [existingRemoteEntries, matchingLocalEntriesExist, serverMetadata] = await Promise.all([
+					this.db.get<any>(keys, RemoteEntriesStoreName),
+					this.db.has(keys, LocalEntriesStoreName),
 					this.getLatestServerMetadata()
 				]);
 
@@ -402,92 +402,92 @@ namespace ZincDB {
 				let diff: Entry<any>[] = [];
 				const transactionNodeLookup = new NodeLookup();
 
-				for (let i = 0; i < newRevisions.length; i++) {
-					const newRevision = newRevisions[i];
-					const existingRevision = existingRemoteRevisions[i];
+				for (let i = 0; i < newEntries.length; i++) {
+					const newEntry = newEntries[i];
+					const existingEntry = existingRemoteEntries[i];
 
-					if (!newRevision.metadata)
-						throw new Error("Encountered a remote revision with no metadata");
+					if (!newEntry.metadata)
+						throw new Error("Encountered a remote entry with no metadata");
 
-					if (!newRevision.metadata.commitTime)
-						throw new Error("Encountered a remote revision with no commit timestamp");
+					if (!newEntry.metadata.commitTime)
+						throw new Error("Encountered a remote entry with no commit timestamp");
 
 					// If a creation event event entry is encountered and the datastore has already been synced before, 
 					// clear all entries in the datastore, and discard all previous updates that were timed before 
 					// the creation event entry. Otherwise skip.
-					if (newRevision.metadata.isCreationEvent) {
+					if (newEntry.metadata.isCreationEvent) {
 						if (serverMetadata.lastModified > 0) {
-							// Clear all new revisions that were added to the update objects 
+							// Clear all new entries that were added to the update objects 
 							commitObject = {};
 
-							// Set the diff to include all known remote revisions keys to value `undefined`
+							// Set the diff to include all known remote entry keys to value `undefined`
 							// With the creation event commit timestamp as timestamp
-							const creationTime = newRevision.metadata.commitTime;
-							diff = (await this.getRemoteRevisionKeys())
+							const creationTime = newEntry.metadata.commitTime;
+							diff = (await this.getRemoteEntryKeys())
 								.map((key) => ({ key, value: undefined, metadata: { updateTime: creationTime, commitTime: creationTime} }))
 
 							// Clear all remote entries from the database
-							await this.db.clearObjectStores([RemoteRevisionsStoreName]);
+							await this.db.clearObjectStores([RemoteEntriesStoreName]);
 
-							// Regenerate node lookup to only include the local revisions' keys
+							// Regenerate node lookup to only include the local entries' keys
 							this.nodeLookup.clear();
-							await this.nodeLookup.addPathStrings(await this.getLocalRevisionKeys());
+							await this.nodeLookup.addPathStrings(await this.getLocalEntryKeys());
 
-							// Set all previously matching remote revisions to undefined
-							existingRemoteRevisions = existingRemoteRevisions.map(() => <Entry<any>><any>undefined);
+							// Set all previously matching remote entries to undefined
+							existingRemoteEntries = existingRemoteEntries.map(() => <Entry<any>><any>undefined);
 						}
 
 						continue;
 					}
 
-					// Check if the remote revision received was due to a previous local change
+					// Check if the remote entry received was due to a previous local change
 					// that has been transmitted to the server and marked as commited locally, or alternatively
 					// It has a value equal to the current value.
-					// At these cases, there is no need to commit it again or include it in the returned revision list.
-					if (existingRevision &&
-						(existingRevision.metadata.commitTime === newRevision.metadata.commitTime ||
-							LocalDBOperations.valuesAreEqual(existingRevision.value, newRevision.value))) {
+					// At these cases, there is no need to commit it again or include it in the returned changes list.
+					if (existingEntry &&
+						(existingEntry.metadata.commitTime === newEntry.metadata.commitTime ||
+							LocalDBOperations.valuesAreEqual(existingEntry.value, newEntry.value))) {
 						continue;
 					}
 
 					// Check it the given leaf path is invalid or shares heritage with an existing leaf path.
-					// This includes local revision that haven't been transmitted yet. 
-					let revisionPath: NodePath;
+					// This includes local entries that haven't been transmitted yet. 
+					let entryPath: NodePath;
 
 					try {
-						revisionPath = <NodePath>Keypath.parse(newRevision.key);
-						LocalDBOperations.validateNodePath(revisionPath, true)
+						entryPath = <NodePath>Keypath.parse(newEntry.key);
+						LocalDBOperations.validateNodePath(entryPath, true)
 					} catch (e) {
-						log(`commitRemoteRevisions: Ignored a remote revision with a key that failed to parse as a leaf node path: '${newRevision.key}'`);
+						log(`commitRemoteEntries: Ignored a remote entry with a key that failed to parse as a leaf node path: '${newEntry.key}'`);
 						continue;
 					}
 
 					// Check if the path conflicts with an existing leaf path
-					const matchingDatabaseNodes = this.nodeLookup.findMatchingNodes(revisionPath);
-					const matchingTransactionNodes = transactionNodeLookup.findMatchingNodes(revisionPath);
+					const matchingDatabaseNodes = this.nodeLookup.findMatchingNodes(entryPath);
+					const matchingTransactionNodes = transactionNodeLookup.findMatchingNodes(entryPath);
 					if (matchingDatabaseNodes.matchType === MatchType.Ancestor ||
 						matchingDatabaseNodes.matchType === MatchType.Descendants ||
 						matchingTransactionNodes.matchType === MatchType.Ancestor ||
 						matchingTransactionNodes.matchType === MatchType.Descendants) {
-						log(`commitRemoteRevisions: Ignored a remote revision with path ${Keypath.formatPath(revisionPath)} that shares heritage with an existing leaf node: '${Keypath.formatPath(matchingDatabaseNodes.paths[0] || matchingTransactionNodes.paths[0])}}'`);
+						log(`commitRemoteEntries: Ignored a remote entry with path ${Keypath.formatPath(entryPath)} that shares heritage with an existing leaf node: '${Keypath.formatPath(matchingDatabaseNodes.paths[0] || matchingTransactionNodes.paths[0])}}'`);
 						continue;
 					}
 
-					commitObject[newRevision.key] = newRevision;
+					commitObject[newEntry.key] = newEntry;
 
-					// Add to the diff if the key is not shadowed by an existing local revision
-					if (!matchingLocalRevisionsExist[i])
-						diff.push(newRevision);
+					// Add to the diff if the key is not shadowed by an existing local entry
+					if (!matchingLocalEntriesExist[i])
+						diff.push(newEntry);
 
 					// Add to the lookup tree for the transaction
-					transactionNodeLookup.add(revisionPath);
+					transactionNodeLookup.add(entryPath);
 				}
 
-				const latestCommitTimestamp = newRevisions[newRevisions.length - 1].metadata.commitTime;
+				const latestCommitTimestamp = newEntries[newEntries.length - 1].metadata.commitTime;
 				serverMetadata.lastModified = <number>latestCommitTimestamp;
 
 				await this.db.set({
-					[RemoteRevisionsStoreName]: commitObject,
+					[RemoteEntriesStoreName]: commitObject,
 					[GlobalMetadataStoreName]: { "serverMetadata": { key: "serverMetadata", value: serverMetadata, metadata: {} } },
 				});
 
@@ -504,85 +504,85 @@ namespace ZincDB {
 				if (keys.length === 0)
 					return;
 
-				const existingLocalRevisions = await this.db.get<any>(keys, LocalRevisionsStoreName);
+				const existingLocalEntries = await this.db.get<any>(keys, LocalEntriesStoreName);
 
 				const entriesObject: EntryObject<any> = {};
 				const clearingObject: { [key: string]: null } = {};
 
 				for (let i = 0; i < keys.length; i++) {
-					const localRevision = existingLocalRevisions[i];
+					const localEntry = existingLocalEntries[i];
 
-					if (localRevision === undefined)
+					if (localEntry === undefined)
 						continue;
 
-					localRevision.metadata.commitTime = commitTimestamp;
-					localRevision.metadata.referenceSyncTimestamp = undefined;
-					entriesObject[localRevision.key] = localRevision;
+					localEntry.metadata.commitTime = commitTimestamp;
+					localEntry.metadata.referenceSyncTimestamp = undefined;
+					entriesObject[localEntry.key] = localEntry;
 
 					clearingObject[keys[i]] = null;
 				}
 
 				await this.db.set({
-					[RemoteRevisionsStoreName]: entriesObject,
-					[LocalRevisionsStoreName]: clearingObject,
+					[RemoteEntriesStoreName]: entriesObject,
+					[LocalEntriesStoreName]: clearingObject,
 				});
 			}
 
-			async getRemoteRevisionKeys(keyPrefix?: string): Promise<string[]> {
+			async getRemoteEntryKeys(keyPrefix?: string): Promise<string[]> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const remoteRevisionKeys = await this.db.getAllKeys(RemoteRevisionsStoreName);
+				const remoteEntryKeys = await this.db.getAllKeys(RemoteEntriesStoreName);
 
 				if (keyPrefix)
-					return remoteRevisionKeys.filter((key) => Tools.stringStartsWith(key, keyPrefix));
+					return remoteEntryKeys.filter((key) => Tools.stringStartsWith(key, keyPrefix));
 				else
-					return remoteRevisionKeys;
+					return remoteEntryKeys;
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Sync related operations
 			/////////////////////////////////////////////////////////////////////////////////////////////////
-			async getSerializedLocalRevisions(keyPrefix?: string, encryptionKeyHex?: string): Promise<[Uint8Array, string[]]> {
+			async getSerializedLocalEntries(keyPrefix?: string, encryptionKeyHex?: string): Promise<[Uint8Array, string[]]> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const localRevisions = await this.getLocalRevisions(keyPrefix);
-				const localRevisionKeys = localRevisions.map((entry) => entry.key);
-				return [EntrySerializer.serializeEntries(localRevisions, encryptionKeyHex), localRevisionKeys];
+				const localEntries = await this.getLocalEntries(keyPrefix);
+				const localEntryKeys = localEntries.map((entry) => entry.key);
+				return [EntrySerializer.serializeEntries(localEntries, encryptionKeyHex), localEntryKeys];
 			}
 
-			async getLocalRevisions(keyPrefix?: string): Promise<EntryArray<any>> {
+			async getLocalEntries(keyPrefix?: string): Promise<EntryArray<any>> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const localRevisions = await this.db.getAll<any>(LocalRevisionsStoreName);
+				const localEntries = await this.db.getAll<any>(LocalEntriesStoreName);
 
 				if (keyPrefix)
-					return localRevisions.filter((entry) => Tools.stringStartsWith(entry.key, keyPrefix));
+					return localEntries.filter((entry) => Tools.stringStartsWith(entry.key, keyPrefix));
 				else
-					return localRevisions;
+					return localEntries;
 			}
 
-			async getLocalRevisionKeys(keyPrefix?: string): Promise<string[]> {
+			async getLocalEntryKeys(keyPrefix?: string): Promise<string[]> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const localRevisionKeys = await this.db.getAllKeys(LocalRevisionsStoreName);
+				const localEntryKeys = await this.db.getAllKeys(LocalEntriesStoreName);
 
 				if (keyPrefix)
-					return localRevisionKeys.filter((key) => Tools.stringStartsWith(key, keyPrefix));
+					return localEntryKeys.filter((key) => Tools.stringStartsWith(key, keyPrefix));
 				else
-					return localRevisionKeys;
+					return localEntryKeys;
 			}
 
-			async discardLocalRevisionKeys(keys: string[]): Promise<EntryArray<any>> {
+			async discardLocalEntryKeys(keys: string[]): Promise<EntryArray<any>> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const [matchingLocalRevisions, matchingRemoteRevisions] = await Promise.all([
-					this.db.get(keys, LocalRevisionsStoreName),
-					this.db.get(keys, RemoteRevisionsStoreName),
+				const [matchingLocalEntries, matchingRemoteEntries] = await Promise.all([
+					this.db.get(keys, LocalEntriesStoreName),
+					this.db.get(keys, RemoteEntriesStoreName),
 				]);
 
 				const clearingObject: { [key: string]: null } = {};
@@ -592,13 +592,13 @@ namespace ZincDB {
 
 				for (let i = 0; i < keys.length; i++) {
 					const key = keys[i];
-					const matchingLocalRevision = matchingLocalRevisions[i];
-					const matchingRemoteRevision = matchingRemoteRevisions[i];
+					const matchingLocalEntry = matchingLocalEntries[i];
+					const matchingRemoteEntry = matchingRemoteEntries[i];
 
-					if (matchingLocalRevision !== undefined) {
-						if (matchingRemoteRevision !== undefined) {
-							if (!LocalDBOperations.valuesAreEqual(matchingLocalRevision.value, matchingRemoteRevision.value)) {
-								resultingDiff.push(matchingRemoteRevision);
+					if (matchingLocalEntry !== undefined) {
+						if (matchingRemoteEntry !== undefined) {
+							if (!LocalDBOperations.valuesAreEqual(matchingLocalEntry.value, matchingRemoteEntry.value)) {
+								resultingDiff.push(matchingRemoteEntry);
 							}
 						} else {
 							resultingDiff.push({ key, value: undefined, metadata: { updateTime: timestamp } });
@@ -610,7 +610,7 @@ namespace ZincDB {
 				}
 
 				await this.db.set({
-					[LocalRevisionsStoreName]: clearingObject
+					[LocalEntriesStoreName]: clearingObject
 				});
 
 				// Remove purged keys from the node lookup tree
@@ -621,41 +621,41 @@ namespace ZincDB {
 				return resultingDiff;
 			}
 
-			async getLocalRevisionCount(): Promise<number> {
+			async getLocalEntryCount(): Promise<number> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				return await this.db.count({}, LocalRevisionsStoreName);
+				return await this.db.count({}, LocalEntriesStoreName);
 			}
 
-			async getConflictingRevisions(): Promise<ConflictInfo[]> {
+			async getConflictingEntries(): Promise<ConflictInfo[]> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				const localRevisions = await this.getLocalRevisions();
-				const localRevisionsKeys = localRevisions.map((entry) => entry.key);
+				const localEntries = await this.getLocalEntries();
+				const localEntryKeys = localEntries.map((entry) => entry.key);
 
-				const matchingRemoteEntries = await this.db.get<any>(localRevisionsKeys, RemoteRevisionsStoreName);
+				const matchingRemoteEntries = await this.db.get<any>(localEntryKeys, RemoteEntriesStoreName);
 				const conflicts: ConflictInfo[] = [];
 
-				for (let i = 0; i < localRevisionsKeys.length; i++) {
-					const localRevision = localRevisions[i];
-					const remoteRevision = matchingRemoteEntries[i];
+				for (let i = 0; i < localEntryKeys.length; i++) {
+					const localEntry = localEntries[i];
+					const remoteEntry = matchingRemoteEntries[i];
 
-					if (!remoteRevision ||
-						localRevision.metadata.referenceSyncTimestamp > remoteRevision.metadata.commitTime ||
-						LocalDBOperations.valuesAreEqual(localRevision.value, remoteRevision.value)) {
+					if (!remoteEntry ||
+						localEntry.metadata.referenceSyncTimestamp > remoteEntry.metadata.commitTime ||
+						LocalDBOperations.valuesAreEqual(localEntry.value, remoteEntry.value)) {
 						continue;
 					}
 
 					conflicts.push({
-						key: localRevision.key,
-						path: <NodePath>Keypath.parse(localRevision.key),
-						localValue: localRevision.value,
-						remoteValue: remoteRevision.value,
-						localUpdateTime: <number>localRevision.metadata.updateTime,
-						remoteUpdateTime: <number>remoteRevision.metadata.updateTime,
-						remoteCommitTime: <number>remoteRevision.metadata.commitTime
+						key: localEntry.key,
+						path: <NodePath>Keypath.parse(localEntry.key),
+						localValue: localEntry.value,
+						remoteValue: remoteEntry.value,
+						localUpdateTime: <number>localEntry.metadata.updateTime,
+						remoteUpdateTime: <number>remoteEntry.metadata.updateTime,
+						remoteCommitTime: <number>remoteEntry.metadata.commitTime
 					});
 				}
 
@@ -684,21 +684,21 @@ namespace ZincDB {
 				if (typeof foreachFunc !== "function")
 					throw new TypeError("Missing or invalid callback function received");
 
-				const keysSeenInLocalRevisions = new StringSet();
-				await this.db.createIterator(LocalRevisionsStoreName, undefined, {
+				const keysSeenInLocalEntries = new StringSet();
+				await this.db.createIterator(LocalEntriesStoreName, undefined, {
 					transactionMode: "readonly"
 				}, (entry, transaction, moveNext) => {
 					if (entry.value !== undefined)
 						foreachFunc(entry.value, entry.key, <number>entry.metadata.updateTime);
 
-					keysSeenInLocalRevisions.add(entry.key);
+					keysSeenInLocalEntries.add(entry.key);
 					moveNext();
 				})
 
-				await this.db.createIterator(RemoteRevisionsStoreName, undefined, {
+				await this.db.createIterator(RemoteEntriesStoreName, undefined, {
 					transactionMode: "readonly"
 				}, (entry, transaction, moveNext) => {
-					if (entry.value !== undefined && !keysSeenInLocalRevisions.has(entry.key))
+					if (entry.value !== undefined && !keysSeenInLocalEntries.has(entry.key))
 						foreachFunc(entry.value, entry.key, <number>entry.metadata.updateTime);
 
 					moveNext();
@@ -746,13 +746,13 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Static utilities
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			static transactionElementsToEntryArray(transactionElements: PathEntries): EntryArray<any> {
-				const revisionEntries: EntryArray<any> = [];
+			static pathEntriesToKeyEntries(transactionElements: PathEntries): EntryArray<any> {
+				const entries: EntryArray<any> = [];
 
 				for (const transactionEntry of transactionElements)
-					revisionEntries.push({ key: Keypath.stringify(transactionEntry.path), value: transactionEntry.value, metadata: transactionEntry.metadata || {} });
+					entries.push({ key: Keypath.stringify(transactionEntry.path), value: transactionEntry.value, metadata: transactionEntry.metadata || {} });
 
-				return revisionEntries;
+				return entries;
 			}
 
 			static validateNodePath(path: NodePath, errorOnRoot = false) {
@@ -865,19 +865,19 @@ namespace ZincDB {
 		export type LocalDBOperationsSchema = {
 			open: { Args: [string, LocalDBOptions]; ReturnValue: void };
 			commitLocalTransaction: { Args: [Transaction]; ReturnValue: EntryArray<any> };
-			commitLocalRevisions: { Args: [EntryArray<any>]; ReturnValue: EntryArray<any> };
-			commitSerializedRemoteRevisions: { Args: [Uint8Array, string | undefined]; ReturnValue: EntryArray<any> };
+			commitLocalEntries: { Args: [EntryArray<any>]; ReturnValue: EntryArray<any> };
+			commitSerializedRemoteEntries: { Args: [Uint8Array, string | undefined]; ReturnValue: EntryArray<any> };
 			setAsRemotelyCommited: { Args: [string[], number]; ReturnValue: void };
 			getEntity: { Args: [EntityPath]; ReturnValue: any };
 			getAllEntries: { Args: undefined[]; ReturnValue: EntryArray<any> };
 			getAllKeys: { Args: undefined[]; ReturnValue: string[] };
 			getAll: { Args: undefined[]; ReturnValue: PathEntries };
 			getLatestServerMetadata: { Args: undefined[]; ReturnValue: ServerMetadata };
-			discardLocalRevisionKeys: { Args: [string[]]; ReturnValue: EntryArray<any> };
-			getConflictingRevisions: { Args: undefined[]; ReturnValue: ConflictInfo[] };
-			getSerializedLocalRevisions: { Args: [string, string | undefined]; ReturnValue: [Uint8Array, string[]] };
-			getLocalRevisions: { Args: [string]; ReturnValue: EntryArray<any> };
-			getLocalRevisionKeys: { Args: [string]; ReturnValue: string[] };
+			discardLocalEntryKeys: { Args: [string[]]; ReturnValue: EntryArray<any> };
+			getConflictingEntries: { Args: undefined[]; ReturnValue: ConflictInfo[] };
+			getSerializedLocalEntries: { Args: [string, string | undefined]; ReturnValue: [Uint8Array, string[]] };
+			getLocalEntries: { Args: [string]; ReturnValue: EntryArray<any> };
+			getLocalEntryKeys: { Args: [string]; ReturnValue: string[] };
 			destroyLocalData: { Args: undefined[]; ReturnValue: void };
 			close: { Args: undefined[]; ReturnValue: void };
 		}
