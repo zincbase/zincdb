@@ -174,35 +174,6 @@ namespace ZincDB {
 							expect(deserializedEntries).toEqual(entries);
 						});
 
-						it("Serializes and deserializes tabbed JSON inputs", () => {
-							// Note: updateTime and commitTime must be equivalent for this to Works
-							// As the parser fills them both when parsing the resulting JSON
-							const entries: Entry<any>[] = [{
-								key: "你好世界",
-								value: { "你好世界!!!": "Hello World! 你好世界!", num: 42 },
-								metadata: { updateTime: 115634856349, commitTime: 115634856349 }
-							},
-							{
-								key: "你好世界你好世界你好世界你好世界!",
-								value: undefined,
-								metadata: { updateTime: 345634853455, commitTime: 345634853455 }
-							},
-							{
-								key: "你好世界你好世界",
-								value: {
-									"你好世界!!!": "Hello World! 你好世界!", num: 43
-								},
-								metadata: { updateTime: 345634856349, commitTime: 345634856349 }
-							}];
-
-							const tabbedJSON = FormattingSerializer.dbEntriesToTabbedJSON(entries);
-							const serializedTabbedJSON = FormattingSerializer.tabbedJSONToSerializedEntries(Encoding.UTF8.encode(tabbedJSON), encryptionKey);
-
-							const deserializedTabbedJSON = EntrySerializer.deserializeEntries(serializedTabbedJSON, encryptionKey);
-
-							expect(deserializedTabbedJSON).toEqual(entries);
-						});
-
 						it("Android <= 4.3 test matcher bug test", () => {
 							const a = new Uint8Array([2, 3]);
 							const b = new Uint8Array([2, 3]);

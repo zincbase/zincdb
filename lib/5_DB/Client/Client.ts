@@ -28,22 +28,6 @@ namespace ZincDB {
 				});
 			}
 
-			async readFormatted(options: {updatedAfter?: number, format?: EntrySerializationFormat, waitUntilNonempty?: boolean }): Promise<HTTPClientResponse> {
-				options = ObjectTools.override({
-					format: "tabbedJsonShort",
-				}, options);
-
-				return await HTTPClient.requestAndErrorOnUnexpectedResponse({
-					url: this.buildRequestURL({ 
-						updatedAfter: options.updatedAfter, 
-						format: options.format,
-						waitUntilNonempty: options.waitUntilNonempty }),						
-					method: "GET",
-					responseType: "text",
-					abortSignalSource: this.abortSignalSource
-				});
-			}
-
 			async write(newRevisions: EntryArray<V>): Promise<WriteResponseObject> {
 				if (!Array.isArray(newRevisions))
 					throw new TypeError("New revisions argument is not an array");
@@ -66,23 +50,6 @@ namespace ZincDB {
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
 			}
 
-			async writeFormatted(content: string, options: { format: EntrySerializationFormat }): Promise<WriteResponseObject> {
-				if (typeof content !== "string")
-					throw new TypeError("Content argument is not a string");
-
-				if (!options || !options.format)
-					throw new TypeError("No input format specified");
-				
-				const response = await HTTPClient.requestAndErrorOnUnexpectedResponse({
-					url: this.buildRequestURL({ format: options.format }),
-					method: "POST",
-					body: content,
-					abortSignalSource: this.abortSignalSource
-				})
-
-				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
-			}
-
 			async rewrite(newRevisions: EntryArray<V>): Promise<WriteResponseObject> {
 				if (!Array.isArray(newRevisions))
 					throw new TypeError("New revisions argument is not an array");
@@ -101,24 +68,6 @@ namespace ZincDB {
 					abortSignalSource: this.abortSignalSource
 				})
 				
-				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
-			}
-
-			async rewriteFormatted(content: string, options: { format: EntrySerializationFormat }): Promise<WriteResponseObject> {
-				if (typeof content !== "string")
-					throw new TypeError("Content argument is not a string");
-
-				if (!options || !options.format) {
-					throw new Error("No input format specified");
-				}
-
-				const response = await HTTPClient.requestAndErrorOnUnexpectedResponse({
-					url: this.buildRequestURL({ format: options.format }),
-					method: "PUT",
-					body: content,
-					abortSignalSource: this.abortSignalSource
-				})
-
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
 			}
 

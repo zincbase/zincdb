@@ -61,10 +61,6 @@ client.read(options?)
 
 _Not documented yet._
 
-## `readFormatted`
-
-_Not documented yet._
-
 ## `openWebsocketReader`
 
 Open a websocket to the server and receive current and future revisions.
@@ -145,9 +141,7 @@ client.write(revisions)
 ```
 
 ## `writeRaw`
-_Not documented yet._
 
-## `writeFormatted`
 _Not documented yet._
 
 ## `rewrite`
@@ -166,9 +160,7 @@ _Similar to `write`_
 _Similar to `write`_
 
 ## `rewriteRaw`
-_Not documented yet._
 
-## `rewriteFormatted`
 _Not documented yet._
 
 ## `destroyRemoteData`
