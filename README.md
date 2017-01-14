@@ -14,7 +14,7 @@ The library is mostly feature complete, but still at an alpha level of stability
 
 ## Installation
 
-Node.js/Webpack:
+Node.js:
 
 ```
 npm install zincdb
