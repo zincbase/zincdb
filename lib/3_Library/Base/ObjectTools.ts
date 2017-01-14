@@ -113,9 +113,13 @@ namespace ZincDB {
 			return value;
 		}
 
-		export const objectHasAtLeastOneProperty = function(obj: any): boolean {
-			for (const _ in obj) {
-				return true;
+		export const objectHasAtLeastOneDefinedProperty = function(obj: any): boolean {
+			if (typeof obj !== "object")
+				return false;
+
+			for (const prop in obj) {
+				if (obj[prop] !== undefined)
+					return true;
 			}
 
 			return false;

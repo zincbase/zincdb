@@ -569,6 +569,8 @@ namespace ZincDB {
 
 				const clearingObject: { [key: string]: null } = {};
 				const resultingDiff: EntryArray<any> = [];
+				const purgedKeys: string[] = [];
+				const timestamp = Timer.getMicrosecondTimestamp();
 
 				for (let i = 0; i < keys.length; i++) {
 					const key = keys[i];
@@ -581,8 +583,8 @@ namespace ZincDB {
 								resultingDiff.push(matchingRemoteRevision);
 							}
 						} else {
-							resultingDiff.push({ key, value: undefined, metadata: {} });
-							// Should the path be removed from the node lookup tree?
+							resultingDiff.push({ key, value: undefined, metadata: { updateTime: timestamp } });
+							purgedKeys.push(key);
 						}
 
 						clearingObject[keys[i]] = null;
@@ -592,6 +594,11 @@ namespace ZincDB {
 				await this.db.set({
 					[LocalRevisionsStoreName]: clearingObject
 				});
+
+				// Remove purged keys from the node lookup tree
+				for (const key of purgedKeys) {
+					this.nodeLookup.delete(Keypath.parse(key));
+				}
 
 				return resultingDiff;
 			}

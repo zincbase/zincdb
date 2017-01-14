@@ -3,8 +3,9 @@ namespace ZincDB {
 		//const getObjectType = (o: any): string => Object.prototype.toString.call(o);
 
 		export type Keypath = (string | number)[];
+		export type EntityPath = Keypath;		
 		export type KeypathAndValue = { path: Keypath, value: any };
-		//export type StringKeypathAndValue = { pathString: Keypath, value: any };
+		export type NodePath = string[];
 
 		const specifierRegExp = /^\[('[^']*')+\]|^\[([0-9]+)\]/;
 
