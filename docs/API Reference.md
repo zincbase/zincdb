@@ -54,6 +54,7 @@ ZincDB.open(name, options?);
 	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"IndexedDB"` or `"WebSQL"`, optional): Storage medium to use for local persistence. Defaults to "InMemory".
 	* `useWebWorker`(boolean, optional): Execute most operations in a web worker, if available. Defaults to `false`.
 	* `workerURI` (string, optional): A URI or relative script path to load the worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used.
+	* `verifyServerCertificate` (boolean, optional). verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.	
 
 **Return value**:
 
