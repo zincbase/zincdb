@@ -343,4 +343,4 @@ await db.pushLocalChanges({ conflictHandler: (conflictInfo) => {
 
 ## Next steps
 
-The full set of methods and options are detailed at the [API Reference]().
+The full set of methods and options are detailed in the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md).
