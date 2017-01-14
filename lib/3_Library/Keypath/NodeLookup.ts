@@ -64,20 +64,20 @@ namespace ZincDB {
 			return { matchType: MatchType.Descendants, paths: NodeLookup.getDescendantPaths(parentNode, <NodePath>path) }
 		}
 
-		deleteNode(path: EntityPath, baseNode = this.root) {
+		delete(path: EntityPath, baseNode = this.root) {
 			if (!Array.isArray(path) || path.length === 0)
 				throw new Error("Invalid path given");
 
 			const childNodeName = path[0];
 
 			if (path.length === 1) {
-				baseNode[childNodeName] = undefined;
+				baseNode[childNodeName] = undefined
 			} else {
-				this.deleteNode(path.slice(1), baseNode[childNodeName]);
+				this.delete(path.slice(1), baseNode[childNodeName]);
 
 				if (!ObjectTools.objectHasAtLeastOneDefinedProperty(baseNode[childNodeName])) {
 					baseNode[childNodeName] = undefined;
-				}
+				}				
 			}
 		}
 
