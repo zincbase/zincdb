@@ -39,7 +39,8 @@ namespace ZincDB {
 					body: undefined,
 					ignoreResponseBody: false,
 					keepAlive: true,
-					abortSignalSource: new SignalSource()
+					abortSignalSource: new SignalSource(),
+					verifyServerCertificate: true
 				}
 
 			options = ObjectTools.override(defaultOptions, options);
@@ -183,7 +184,7 @@ namespace ZincDB {
 					headers: options.requestHeaders,
 					agent: undefined,
 
-					rejectUnauthorized: false
+					rejectUnauthorized: options.verifyServerCertificate
 				};
 
 			let clientRequest: http.ClientRequest;
@@ -284,11 +285,12 @@ namespace ZincDB {
 			responseType: "text" | "arraybuffer";
 			responseEncoding: string;
 			abortSignalSource: SignalSource;
+			verifyServerCertificate: boolean;
 		}
 	
 	//export type Optionalize<T> = { [P in keyof T]?: T[P]; };
 
-	export type OptionalizedHTTPRequestOptions = { [key in keyof HTTPRequestOptions]?: HTTPRequestOptions[key] };
+	export type OptionalizedHTTPRequestOptions = Partial<HTTPRequestOptions>;
 
 	export interface HTTPClientResponse {
 		httpVersion?: string;

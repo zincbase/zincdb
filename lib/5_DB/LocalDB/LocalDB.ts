@@ -21,13 +21,15 @@ namespace ZincDB {
 					storageMedium: "InMemory",
 					useWebWorker: false,
 					pullAfterOpened: false,
-					workerURI: undefined
+					workerURI: undefined,
+					verifyServerCertificate: true
 				}, customOptions);
 
 				this.syncClient = new Client<any>({
 					datastoreURL: this.options.remoteSyncURL,
 					accessKey: this.options.remoteAccessKey,
-					encryptionKey: this.options.encryptionKey
+					encryptionKey: this.options.encryptionKey,
+					verifyServerCertificate: this.options.verifyServerCertificate
 				});
 
 				if (this.options.useWebWorker === true && webWorkersAvailable()) {

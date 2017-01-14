@@ -19,6 +19,7 @@ namespace ZincDB {
 			useWebWorker: boolean;
 			pullAfterOpened: boolean;
 			workerURI?: string;
+			verifyServerCertificate?: boolean;
 		}
 
 		export type ConflictInfo = {

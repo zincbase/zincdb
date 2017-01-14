@@ -366,6 +366,7 @@ namespace ZincDB {
 								remoteSyncURL: `${ZincDBTestConfig.host}/datastore/${dbName}`,
 								remoteAccessKey: ZincDBTestConfig.accessKey,
 								encryptionKey: "4d2d3fb0356cf6a66617e6454641697b",
+								verifyServerCertificate: false
 							});
 
 							await db.syncClient.rewrite([]);

@@ -24,7 +24,8 @@ namespace ZincDB {
 					url: this.buildRequestURL({ updatedAfter: options.updatedAfter, waitUntilNonempty: options.waitUntilNonempty }),
 					method: "GET",
 					responseType: "arraybuffer",
-					abortSignalSource: this.abortSignalSource
+					abortSignalSource: this.abortSignalSource,
+					verifyServerCertificate: this.options.verifyServerCertificate
 				});
 			}
 
@@ -44,7 +45,8 @@ namespace ZincDB {
 					url: this.buildRequestURL(),
 					method: "POST",
 					body: content,
-					abortSignalSource: this.abortSignalSource
+					abortSignalSource: this.abortSignalSource,
+					verifyServerCertificate: this.options.verifyServerCertificate
 				})
 				
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
@@ -65,7 +67,8 @@ namespace ZincDB {
 					url: this.buildRequestURL(),
 					method: "PUT",
 					body: content,
-					abortSignalSource: this.abortSignalSource
+					abortSignalSource: this.abortSignalSource,
+					verifyServerCertificate: this.options.verifyServerCertificate
 				})
 				
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
@@ -75,7 +78,8 @@ namespace ZincDB {
 				return await HTTPClient.requestAndErrorOnUnexpectedResponse({
 					url: this.buildRequestURL(),
 					method: "DELETE",
-					abortSignalSource: this.abortSignalSource
+					abortSignalSource: this.abortSignalSource,
+					verifyServerCertificate: this.options.verifyServerCertificate
 				});
 			}
 
@@ -192,6 +196,7 @@ namespace ZincDB {
 			datastoreURL: string;
 			encryptionKey?: string;
 			accessKey?: string;
+			verifyServerCertificate?: boolean
 		}
 
 		export type WriteResponseObject = {

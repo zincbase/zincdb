@@ -16,6 +16,7 @@ const client = new ZincDB.Client(options)
 * `remoteDatastoreURL` (string, required): the URL for the datastore.
 * `accessKey` (string, optional): an access key for the remote datastore, if needed. If specified, must be 40 lowercase hexadecimal characters (160 bits).
 * `encryptionKey` (string, optional): an encryption key to locally encrypt individual entries before submitting them to the server. The key would be used to decrypt any encrypted entry received. If provided, must be 32 lowercase hexadecimal characters (representing a 128 bit binary key). 
+* `verifyServerCertificate` (boolean, optional). verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.
 
 **Example**:
 
