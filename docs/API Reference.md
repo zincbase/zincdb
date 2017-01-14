@@ -493,7 +493,7 @@ Pull remote changes once:
 await db.pullRemoteChanges()
 ```
 
-Continuously pull new changes from the remote server:
+Continuously pull new updates from the remote server:
 
 ```ts
 db.pullRemoteChanges({ continuous: true }).catch((err) => {
@@ -509,7 +509,7 @@ db.pullRemoteChanges({ continuous: true }).catch((err) => {
 
 ## `pushLocalChanges`
 
-Submit pending local changes to the remote server.
+Submit local changes to the remote server.
 
 ```ts
 db.pushLocalChanges(options?)
@@ -519,7 +519,7 @@ db.pushLocalChanges(options?)
 
 * `options` (object, optional):
 	* `path` (array or string, optional): Only submit local changes to the given path's descendants. 
-	* `conflictHandler` (function, optional): A custom callback function to handle merge conflicts, described in detail in a separate section below. If no handler is specified, merge conflicts are automatically resolved with the update with the later update timestamp.
+	* `conflictHandler` (function, optional): A custom callback function to handle merge conflicts, described in detail in a separate section below. If no handler is specified, merge conflicts are automatically resolved with the entry with the later update timestamp.
 
 **Return value**:
 
@@ -527,7 +527,7 @@ A promise resolving when the operation has completed, or rejecting when it fails
 
 **Examples**:
 
-Update the database and submit all pending local changes (merge conflicts would be resolved automatically using the default behavior).
+Update the database and submit all local changes (merge conflicts would be resolved automatically using the default behavior).
 
 ```ts
 await db.put(["people", "Jane Doe"], {
@@ -603,7 +603,7 @@ Notes:
 
 ## `discardLocalChanges`
 
-Discards pending local changes, i.e. local entries that have not yet been transmitted to the remote server using `pushLocalChanges()`.
+Discards local changes, i.e. entries that have been locally updated but have not yet been transmitted to the remote server using `pushLocalChanges()`.
 
 **Usage**:
 
@@ -613,11 +613,11 @@ db.discardLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array, optional): the root node for the local entries to discard.
+* `path` (string or array, optional): the root node for the changes to discard.
 
 **Return value**:
 
-A promise resolving when the matching local entries have been successfully discarded.
+A promise resolving when the matching changes have been successfully discarded.
 
 **Example**:
 
