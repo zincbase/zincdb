@@ -434,7 +434,7 @@ Subscribe to receive all changes to the database and log the change list on each
 
 ```ts
 await db.subscribe([], (changeEvent) => { 
-	console.log(changes.origin + " changes announced!");
+	console.log(changeEvent.origin + " changes announced!");
 	
 	changeEvent.changes.map((change) => {
 		console.log("keypath: " + change.keypath + ", value: " + JSON.stringify(change.value));
@@ -444,8 +444,8 @@ await db.subscribe([], (changeEvent) => {
 
 **Notes**:
 
-* Remote changes that are shadowed by conflicting local entries would not be announced to the subscriber. The only current way to access them is when resolving conflicts using a custom conflict handler.
-* Applying `observe()` to large and complex objects like the root may be a very expensive operation if rapid updates are expected, since the entire database might need to loaded be reconstructed at every small update. It is therefore recommended to use `subscribe()` instead or create many observers to individual small objects and perform any needed operation immediately, rather than trying to maintain an up-to-date copy of the entire root object tree or a large branch node.
+* Remote changes that are shadowed by conflicting local changes would not be announced to the subscriber. The only current way to access them is when resolving conflicts using a custom conflict handler.
+* Applying `observe()` to large and complex objects like the root may be a very expensive operation if rapid updates are expected, since the entire database might be need to be loaded be reconstructed on every small update. It is therefore recommended to use `subscribe()` instead or create many observers to individual small objects and perform any needed operation immediately, rather than trying to maintain an up-to-date copy of the entire root object tree or a large branch node.
 
 ## `unsubscribe`
 
@@ -519,7 +519,7 @@ db.pushLocalChanges(options?)
 
 * `options` (object, optional):
 	* `path` (array or string, optional): Only submit local changes to the given path's descendants. 
-	* `conflictHandler` (function, optional): A custom callback function to handle merge conflicts, described in detail in a separate section below. If no handler is specified, merge conflicts are automatically resolved with the entry with the later update timestamp.
+	* `conflictHandler` (function, optional): A custom callback function to handle merge conflicts, described in detail in a separate section below. If no handler is specified, merge conflicts are automatically resolved to the entry with the later update timestamp.
 
 **Return value**:
 
@@ -527,7 +527,7 @@ A promise resolving when the operation has completed, or rejecting when it fails
 
 **Examples**:
 
-Update the database and submit all local changes (merge conflicts would be resolved automatically using the default behavior).
+Apply an update to the database and submit all local changes (merge conflicts would be resolved automatically using the default behavior).
 
 ```ts
 await db.put(["people", "Jane Doe"], {
@@ -539,7 +539,7 @@ await db.put(["people", "Jane Doe"], {
 await db.pushLocalChanges();
 ```
 
-Update particular nodes and only submit changes made to their container array. Handle any merge conflict with a custom handler.
+Modify particular nodes and only submit changes made to their container array. Handle any merge conflict with a custom handler.
 
 ```ts
 let t = db.transaction();
@@ -589,7 +589,7 @@ The handler's return value must be a promise. Returning a promise allows to defe
 * `path` is the path of the node having conflicting updates.
 * `key` is the encoded path that was used with the serialized entry.
 * `localValue` is the value in a local entry that has not yet been submitted to the server. 
-* `remoteValue` is the value in a remote entry having the same path, that was updated after the _first_ time an unsubmitted local change was created for that path (note both unsubmitted local changes and the updated remote entry may coexist locally, the mechanism for this is explained in the last remark below).
+* `remoteValue` is the value in a remote entry having the same path, which was updated after the _first_ time an unsubmitted local change was created for that path (note both unsubmitted local changes and the updated remote entry may coexist locally, the mechanism for this is explained in the last remark below).
 * `localUpdateTime` is the time (microsecond unix epoch) the local entry has been last updated. 
 * `remoteUpdateTime` is the time (microsecond unix epoch) the remote entry has been last updated. 
 * `remoteCommitTime` is the time (microsecond unix epoch) the remote entry has been commited to the server.
@@ -603,7 +603,7 @@ Notes:
 
 ## `discardLocalChanges`
 
-Discards local changes, i.e. entries that have been locally updated but have not yet been transmitted to the remote server using `pushLocalChanges()`.
+Discards local changes.
 
 **Usage**:
 
@@ -621,16 +621,17 @@ A promise resolving when the matching changes have been successfully discarded.
 
 **Example**:
 
-Discard all local changes to a particular array element.
+Discard local changes to a particular node:
 
 ```ts
-await db.put(["dogs", "Lucy"], { "mmm": "OOPS??" });
+await db.put(["dogs", "Max"], { age: 8, height: 40, medals: []});
+await db.put(["dogs", "Lucy"], { age: 60, height: 500, medals: ["oops?"] });
 await db.discardLocalChanges(["dogs", "Lucy"]);
 ```
 
 **Notes**:
 
-When a local change to a particular value or object is discarded, it is automatically rolled back to the most recent remote entry known. Note that after a local entry is submitted using `pushLocalChanges()`, its status internally changes from 'local' to 'remote' and it cannot be discarded anymore.
+When a local change to a particular value or object is discarded, the entry is automatically rolled back to the most recent remote entry received. Note that after a local entry is submitted using `pushLocalChanges()`, its status internally changes from 'local' to 'remote' and it cannot be discarded anymore.
 
 ## `getLocalChanges`
 
