@@ -399,7 +399,7 @@ namespace ZincDB {
 				]);
 
 				let commitObject: EntryObject<any> = {};
-				const diff: Entry<any>[] = [];
+				let diff: Entry<any>[] = [];
 				const transactionNodeLookup = new NodeLookup();
 
 				for (let i = 0; i < newRevisions.length; i++) {
@@ -419,7 +419,12 @@ namespace ZincDB {
 						if (serverMetadata.lastModified > 0) {
 							// Clear all new revisions that were added to the update objects 
 							commitObject = {};
-							diff.length = 0;
+
+							// Set the diff to include all known remote revisions keys to value `undefined`
+							// With the creation event commit timestamp as timestamp
+							const creationTime = newRevision.metadata.commitTime;
+							diff = (await this.getRemoteRevisionKeys())
+								.map((key) => ({ key, value: undefined, metadata: { updateTime: creationTime, commitTime: creationTime} }))
 
 							// Clear all remote entries from the database
 							await this.db.clearObjectStores([RemoteRevisionsStoreName]);
@@ -488,6 +493,7 @@ namespace ZincDB {
 
 				// Add add paths as leaf nodes, if needed. 
 				this.nodeLookup.addPathStrings(diff.map((entry) => entry.key));
+
 				return diff;
 			}
 
@@ -520,6 +526,18 @@ namespace ZincDB {
 					[RemoteRevisionsStoreName]: entriesObject,
 					[LocalRevisionsStoreName]: clearingObject,
 				});
+			}
+
+			async getRemoteRevisionKeys(keyPrefix?: string): Promise<string[]> {
+				if (this.isClosed)
+					throw new Error("Database is closed.");
+
+				const remoteRevisionKeys = await this.db.getAllKeys(RemoteRevisionsStoreName);
+
+				if (keyPrefix)
+					return remoteRevisionKeys.filter((key) => Tools.stringStartsWith(key, keyPrefix));
+				else
+					return remoteRevisionKeys;
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////
