@@ -45,7 +45,7 @@ ZincDB.open(name, options?);
 
 **Arguments**:
 
-* `name` (string, required): The identifier to use when locally persisting data in local storage mediums like IndexedDB or WebSQL. The actual identifier used is additionally prefixed with "Zinc_", i.e.. `Zinc_<name>`.
+* `name` (string, required): The identifier to use when persisting data in local storage mediums like IndexedDB or WebSQL. The actual identifier used is additionally prefixed with "Zinc_", i.e.. `Zinc_<name>`.
 
 * `options` (object, optional):
 	* `remoteSyncURL` (string, optional): A full URL of a remote datastore to synchronize with.
@@ -71,7 +71,7 @@ Open a database named "MyDB". Set a remote synchronization host and access key. 
 
 ```ts
 const db = await ZincDB.open("MyDB", {
-	remoteSyncURL: "https://example.com:2345/datastore/MyDB",
+	remoteSyncURL: "https://example.com:1337/datastore/MyDB",
 	remoteAccessKey: "3da541559918a808c2402bba5012f6c6",
 });
 ```
@@ -80,7 +80,7 @@ Open a database named "MyDB" with a remote synchronization host and access key s
 
 ```ts
 const db = await ZincDB.open("MyDB", {
-	remoteSyncURL: "https://example.com:2345/datastore/MyDB",
+	remoteSyncURL: "https://example.com:1337/datastore/MyDB",
 	remoteAccessKey: "3da541559918a808c2402bba5012f6c6",
 	storageMedium: "OnDisk",
 	useWebWorker: true,
@@ -393,17 +393,17 @@ db.observe(path, handler)
 **Arguments**:
 
 * `path` (string or array, required): the path of the entity to watch. This can be any path supported by `get()`.
-* `handler` (function, required): a handler function to be called when a relevant modification occurred. The handler function receives single argument representing an object of the form:
+* `handler` (function, required): a handler function to be called when a relevant update occurred. The handler function receives single argument - an event object of the form:
 
 ```ts
 {
 	origin, // string, either "local" or "remote"
 	changes, // array of entry objects, representing the changes made
-	newValue // The new value for the path, if `observe` was used
+	newValue // the new value for the path, if `observe` was used
 }
 ```
 
-Where the `changes` array is of the form:
+Where `changes`is an array of objects of the form:
 
 ```ts
 [
@@ -414,7 +414,7 @@ Where the `changes` array is of the form:
 ]
 ```
 
-`path` is the target node's path, `value` is any type, `metadata` has a metadata object (currently mostly used internally - the specification is likely to change).
+`path` is the target node's path, `value` is any type, `metadata` has a metadata object of the form `{ updateTime: ..., commitTime: ...}` where times are microsecond unix timestamps.
 
 **Return value**:
 
@@ -444,8 +444,8 @@ await db.subscribe([], (changeEvent) => {
 
 **Notes**:
 
-* Remote changes that are shadowed by conflicting, pending local changes would not be announced to the subscriber. The only current way to access them is when resolving conflicts using a custom conflict handler.
-* Applying `observe()` to large and complex objects like the root may be a very expensive operation if rapid updates are expected, as the entire database might need to loaded be reconstructed at every small update. It is therefore recommended to use `subscribe()` instead or create many observers to individual small objects and perform any needed operation immediately, rather than trying to maintain an up-to-date copy of the entire root object tree or a large branch node.
+* Remote changes that are shadowed by conflicting local entries would not be announced to the subscriber. The only current way to access them is when resolving conflicts using a custom conflict handler.
+* Applying `observe()` to large and complex objects like the root may be a very expensive operation if rapid updates are expected, since the entire database might need to loaded be reconstructed at every small update. It is therefore recommended to use `subscribe()` instead or create many observers to individual small objects and perform any needed operation immediately, rather than trying to maintain an up-to-date copy of the entire root object tree or a large branch node.
 
 ## `unsubscribe`
 
@@ -504,7 +504,7 @@ db.pullRemoteChanges({ continuous: true }).catch((err) => {
 
 **Notes**
 
-* When `pullRemoteChanges` is executing in continuous mode, the only way to abort the operation is to close the database connection by calling `close()`.
+* When `pullRemoteChanges` is executing in continuous mode, the only way to abort the operation is to close the database connection by calling `db.close()`.
 * If an update entry containing an invalid node path is received from the server, it will be ignored and a warning message would be logged to the error console. 
 
 ## `pushLocalChanges`
@@ -589,7 +589,7 @@ The handler's return value must be a promise. Returning a promise allows to defe
 * `path` is the path of the node having conflicting updates.
 * `key` is the encoded path that was used with the serialized entry.
 * `localValue` is the value in a local entry that has not yet been submitted to the server. 
-* `remoteValue` is the value in a remote entry having the same path, that was received after the _first_ time an unsubmitted local entry was created for that path (note both unsubmitted local entry and newer remote entry may coexist locally, the mechanism for this is explained at the last remark below).
+* `remoteValue` is the value in a remote entry having the same path, that was updated after the _first_ time an unsubmitted local change was created for that path (note both unsubmitted local changes and the updated remote entry may coexist locally, the mechanism for this is explained in the last remark below).
 * `localUpdateTime` is the time (microsecond unix epoch) the local entry has been last updated. 
 * `remoteUpdateTime` is the time (microsecond unix epoch) the remote entry has been last updated. 
 * `remoteCommitTime` is the time (microsecond unix epoch) the remote entry has been commited to the server.
@@ -603,7 +603,7 @@ Notes:
 
 ## `discardLocalChanges`
 
-Discard pending local changes, i.e. local entries that have not yet been transmitted to the remote server using `pushLocalChanges()`.
+Discards pending local changes, i.e. local entries that have not yet been transmitted to the remote server using `pushLocalChanges()`.
 
 **Usage**:
 
@@ -634,7 +634,7 @@ When a local change to a particular value or object is discarded, it is automati
 
 ## `getLocalChanges`
 
-Get local changes that have not yet been submitted to the remote server.
+Get all local changes.
 
 **Usage**:
 
