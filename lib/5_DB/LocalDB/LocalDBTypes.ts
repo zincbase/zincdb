@@ -1,7 +1,7 @@
 namespace ZincDB {
 	export namespace DB {
-		export type NodePath = string[];
-		export type EntityPath = (string | number)[];
+		export type NodePath = Keypath.NodePath;
+		export type EntityPath = Keypath.EntityPath;
 		export type PathEntry = { path: NodePath, value: any, metadata?: EntryMetadata };
 		export type PathEntries = PathEntry[];
 		export type ConflictHandler = (conflictInfo: ConflictInfo) => Promise<any>;
