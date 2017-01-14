@@ -23,10 +23,9 @@ npm install zincdb
 Browser:
 
 ```html
-<script id="zincdb" src="path/to/zincdb.js"></script>
+<script id="zincdb" src="https://unpkg.com/zincdb"></script>
 ```
-Download the latest release [here]().
-_(CDN URLs would be made available in the future)_
+(or download the latest production build [here](https://unpkg.com/zincdb))
 
 ## Documentation
 
