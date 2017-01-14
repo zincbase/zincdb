@@ -19,7 +19,7 @@ namespace ZincDB {
 
 			function runDBTests(storageMedium: LocalDBOptions['storageMedium'], useWebWorker: boolean) {
 				describe(`Persistence: ${storageMedium}, Uses web worker: ${useWebWorker}:`, () => {
-					describe("Basic operations on local revisions only:", () => {
+					describe("Basic operations on local entries only:", () => {
 						let db: LocalDB;
 
 						beforeEach(async () => {
@@ -385,8 +385,8 @@ namespace ZincDB {
 							transaction.put(["a", "c", "e"], new Uint8Array([1, 2, 3, 4]));
 							await transaction.commit();
 
-							await db.pushLocalRevisions();
-							expect(await db.getLocalRevisions()).toEqual([]);
+							await db.pushLocalChanges();
+							expect(await db.getLocalChanges()).toEqual([]);
 							expect(await db.get([])).toEqual({
 								a: {
 									b: { yo: "go", do: 123 },
@@ -409,7 +409,7 @@ namespace ZincDB {
 								}
 							});
 
-							await db.discardLocalRevisions()
+							await db.discardLocalChanges()
 							expect(await db.get([])).toEqual({
 								a: {
 									b: { yo: "go", do: 123 },
@@ -436,7 +436,7 @@ namespace ZincDB {
 							];
 
 							await db.syncClient.write(entries1);
-							await db.pullRemoteRevisions();
+							await db.pullRemoteChanges();
 
 							expect((await db.get(["a", "c", "e"])) instanceof Uint8Array).toBe(true);
 							expect(await db.get([])).toEqual({
@@ -450,7 +450,7 @@ namespace ZincDB {
 							});
 
 							await db.syncClient.write(entries2);
-							await db.pullRemoteRevisions();
+							await db.pullRemoteChanges();
 
 							expect((await db.get(["a", "c", "e"])) instanceof Uint8Array).toBe(true);
 							expect(await db.get([])).toEqual({
@@ -512,7 +512,7 @@ namespace ZincDB {
 										}
 									});
 
-									db.pullRemoteRevisions({ continuous: true, useWebSocket });
+									db.pullRemoteChanges({ continuous: true, useWebSocket });
 									await db.syncClient.write(entries1);
 								});
 							});
@@ -532,7 +532,7 @@ namespace ZincDB {
 							]
 
 							await db.syncClient.write(entries1);
-							await db.pullRemoteRevisions();
+							await db.pullRemoteChanges();
 							expect(await db.get(["a", "b"])).toEqual(23);
 
 							await db.resolveConflicts();
@@ -550,7 +550,7 @@ namespace ZincDB {
 							]
 
 							await db.syncClient.write(entries1);
-							await db.pullRemoteRevisions();
+							await db.pullRemoteChanges();
 							expect(await db.get(["a", "b"])).toEqual(23);
 
 							await db.resolveConflicts((conflictInfo) => {
@@ -566,7 +566,7 @@ namespace ZincDB {
 							expect(await db.get(["a", "b"])).toEqual({ hey: 4321 });
 						});
 
-						it("Discards local revisions", async () => {
+						it("Discards local changes", async () => {
 							await db.put(["a", "b"], 23);
 
 							const updateTime = Timer.getMicrosecondTimestamp();
@@ -578,7 +578,7 @@ namespace ZincDB {
 							]
 
 							await db.syncClient.write(entries1);
-							await db.pullRemoteRevisions();
+							await db.pullRemoteChanges();
 
 							expect(await db.get(["a", "b"])).toEqual(23);
 							expect(await db.get([])).toEqual({
@@ -592,7 +592,7 @@ namespace ZincDB {
 							});
 
 							await db.put(["a", "c", "d"], [4, 3, 2, 1]);
-							await db.discardLocalRevisions(["a", "b"]);
+							await db.discardLocalChanges(["a", "b"]);
 
 							expect(await db.get([])).toEqual({
 								a: {

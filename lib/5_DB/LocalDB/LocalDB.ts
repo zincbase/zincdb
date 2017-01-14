@@ -94,13 +94,13 @@ namespace ZincDB {
 				await this.announceChanges("local", diff);
 			}
 
-			async commitLocalRevisions(newRevisions: EntryArray<any>) {
-				const diff = await this.operations.exec("commitLocalRevisions", [newRevisions]);
+			async commitLocalEntries(newEntries: EntryArray<any>) {
+				const diff = await this.operations.exec("commitLocalEntries", [newEntries]);
 				await this.announceChanges("local", diff);
 			}
 
-			protected async commitSerializedRemoteRevisions(serializedRevisions: Uint8Array) {
-				const diff = await this.operations.exec("commitSerializedRemoteRevisions", [serializedRevisions, this.options.encryptionKey]);
+			protected async commitSerializedRemoteEntries(serializedEntries: Uint8Array) {
+				const diff = await this.operations.exec("commitSerializedRemoteEntries", [serializedEntries, this.options.encryptionKey]);
 				await this.announceChanges("remote", diff);
 			}
 
@@ -205,7 +205,7 @@ namespace ZincDB {
 						continue;
 
 					const subscriptionPathString = subscriptionTarget.pathString;
-					const matchingRevisions: EntryArray<any> = [];
+					const matchingEntries: EntryArray<any> = [];
 
 					let matchType: Keypath.Relationship = Keypath.Relationship.None;
 
@@ -216,7 +216,7 @@ namespace ZincDB {
 						if (matchType === Keypath.Relationship.None)
 							continue;
 
-						matchingRevisions.push(entry);
+						matchingEntries.push(entry);
 
 						if (matchType !== Keypath.Relationship.Descendant)
 							break;
@@ -231,17 +231,17 @@ namespace ZincDB {
 
 					if (updatedValueNeeded) {
 						if (matchType === Keypath.Relationship.Equal) {
-							updatedValue = matchingRevisions[0].value;
+							updatedValue = matchingEntries[0].value;
 						} else if (matchType === Keypath.Relationship.Ancestor) {
-							const ancestorValue = matchingRevisions[0].value;
-							const ancestorPath = Keypath.parse(matchingRevisions[0].key);
+							const ancestorValue = matchingEntries[0].value;
+							const ancestorPath = Keypath.parse(matchingEntries[0].key);
 							updatedValue = Keypath.getValueByKeypath(ancestorValue, subscriptionTarget.path.slice(ancestorPath.length));
 						} else {
 							updatedValue = await this.getEntity(subscriptionTarget.path);
 						}
 					}
 
-					const changeList: PathEntries = matchingRevisions.map((entry) => {
+					const changeList: PathEntries = matchingEntries.map((entry) => {
 						return {
 							path: <NodePath>Keypath.parse(entry.key),
 							value: entry.value,
@@ -250,22 +250,22 @@ namespace ZincDB {
 					});
 
 					for (const subscriber of subscriptionTarget.subscribers) {
-						let changesObject: ChangesObject;
+						let eventObject: SubscriberEventObject;
 
 						if (subscriber.isObserver)
-							changesObject = { origin, revisions: changeList, newValue: updatedValue };
+							eventObject = { origin, changes: changeList, newValue: updatedValue };
 						else
-							changesObject = { origin, revisions: changeList };
+							eventObject = { origin, changes: changeList };
 
-						EventLoop.enqueueImmediate(() => subscriber.handler(changesObject));
+						EventLoop.enqueueImmediate(() => subscriber.handler(eventObject));
 					}
 				}
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			// Remote revision sync operations
+			// Remote changes sync operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async pullRemoteRevisions(options?: { continuous?: boolean; useWebSocket?: boolean }) {
+			async pullRemoteChanges(options?: { continuous?: boolean; useWebSocket?: boolean }) {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
@@ -273,15 +273,15 @@ namespace ZincDB {
 
 				if (options.continuous) {
 					if (options.useWebSocket && webSocketsAvailable())
-						await this.startWebsocketRemoteRevisionsSync();
+						await this.startWebsocketRemoteChangesSync();
 					else
-						await this.startLongPollingRemoteRevisionsSync();
+						await this.startLongPollingRemoteChangesSync();
 				} else {
-					await this.pullRemoteRevisionsOnce(false);
+					await this.pullRemoteChangessOnce(false);
 				}
 			}
 
-			protected async pullRemoteRevisionsOnce(enableLongPolling: boolean): Promise<void> {
+			protected async pullRemoteChangessOnce(enableLongPolling: boolean): Promise<void> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
@@ -296,10 +296,10 @@ namespace ZincDB {
 				if (this.isClosed || serializedEntries.length === 0)
 					return;
 
-				await this.commitSerializedRemoteRevisions(serializedEntries);
+				await this.commitSerializedRemoteEntries(serializedEntries);
 			}
 
-			protected async startLongPollingRemoteRevisionsSync() {
+			protected async startLongPollingRemoteChangesSync() {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
@@ -327,7 +327,7 @@ namespace ZincDB {
 						return;
 
 					try {
-						await this.pullRemoteRevisionsOnce(true);
+						await this.pullRemoteChangessOnce(true);
 						lastSuccessfulPollStartTime = Timer.getTimestamp();
 						successfulPollCount++;
 
@@ -338,21 +338,21 @@ namespace ZincDB {
 							return;
 
 						if (e.name === "NetworkError" || e.name === "HTTPError") {
-							printExceptionAndStackTraceToConsole(e, `Remote revisions sync with '${this.options.remoteSyncURL}' has encountered a network error`);
+							printExceptionAndStackTraceToConsole(e, `Remote changes sync with '${this.options.remoteSyncURL}' has encountered a network error`);
 							log(`Retrying in ${errorDelayTime}ms..`);
 
 							await PromiseX.delay(errorDelayTime);
 
 							errorDelayTime = Math.min(errorDelayTime * 2, maxErrorDelayTime);
 						} else {
-							printExceptionAndStackTraceToConsole(e, `Remote revisions sync with '${this.options.remoteSyncURL}' has stopped due to a fatal error`);
+							printExceptionAndStackTraceToConsole(e, `Remote changes sync with '${this.options.remoteSyncURL}' has stopped due to a fatal error`);
 							throw e;
 						}
 					}
 				}
 			}
 
-			protected async startWebsocketRemoteRevisionsSync() {
+			protected async startWebsocketRemoteChangesSync() {
 				let receivedMessagesCount = 0;
 
 				const initialErrorDelayTime = 250;
@@ -373,7 +373,7 @@ namespace ZincDB {
 							if (this.isClosed)
 								throw new PromiseCanceledError();
 
-							await this.commitSerializedRemoteRevisions(message);
+							await this.commitSerializedRemoteEntries(message);
 
 							receivedMessagesCount++;
 							errorDelayTime = initialErrorDelayTime;
@@ -384,13 +384,13 @@ namespace ZincDB {
 							return;
 
 						if (e.name === "NetworkError" || e.name === "HTTPError") {
-							printExceptionAndStackTraceToConsole(e, `Remote revisions websocket sync with '${this.options.remoteSyncURL}' has encountered a network error`);
+							printExceptionAndStackTraceToConsole(e, `Remote changes websocket sync with '${this.options.remoteSyncURL}' has encountered a network error`);
 							log(`Retrying in ${errorDelayTime}ms..`);
 
 							await PromiseX.delay(errorDelayTime);
 							errorDelayTime = Math.min(errorDelayTime * 2, maxErrorDelayTime);
 						} else {
-							printExceptionAndStackTraceToConsole(e, `Remote revisions websocket sync with '${this.options.remoteSyncURL}' has stopped due to a fatal error`);
+							printExceptionAndStackTraceToConsole(e, `Remote changes websocket sync with '${this.options.remoteSyncURL}' has stopped due to a fatal error`);
 							throw e;
 						}
 					}
@@ -402,9 +402,9 @@ namespace ZincDB {
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			// Local revision sync operations
+			// Local changes sync operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async pushLocalRevisions(options?: { conflictHandler?: ConflictHandler; basePath: NodePath }) {
+			async pushLocalChanges(options?: { conflictHandler?: ConflictHandler; basePath: NodePath }) {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
@@ -415,41 +415,41 @@ namespace ZincDB {
 
 				await this.resolveConflicts(options.conflictHandler, options.basePath);
 
-				const [serializedLocalRevisions, localRevisionKeys] = await this.getSerializedLocalRevisions(Keypath.stringify(options.basePath));
+				const [serializedLocalEntries, localEntryKeys] = await this.getSerializedLocalEntries(Keypath.stringify(options.basePath));
 
-				if (localRevisionKeys.length == 0)
+				if (localEntryKeys.length == 0)
 					return;
 
-				const responseObject = await this.syncClient.writeRaw(serializedLocalRevisions);
+				const responseObject = await this.syncClient.writeRaw(serializedLocalEntries);
 				const remoteCommitTimestamp = responseObject.commitTimestamp;
 
 				if (typeof remoteCommitTimestamp !== "number")
 					throw new Error("Invalid response object: 'commitTimestamp' is missing or not a number");
 
-				await this.setAsRemotelyCommited(localRevisionKeys, remoteCommitTimestamp);
+				await this.setAsRemotelyCommited(localEntryKeys, remoteCommitTimestamp);
 			}
 
-			async discardLocalRevisions(basePath: NodePath = []): Promise<void> {
+			async discardLocalChanges(basePath: NodePath = []): Promise<void> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
 				LocalDBOperations.validateNodePath(basePath);
-				const matchingKeys = await this.getLocalRevisionKeys(Keypath.stringify(basePath));
-				await this.discardLocalRevisionKeys(matchingKeys);
+				const matchingKeys = await this.getLocalEntryKeys(Keypath.stringify(basePath));
+				await this.discardLocalEntryKeys(matchingKeys);
 			}
 
-			async discardLocalRevisionKeys(keys: string[]): Promise<void> {
-				const diff = await this.operations.exec("discardLocalRevisionKeys", [keys]);
+			async discardLocalEntryKeys(keys: string[]): Promise<void> {
+				const diff = await this.operations.exec("discardLocalEntryKeys", [keys]);
 				await this.announceChanges("local", diff);
 			}
 
-			async getLocalRevisions(basePath: NodePath = []): Promise<PathEntries> {
+			async getLocalChanges(basePath: NodePath = []): Promise<PathEntries> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
 				LocalDBOperations.validateNodePath(basePath);
 
-				const matchingEntries = await this.getLocalRevisionEntries(Keypath.stringify(basePath));
+				const matchingEntries = await this.getLocalEntries(Keypath.stringify(basePath));
 				const result: PathEntries = [];
 
 				for (const entry of matchingEntries) {
@@ -476,7 +476,7 @@ namespace ZincDB {
 				if (typeof conflictHandler !== "function")
 					throw new TypeError("Given conflict handler is not a function");
 
-				const conflicts = await this.getConflictingRevisions();
+				const conflicts = await this.getConflictingEntries();
 				const basePathString = Keypath.stringify(basePath);
 				const matchingConflicts = conflicts.filter((conflictInfo) => Tools.stringStartsWith(conflictInfo.key, basePathString));
 
@@ -484,7 +484,7 @@ namespace ZincDB {
 					return;
 
 				const resolvingEntries: EntryArray<any> = [];
-				const discardedLocalRevisionKeys: string[] = [];
+				const discardedLocalEntryKeys: string[] = [];
 
 				for (const conflictInfo of matchingConflicts) {
 					const resolvingPromise = conflictHandler(conflictInfo);
@@ -496,7 +496,7 @@ namespace ZincDB {
 
 					if (!LocalDBOperations.valuesAreEqual(resolvingValue, conflictInfo.localValue)) {
 						if (LocalDBOperations.valuesAreEqual(resolvingValue, conflictInfo.remoteValue)) {
-							discardedLocalRevisionKeys.push(conflictInfo.key);
+							discardedLocalEntryKeys.push(conflictInfo.key);
 						} else {
 							resolvingEntries.push({
 								key: conflictInfo.key,
@@ -507,27 +507,27 @@ namespace ZincDB {
 					}
 				}
 
-				if (discardedLocalRevisionKeys.length > 0)
-					await this.discardLocalRevisionKeys(discardedLocalRevisionKeys);
+				if (discardedLocalEntryKeys.length > 0)
+					await this.discardLocalEntryKeys(discardedLocalEntryKeys);
 
 				if (resolvingEntries.length > 0)
-					await this.commitLocalRevisions(resolvingEntries);
+					await this.commitLocalEntries(resolvingEntries);
 			}
 
-			protected async getConflictingRevisions(): Promise<ConflictInfo[]> {
-				return this.operations.exec("getConflictingRevisions", []);
+			protected async getConflictingEntries(): Promise<ConflictInfo[]> {
+				return this.operations.exec("getConflictingEntries", []);
 			}
 
-			protected async getSerializedLocalRevisions(basePathString: string = "") {
-				return this.operations.exec("getSerializedLocalRevisions", [basePathString, this.options.encryptionKey]);
+			protected async getSerializedLocalEntries(basePathString: string = "") {
+				return this.operations.exec("getSerializedLocalEntries", [basePathString, this.options.encryptionKey]);
 			}
 
-			protected async getLocalRevisionEntries(basePathString: string = "") {
-				return this.operations.exec("getLocalRevisions", [basePathString]);
+			protected async getLocalEntries(basePathString: string = "") {
+				return this.operations.exec("getLocalEntries", [basePathString]);
 			}
 
-			protected async getLocalRevisionKeys(basePathString: string = "") {
-				return this.operations.exec("getLocalRevisionKeys", [basePathString]);
+			protected async getLocalEntryKeys(basePathString: string = "") {
+				return this.operations.exec("getLocalEntryKeys", [basePathString]);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -564,7 +564,7 @@ namespace ZincDB {
 		await db.open();
 
 		if (customOptions && customOptions.pullAfterOpened && customOptions.remoteSyncURL)
-			await db.pullRemoteRevisions();
+			await db.pullRemoteChanges();
 
 		return db;
 	}
