@@ -208,7 +208,7 @@ namespace ZincDB {
 				}
 			}
 			
-			await reloadDatastoreAndRender();
+			reloadDatastoreAndRender();
 		}
 	}
 }
