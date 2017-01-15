@@ -294,7 +294,7 @@ db.get(path)
 
 **Arguments**:
 
-* `path` (array of strings, array of arrays or strings, or string, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
+* `path` (array of strings, array of arrays of strings, or string, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
 
 **Return value**:
 
