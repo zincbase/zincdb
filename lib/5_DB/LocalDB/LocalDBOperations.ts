@@ -53,7 +53,7 @@ namespace ZincDB {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
-				LocalDBOperations.validateEntityPath(path);
+				LocalDBOperations.verifyAndNormalizeEntityPath(path);
 
 				const matchObject = this.nodeLookup.findMatchingNodes(path);
 
@@ -172,7 +172,7 @@ namespace ZincDB {
 			async getAll(): Promise<PathEntries> {
 				const allEntries = await this.getAllEntries();
 				return allEntries.map((entry) => { return { path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata } });
-			}			
+			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Write operations
@@ -193,7 +193,7 @@ namespace ZincDB {
 				}
 
 				const processPutOrDeleteOperation = (path: NodePath, value: any) => {
-					LocalDBOperations.validateNodePath(path, true);
+					LocalDBOperations.verifyAndNormalizeNodePath(path, true);
 
 					let matchObject = transactionNodeLookup.findMatchingNodes(path);
 
@@ -387,7 +387,7 @@ namespace ZincDB {
 
 				if (!Array.isArray(newEntries))
 					throw new TypeError("Entries argument must be an array");
-				
+
 				if (newEntries.length === 0)
 					return [];
 
@@ -424,7 +424,7 @@ namespace ZincDB {
 							// With the creation event commit timestamp as timestamp
 							const creationTime = newEntry.metadata.commitTime;
 							diff = (await this.getRemoteEntryKeys())
-								.map((key) => ({ key, value: undefined, metadata: { updateTime: creationTime, commitTime: creationTime} }))
+								.map((key) => ({ key, value: undefined, metadata: { updateTime: creationTime, commitTime: creationTime } }))
 
 							// Clear all remote entries from the database
 							await this.db.clearObjectStores([RemoteEntriesStoreName]);
@@ -456,7 +456,7 @@ namespace ZincDB {
 
 					try {
 						entryPath = <NodePath>Keypath.parse(newEntry.key);
-						LocalDBOperations.validateNodePath(entryPath, true)
+						LocalDBOperations.verifyAndNormalizeNodePath(entryPath, true)
 					} catch (e) {
 						log(`commitRemoteEntries: Ignored a remote entry with a key that failed to parse as a leaf node path: '${newEntry.key}'`);
 						continue;
@@ -755,12 +755,17 @@ namespace ZincDB {
 				return entries;
 			}
 
-			static validateNodePath(path: NodePath, errorOnRoot = false) {
+			static verifyAndNormalizeNodePath(path: NodePath | string, errorOnRoot = false): NodePath {
 				if (path == null)
 					throw new TypeError(`Null or undefined path given`);
 
-				if (!Array.isArray(path))
-					throw new TypeError(`The path argument given is not an array`);
+				if (typeof path === "string") {
+					return [path];
+				}
+
+				if (!Array.isArray(path)) {
+					throw new TypeError(`Invalid path given: not an array or string`);
+				}
 
 				for (const specifier of path) {
 					if (typeof specifier !== "string")
@@ -769,14 +774,21 @@ namespace ZincDB {
 
 				if (errorOnRoot && path.length === 0)
 					throw new TypeError(`The root cannot be used as a target for this operation`)
+
+				return path;
 			}
 
-			static validateEntityPath(path: EntityPath) {
+			static verifyAndNormalizeEntityPath(path: EntityPath | string | number): EntityPath {
 				if (path == null)
 					throw new TypeError(`Null or undefined path given`);
 
-				if (!Array.isArray(path))
-					throw new TypeError(`The path argument given is not an array`);
+				if (typeof path === "string" || typeof path === "number") {
+					return [path];
+				}
+
+				if (!Array.isArray(path)) {
+					throw new TypeError(`Invalid path given: not an array, string or number`);
+				}
 
 				for (const specifier of path) {
 					const specifierType = typeof specifier;
@@ -784,6 +796,8 @@ namespace ZincDB {
 					if (specifierType !== "string" && specifierType !== "number")
 						throw new TypeError(`The path ${Keypath.formatPath(path)} contains a specifier with type other than string or number`);
 				}
+
+				return path;
 			}
 
 			static cloneEntry(value: any): any {
