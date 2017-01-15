@@ -23,7 +23,7 @@
 		"emitBOM": false,
 		"noUnusedLocals": true,
 		"noUnusedParameters": false,
-		"skipLibCheck": true,
+		"skipLibCheck": false,
 		"alwaysStrict": false,
 		"jsx": "react",
 		"pretty": false

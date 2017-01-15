@@ -10,7 +10,10 @@ namespace ZincDB {
 		if (WebSQLAdapter.isAvailable)
 			testStorageAdapter("WebSQL", new WebSQLAdapter(dbName));
 
-		function testStorageAdapter(adapterName: string, db: StorageAdapter) {
+		if (NodeSQLiteAdapter.isAvailable)
+			testStorageAdapter("SQLite", new NodeSQLiteAdapter(dbName));			
+
+		function testStorageAdapter(adapterName: LocalDBOptions['storageMedium'], db: StorageAdapter) {
 			describe(`Storage adapter: '${adapterName}'`, () => {
 				const testEntry1 = { key: "key1", value: "value1", metadata: { timestamp: 1000, longevity: 1000 } };
 				const testEntry2 = { key: "key2", value: "value2", metadata: { timestamp: 1001, longevity: 1000 } };

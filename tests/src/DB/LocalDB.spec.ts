@@ -10,6 +10,9 @@ namespace ZincDB {
 			if (WebSQLAdapter.isAvailable)
 				runDBTests("WebSQL", false);
 
+			if (NodeSQLiteAdapter.isAvailable)
+				runDBTests("SQLite", false);
+
 			if (webWorkersAvailable()) {
 				runDBTests("InMemory", true);
 

@@ -1,8 +1,4 @@
 namespace ZincDB {
-	if (runningInNodeJS()) {
-		global["openDatabase"] = require('websql');
-	}
-
 	export namespace DB {
 		export class WebSQLAdapter implements StorageAdapter {
 			db: Database;
