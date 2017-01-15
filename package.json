@@ -48,7 +48,7 @@
   "scripts": {
     "build": "grunt",
     "test": "grunt test",
-    "testphantom": "grunt testPhantomjs",
+    "testPhantomjs": "grunt testPhantomjs",
     "devserver": "grunt startDevServer"
   },
   "engines": {
