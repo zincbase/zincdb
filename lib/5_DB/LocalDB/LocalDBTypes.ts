@@ -12,7 +12,7 @@ namespace ZincDB {
 		export type ValueComparer<V> = (value1: V, value2: V) => number;
 
 		export type LocalDBOptions = {
-			storageMedium: "InMemory" | "OnDisk" | "IndexedDB" | "WebSQL";
+			storageMedium: "InMemory" | "OnDisk" | "IndexedDB" | "WebSQL" | "SQLite";
 			remoteSyncURL: string;
 			remoteAccessKey: string;
 			encryptionKey?: string;
@@ -20,6 +20,7 @@ namespace ZincDB {
 			pullAfterOpened: boolean;
 			workerURI?: string;
 			verifyServerCertificate?: boolean;
+			sqliteStorageDirectory?: string;
 		}
 
 		export type ConflictInfo = {

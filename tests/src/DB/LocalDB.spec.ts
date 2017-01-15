@@ -10,6 +10,9 @@ namespace ZincDB {
 			if (WebSQLAdapter.isAvailable)
 				runDBTests("WebSQL", false);
 
+			if (NodeSQLiteAdapter.isAvailable)
+				runDBTests("SQLite", false);
+
 			if (webWorkersAvailable()) {
 				runDBTests("InMemory", true);
 
@@ -23,7 +26,11 @@ namespace ZincDB {
 						let db: LocalDB;
 
 						beforeEach(async () => {
-							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, { storageMedium, useWebWorker });
+							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, { 
+								storageMedium, 
+								useWebWorker,
+								sqliteStorageDirectory: "tests/temp"
+							});
 						});
 
 						afterEach(async () => {
@@ -371,7 +378,8 @@ namespace ZincDB {
 								remoteSyncURL: `${ZincDBTestConfig.host}/datastore/${dbName}`,
 								remoteAccessKey: ZincDBTestConfig.accessKey,
 								encryptionKey: "4d2d3fb0356cf6a66617e6454641697b",
-								verifyServerCertificate: false
+								verifyServerCertificate: false,
+								sqliteStorageDirectory: "tests/temp"
 							});
 
 							await db.syncClient.rewrite([]);

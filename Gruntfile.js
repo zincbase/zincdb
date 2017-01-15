@@ -41,7 +41,7 @@ module.exports = function (grunt) {
 					require: 'expectations'
 				},
 
-				src: ['../../build/development/zincdb.js']
+				src: ['build/development/zincdb.js']
 			}
 		},
 
@@ -106,14 +106,6 @@ module.exports = function (grunt) {
 
 	require('load-grunt-tasks')(grunt);
 
-	grunt.registerTask('chdirToTempDirectory', () => {
-		process.chdir('tests/temp')
-	});
-
-	grunt.registerTask('chdirFromTempToGruntRootDirectory', () => {
-		process.chdir('../..')
-	});
-
 	grunt.registerTask('buildDevelopment',
 		[
 			'shell:buildDevelopment',
@@ -123,9 +115,7 @@ module.exports = function (grunt) {
 	grunt.registerTask('test',
 		[
 			'buildDevelopment',
-			'chdirToTempDirectory',
 			'mochaTest:runTestsWithinDevelopmentBuild',
-			'chdirFromTempToGruntRootDirectory',
 			'clean:temporaryTestFiles'
 		]);
 

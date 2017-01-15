@@ -31,11 +31,20 @@ namespace ZincDB {
 						this.db = new WebSQLAdapter(localDBIdentifier);
 						break;
 
+					case "SQLite":
+						if (!NodeSQLiteAdapter.isAvailable)
+							throw new Error("SQLite is not available at the current context.");
+						
+						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.sqliteStorageDirectory || "");
+						break;
+
 					case "OnDisk":
 						if (IndexedDBAdapter.isAvailable)
 							this.db = new IndexedDBAdapter(localDBIdentifier);
 						else if (WebSQLAdapter.isAvailable)
 							this.db = new WebSQLAdapter(localDBIdentifier);
+						else if (NodeSQLiteAdapter.isAvailable)
+							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.sqliteStorageDirectory || "");
 						else
 							this.db = new InMemoryAdapter(localDBIdentifier);
 						break;
