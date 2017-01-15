@@ -435,11 +435,11 @@ namespace ZincDB {
 				await this.setAsRemotelyCommited(localEntryKeys, remoteCommitTimestamp);
 			}
 
-			async discardLocalChanges(basePath: NodePath = []): Promise<void> {
+			async discardLocalChanges(basePath: NodePath | string = []): Promise<void> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				LocalDBOperations.verifyAndNormalizeNodePath(basePath);
+				basePath = LocalDBOperations.verifyAndNormalizeNodePath(basePath);
 				const matchingKeys = await this.getLocalEntryKeys(Keypath.stringify(basePath));
 				await this.discardLocalEntryKeys(matchingKeys);
 			}
@@ -449,20 +449,20 @@ namespace ZincDB {
 				await this.announceChanges("local", diff);
 			}
 
-			async getLocalChanges(basePath: NodePath = []): Promise<PathEntries> {
+			async getLocalChanges(basePath: NodePath | string = []): Promise<PathEntries> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				LocalDBOperations.verifyAndNormalizeNodePath(basePath);
+				basePath = LocalDBOperations.verifyAndNormalizeNodePath(basePath);
 
 				const matchingEntries = await this.getLocalEntries(Keypath.stringify(basePath));
-				const result: PathEntries = [];
+				const results: PathEntries = [];
 
 				for (const entry of matchingEntries) {
-					result.push({ path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata });
+					results.push({ path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata });
 				}
 
-				return result;
+				return results;
 			}
 
 			async resolveConflicts(conflictHandler?: ConflictHandler, basePath: NodePath = []): Promise<void> {
