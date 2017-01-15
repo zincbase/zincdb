@@ -10,7 +10,7 @@ namespace ZincDB {
 			rows: Row[];
 
 			topBar: {
-				host: string;
+				datastoreURL: string;
 				accessKey: string;
 				newEntryPath: string;
 			}
@@ -87,20 +87,24 @@ namespace ZincDB {
 			if (db)
 				db.close();
 
-			const host = viewState.topBar.host;
+			const datastoreURL = viewState.topBar.datastoreURL;
 			const accessKey = viewState.topBar.accessKey;
 
-			db = await open(host, {
-				remoteSyncURL: host || undefined,
+			db = await open(datastoreURL, {
+				remoteSyncURL: datastoreURL || undefined,
 				remoteAccessKey: accessKey,
 				storageMedium: "OnDisk",
 				useWebWorker: true,
 			});
 
-			if (host !== "") {
+			let syncError: any;
+
+			if (datastoreURL !== "") {
 				try {
 					await db.pullRemoteChanges();
-				} catch (e) {
+				}
+				catch (e) {
+					syncError = e;
 				}
 			}
 
@@ -140,13 +144,26 @@ namespace ZincDB {
 				updateViewStateAndRender(patches);
 			});
 
-			if (host !== "")
-				db.pullRemoteChanges({ continuous: true });
+			if (syncError === undefined) {
+				if (datastoreURL !== "")
+					await db.pullRemoteChanges({ continuous: true });
+			} else {
+				throw syncError;
+			}
 		}
 
-		export const updateHostField = function(newValue: string) {
-			updateViewStateAndRender([{ path: ["topBar", "host"], value: newValue }]);
-			EventLoop.enqueueImmediate(() => localStorage.setItem("ZincEditor.host", newValue));
+		export const createDatastore = async function(datastoreURL: string, accessKey: string) {
+			const client = new Client({
+				datastoreURL,
+				accessKey
+			})
+
+			await client.rewriteRaw(new Uint8Array(0));
+		}
+
+		export const updateDatastoreURLField = function(newValue: string) {
+			updateViewStateAndRender([{ path: ["topBar", "datastoreURL"], value: newValue }]);
+			EventLoop.enqueueImmediate(() => localStorage.setItem("ZincEditor.datastoreURL", newValue));
 		}
 
 		export const updateAccessKeyField = function(newValue: string) {
@@ -185,12 +202,12 @@ namespace ZincDB {
 			viewState = {
 				rows: [],
 				topBar: {
-					host: localStorage.getItem("ZincEditor.host") || "",
+					datastoreURL: localStorage.getItem("ZincEditor.datastoreURL") || "",
 					accessKey: localStorage.getItem("ZincEditor.accessKey") || "",
 					newEntryPath: localStorage.getItem("ZincEditor.newEntryPath") || ""
 				}
 			}
-
+			
 			await reloadDatastoreAndRender();
 		}
 	}

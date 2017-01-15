@@ -115,6 +115,21 @@ namespace ZincDB {
 
 		export class TopBar extends React.PureComponent<{ topBarState: ViewState["topBar"] }, {}> {
 			render() {
+				const loadDatastore = async () => {
+					try {
+						await reloadDatastoreAndRender();
+					} 
+					catch(e) {
+						if (typeof e.message === "string" && 
+							e.message.indexOf("response code 404") >= 0) {
+							if (window.confirm("The specified datastore wasn't found on the server, would you like to create it?\n\n (this would require the relevant permissions for the access key provided)")) {
+								await createDatastore(this.props.topBarState.datastoreURL, this.props.topBarState.accessKey);
+								await reloadDatastoreAndRender();
+							}
+						}
+					}
+				}
+
 				return (
 					<div id="TopBar">
 						<table>
@@ -124,16 +139,16 @@ namespace ZincDB {
 										type="text"
 										title="Press enter to load target datastore"
 										placeholder="https://example.com:1337/datastore/datastorename"
-										value={this.props.topBarState.host}
+										value={this.props.topBarState.datastoreURL}
 										spellCheck={false}
-										onChange={(event) => updateHostField(event.target["value"])}
-										onKeyPress={(event) => { if (event.key === "Enter") { reloadDatastoreAndRender() } }} /></td>
+										onChange={(event) => updateDatastoreURLField(event.target["value"])}
+										onKeyPress={(event) => { if (event.key === "Enter") { loadDatastore() } }} /></td>
 									<td>Access key: <input 
 										type="password"
 										title="Press enter to load target datastore"
 										value={this.props.topBarState.accessKey} 
 										onChange={(event) => updateAccessKeyField(event.target["value"])}
-										onKeyPress={(event) => { if (event.key === "Enter") { reloadDatastoreAndRender() } }} />
+										onKeyPress={(event) => { if (event.key === "Enter") { loadDatastore() } }} />
 									</td>
 									<td><button onClick={pushChanges} title="Push all pending changes to remote datastore">Push changes</button></td>
 									<td><button onClick={revertChanges} title="Revert all pending changes">Revert changes</button></td>
