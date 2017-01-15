@@ -218,24 +218,14 @@ namespace ZincDB {
 			}
 			
 			/////////////
-			runSQLTransaction(statements: SQLStatement[]): Promise<void> {
-				const operationPromise = new OpenPromise<void>();
-
-				this.db.run("BEGIN TRANSACTION");
+			async runSQLTransaction(statements: SQLStatement[]): Promise<void> {
+				await this.runSQL("BEGIN TRANSACTION");
 
 				for (const statement of statements) {
-					this.db.run(statement[0], statement[1]);
+					await this.runSQL(statement[0], statement[1]);
 				}
-				
-				this.db.run(`COMMIT TRANSACTION`, (err: any) => {
-					if (err == null) {
-						operationPromise.resolve();
-					} else {
-						operationPromise.reject(err);
-					}
-				});
 
-				return operationPromise;
+				await this.runSQL("COMMIT TRANSACTION");
 			}
 
 			runSQL(statement: string, params: any[] = []): Promise<any[]> {
