@@ -1,6 +1,6 @@
 {
   "name": "zincdb",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A database and synchronization library for Javascript applications.",
   "keywords": [
     "database",
@@ -19,7 +19,8 @@
   },
   "main": "build/production/zincdb.js",
   "files": [
-    "build/production/zincdb.js"
+    "build/production/zincdb.js",
+    "build/production/zincdb.min.js"
   ],
   "dependencies": {
     "ws": "^1.1.1",
