@@ -4,16 +4,23 @@ namespace ZincDB {
 
 		export class NodeSQLiteAdapter implements StorageAdapter {
 			db: NodeSQLiteDatabase;
+			databaseFilePath: string;
 
-			constructor(public dbName: string) {
+			constructor(public dbName: string, public storageDirectory: string) {
+				if (storageDirectory != null && storageDirectory.length > 0)
+					this.databaseFilePath = this.storageDirectory + "/" + this.dbName;
+				else
+					this.databaseFilePath = this.dbName;
+
+				this.databaseFilePath = require("path").posix.normalize(this.databaseFilePath);				
 			}
 
 			async open(): Promise<void> {
 				const operationPromise = new OpenPromise<void>();
 				const SQLite3 = require("sqlite3").verbose();
-
+				
 				try {
-					this.db = new SQLite3.Database(this.dbName, SQLite3.OPEN_READWRITE | SQLite3.OPEN_CREATE, (err: any) => {
+					this.db = new SQLite3.Database(this.databaseFilePath, SQLite3.OPEN_READWRITE | SQLite3.OPEN_CREATE, (err: any) => {
 						if (err === null) {
 							operationPromise.resolve();
 						} else {
@@ -268,6 +275,13 @@ namespace ZincDB {
 				const names = await this.getObjectStoreNames();
 				await this.deleteObjectStores(names);
 				await this.close();
+				
+				try {
+					const NodeFS: typeof fs = require("fs")
+					NodeFS.unlinkSync(this.databaseFilePath);
+				}
+				catch (e) {
+				}
 			}
 
 			get isOpen() {

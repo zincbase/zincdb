@@ -11,7 +11,7 @@ namespace ZincDB {
 			testStorageAdapter("WebSQL", new WebSQLAdapter(dbName));
 
 		if (NodeSQLiteAdapter.isAvailable)
-			testStorageAdapter("SQLite", new NodeSQLiteAdapter(dbName));			
+			testStorageAdapter("SQLite", new NodeSQLiteAdapter(dbName, `tests/temp`));
 
 		function testStorageAdapter(adapterName: LocalDBOptions['storageMedium'], db: StorageAdapter) {
 			describe(`Storage adapter: '${adapterName}'`, () => {

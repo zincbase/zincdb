@@ -22,7 +22,8 @@ namespace ZincDB {
 					useWebWorker: false,
 					pullAfterOpened: false,
 					workerURI: undefined,
-					verifyServerCertificate: true
+					verifyServerCertificate: true,
+					sqliteStorageDirectory: ""
 				}, customOptions);
 
 				this.syncClient = new Client<any>({
