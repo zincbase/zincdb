@@ -24,12 +24,16 @@ Node.js:
 npm install zincdb
 ```
 
-Browser:
+Browser ([download](https://unpkg.com/zincdb)):
 
 ```html
 <script id="zincdb" src="https://unpkg.com/zincdb"></script>
 ```
-(or download the latest production build [here](https://unpkg.com/zincdb))
+
+Minified version ([download](https://unpkg.com/zincdb/production/zincdb.min.js))
+```html
+<script id="zincdb" src="https://unpkg.com/zincdb/production/zincdb.min.js"></script>
+```
 
 ## Documentation
 
