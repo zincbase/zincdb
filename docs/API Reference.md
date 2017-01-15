@@ -101,7 +101,7 @@ db.put(path, val)
 
 **Arguments**:
 
-* `path` (array or string, required): A path specifying the leaf to assign.
+* `path` (array of strings or string, required): A path specifying the leaf to assign.
 * `val` (any, required): The primitive value, object, or array to assign.  
 
 **Return value**
@@ -110,11 +110,12 @@ A promise resolving when the data has been successfully written to the database.
 
 **Examples**:
 
-Create a leaf node with an number typed value:
+Create a simple leaf node with an number typed value:
 
 ```ts
-await db.put(["year"], 2014);
+await db.put("year", 2014);
 ```
+(note `"year"` can be used as a shorthand alternative for `["year"]`)
 
 Create or update a leaf node with an object typed value:
 
@@ -145,7 +146,7 @@ db.delete(path)
 
 **Arguments**:
 
-* `path` (array, required): the path of the leaf node to delete.
+* `path` (array of strings or string, required): the path of the leaf node to delete.
 
 **Return value**:
 
@@ -167,7 +168,7 @@ db.update(path, newValue)
 
 **Arguments**:
 
-* `path` (array, required): the path of the entity to update. Can be either a leaf node, branch node (including the root), or a leaf node value's descendant property or array index.
+* `path` (array of strings or string, required): the path of the entity to update. Can be either a leaf node, branch node (including the root), or a leaf node value's descendant property or array index.
 * `newValue` (any, required): the new value to assign the entity.
 
 **Example**:
@@ -215,7 +216,7 @@ db.addListItem(containerPath, value)
 
 **Arguments**:
 
-* `containerPath` (array, required): the containing path.
+* `containerPath` (array of strings or string, required): the containing path.
 * `value` (any, required): the value to assign to the new list item.
 
 **Return type**:
@@ -225,9 +226,9 @@ The 16 character alphanumeric random string which was used as identifier for the
 **Examples**:
 
 ```ts
-const key1 = await db.addListItem("Guest List", { name: "John"}); // returns "YJ5xGKqrCckRKqlZ"
-const key2 = await db.addListItem("Guest List", { name: "Dana"}); // returns "lNK7CbxfNxFAc1hj"
-const key3 = await db.addListItem("Guest List", { name: "John"}); // returns "tb0Ve0S3JTVURswh"
+const key1 = await db.addListItem("Guest List", { name: "John" }); // returns "YJ5xGKqrCckRKqlZ"
+const key2 = await db.addListItem("Guest List", { name: "Dana" }); // returns "lNK7CbxfNxFAc1hj"
+const key3 = await db.addListItem("Guest List", { name: "John" }); // returns "tb0Ve0S3JTVURswh"
 ```
 
 The database now looks like:
@@ -293,7 +294,7 @@ db.get(path)
 
 **Arguments**:
 
-* `path` (array or array of arrays, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
+* `path` (array of strings, array of arrays of strings, or string, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
 
 **Return value**:
 
@@ -393,7 +394,7 @@ db.observe(path, handler)
 
 **Arguments**:
 
-* `path` (string or array, required): the path of the entity to watch. This can be any path supported by `get()`.
+* `path` (array of strings or string, required): the path of the entity to watch. This can be any path supported by `get()`.
 * `handler` (function, required): a handler function to be called when a relevant update occurred. The handler function receives single argument - an event object of the form:
 
 ```ts
@@ -614,7 +615,7 @@ db.discardLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array, optional): the base node for the changes to discard.
+* `path` (array of strings or string, optional): the base node path for the changes to discard.
 
 **Return value**:
 
@@ -646,7 +647,7 @@ db.getLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array, optional): the base node for the local changes to retrieve.
+* `path` (array of strings or string, optional): the base node for the local changes to retrieve.
 
 **Return value**:
 

@@ -342,6 +342,11 @@ namespace ZincDB {
 							await db.put(["a", "b"], 321);
 							await expectPromiseToReject(db.update.call(db, ["a", "b"]));
 						});
+
+						it("Accepts plain strings as paths to 'put' and 'get'", async () => {
+							await db.put("Great News!", 63445);
+							expect(await db.get("Great News!")).toEqual(63445);
+						});
 					});
 
 					describe("Basic operations involving a remote server:", () => {

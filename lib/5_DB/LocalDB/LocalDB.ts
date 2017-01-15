@@ -60,27 +60,27 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Write operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async put(path: NodePath, value: any): Promise<void>
+			async put(path: NodePath | string, value: any): Promise<void>
 			async put(...args: any[]): Promise<void> {
 				const t = this.transaction();
 				t.put.apply(t, args);
 				return await t.commit();
 			}
 
-			async delete(path: NodePath): Promise<void> {
+			async delete(path: NodePath | string): Promise<void> {
 				const t = this.transaction();
 				t.delete(path);
 				return await t.commit();
 			}
 
-			async update(path: EntityPath, newValue: any): Promise<void>
+			async update(path: EntityPath | string, newValue: any): Promise<void>
 			async update(...args: any[]): Promise<void> {
 				const t = this.transaction();
 				t.update.apply(t, args);
 				return await t.commit();
 			}
 
-			async addListItem(listPath: NodePath, value: any): Promise<string> {
+			async addListItem(listPath: NodePath | string, value: any): Promise<string> {
 				const t = this.transaction();
 				const key = t.addListItem(listPath, value);
 				await t.commit();
@@ -113,15 +113,19 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Read operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
+			async get(path: string): Promise<any>;
 			async get(path: EntityPath): Promise<any>;
 			async get(paths: EntityPath[]): Promise<any[]>;
-			async get(pathOrPaths: EntityPath | EntityPath[]): Promise<any | any[]> {
+			async get(pathOrPaths: EntityPath | EntityPath[] | string): Promise<any | any[]> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
-
+				
+				if (typeof pathOrPaths === "string")
+					pathOrPaths = [pathOrPaths];
+				
 				if (!Array.isArray(pathOrPaths))
-					throw new TypeError("Invalid first argument provided: must be an array array.");
-
+					throw new TypeError("Invalid first argument provided: must be an  array, array of arrays or string.");
+				
 				if (Array.isArray(pathOrPaths[0])) {
 					const paths = <EntityPath[]>pathOrPaths;
 					return Promise.all(paths.map((path) => this.getEntity(path)));
@@ -149,19 +153,19 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Watch operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			subscribe(path: EntityPath, handler: SubscriberHandler) {
+			subscribe(path: EntityPath | string, handler: SubscriberHandler) {
 				return this.subscribeOrObserve(path, handler, false);
 			}
 
-			observe(path: EntityPath, handler: SubscriberHandler) {
+			observe(path: EntityPath | string, handler: SubscriberHandler) {
 				return this.subscribeOrObserve(path, handler, true);
 			}
 
-			subscribeOrObserve(path: EntityPath, handler: SubscriberHandler, isObserver: boolean) {
+			subscribeOrObserve(path: EntityPath | string, handler: SubscriberHandler, isObserver: boolean) {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				LocalDBOperations.validateEntityPath(path);
+				path = LocalDBOperations.verifyAndNormalizeEntityPath(path);
 
 				if (typeof handler !== "function")
 					throw new TypeError("Missing or invalid handler argument");
@@ -431,11 +435,11 @@ namespace ZincDB {
 				await this.setAsRemotelyCommited(localEntryKeys, remoteCommitTimestamp);
 			}
 
-			async discardLocalChanges(basePath: NodePath = []): Promise<void> {
+			async discardLocalChanges(basePath: NodePath | string = []): Promise<void> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				LocalDBOperations.validateNodePath(basePath);
+				basePath = LocalDBOperations.verifyAndNormalizeNodePath(basePath);
 				const matchingKeys = await this.getLocalEntryKeys(Keypath.stringify(basePath));
 				await this.discardLocalEntryKeys(matchingKeys);
 			}
@@ -445,20 +449,20 @@ namespace ZincDB {
 				await this.announceChanges("local", diff);
 			}
 
-			async getLocalChanges(basePath: NodePath = []): Promise<PathEntries> {
+			async getLocalChanges(basePath: NodePath | string = []): Promise<PathEntries> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				LocalDBOperations.validateNodePath(basePath);
+				basePath = LocalDBOperations.verifyAndNormalizeNodePath(basePath);
 
 				const matchingEntries = await this.getLocalEntries(Keypath.stringify(basePath));
-				const result: PathEntries = [];
+				const results: PathEntries = [];
 
 				for (const entry of matchingEntries) {
-					result.push({ path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata });
+					results.push({ path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata });
 				}
 
-				return result;
+				return results;
 			}
 
 			async resolveConflicts(conflictHandler?: ConflictHandler, basePath: NodePath = []): Promise<void> {
