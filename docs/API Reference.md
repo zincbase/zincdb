@@ -615,7 +615,7 @@ db.discardLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array, optional): the base node for the changes to discard.
+* `path` (array of strings or string, optional): the base node path for the changes to discard.
 
 **Return value**:
 
@@ -647,7 +647,7 @@ db.getLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array, optional): the base node for the local changes to retrieve.
+* `path` (array of strings or string, optional): the base node for the local changes to retrieve.
 
 **Return value**:
 
