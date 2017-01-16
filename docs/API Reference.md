@@ -114,9 +114,13 @@ A promise resolving when the data has been successfully written to the database.
 Create a simple leaf node with an number typed value:
 
 ```ts
+await db.put(["year"], 2014);
+```
+or alternatively, the plain string `"year"` can be used as a shorthand for `["year"]` as well:
+
+```ts
 await db.put("year", 2014);
 ```
-(note `"year"` can be used as a shorthand alternative for `["year"]`)
 
 Create or update a leaf node with an object typed value:
 
