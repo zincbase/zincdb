@@ -29,7 +29,7 @@ namespace ZincDB {
 							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, { 
 								storageMedium, 
 								useWebWorker,
-								sqliteStorageDirectory: "tests/temp"
+								sqliteStoragePath: "tests/temp"
 							});
 						});
 
@@ -379,7 +379,7 @@ namespace ZincDB {
 								remoteAccessKey: ZincDBTestConfig.accessKey,
 								encryptionKey: "4d2d3fb0356cf6a66617e6454641697b",
 								verifyServerCertificate: false,
-								sqliteStorageDirectory: "tests/temp"
+								sqliteStoragePath: "tests/temp"
 							});
 
 							await db.syncClient.rewrite([]);

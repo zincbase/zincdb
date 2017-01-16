@@ -55,7 +55,7 @@ ZincDB.open(name, options?);
 	* `useWebWorker`(boolean, optional): Execute most operations in a web worker, if available. Defaults to `false`.
 	* `workerURI` (string, optional): A URI or relative script path to load the worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used.
 	* `verifyServerCertificate` (boolean, optional). Verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.	
-	* `sqliteStorageDirectory` (string, optional). A storage directory for SQLite databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"` or `"OnDisk"`.
+	* `sqliteStoragePath` (string, optional). A storage directory path for SQLite databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"` or `"OnDisk"`. Defaults to current working directory.
 
 **Return value**:
 

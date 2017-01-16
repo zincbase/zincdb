@@ -35,7 +35,7 @@ namespace ZincDB {
 						if (!NodeSQLiteAdapter.isAvailable)
 							throw new Error("SQLite is not available at the current context.");
 						
-						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.sqliteStorageDirectory || "");
+						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.sqliteStoragePath || "");
 						break;
 
 					case "OnDisk":
@@ -44,7 +44,7 @@ namespace ZincDB {
 						else if (WebSQLAdapter.isAvailable)
 							this.db = new WebSQLAdapter(localDBIdentifier);
 						else if (NodeSQLiteAdapter.isAvailable)
-							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.sqliteStorageDirectory || "");
+							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.sqliteStoragePath || "");
 						else
 							this.db = new InMemoryAdapter(localDBIdentifier);
 						break;
