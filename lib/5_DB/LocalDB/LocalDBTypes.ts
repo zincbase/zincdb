@@ -20,7 +20,7 @@ namespace ZincDB {
 			pullAfterOpened: boolean;
 			workerURI?: string;
 			verifyServerCertificate?: boolean;
-			sqliteStoragePath?: string;
+			storagePath?: string;
 		}
 
 		export type ConflictInfo = {
