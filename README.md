@@ -35,6 +35,8 @@ Minified version ([download](https://unpkg.com/zincdb/production/zincdb.min.js))
 <script id="zincdb" src="https://unpkg.com/zincdb/production/zincdb.min.js"></script>
 ```
 
+(To reference a specific library version use the pattern `https://unpkg.com/zincdb@<version>`)
+
 ## Documentation
 
 * [Getting started](https://github.com/zincbase/zincdb/blob/master/docs/Getting%20started.md)
