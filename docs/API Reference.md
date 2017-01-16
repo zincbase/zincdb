@@ -400,7 +400,7 @@ db.observe(path, handler)
 **Arguments**:
 
 * `path` (array of strings or string, required): the path of the entity to watch. This can be any path supported by `get()`.
-* `handler` (function, required): a handler function to be called when a relevant update occurred. The handler function receives single argument - an event object of the form:
+* `handler` (function, required): a handler function to be called when a relevant update occurred. The handler function receives a single argument - an event object of the form:
 
 ```ts
 {
@@ -414,9 +414,9 @@ Where `changes`is an array of objects of the form:
 
 ```ts
 [
-	{ path: ..., value: ..., metadata: ... },
-	{ path: ..., value: ..., metadata: ... },
-	{ path: ..., value: ..., metadata: ... },
+	{ path: ..., value: ..., metadata: { updateTime: ..., commitTime: ...} },
+	{ path: ..., value: ..., metadata: { updateTime: ..., commitTime: ...} },
+	{ path: ..., value: ..., metadata: { updateTime: ..., commitTime: ...} },
 	...
 ]
 ```
@@ -454,7 +454,7 @@ await db.subscribe([], (changeEvent) => {
 * Remote changes that are shadowed by conflicting local changes would not be announced to the subscriber. The only current way to access them is when resolving conflicts using a custom conflict handler.
 * Applying `observe()` to large and complex objects like the root may be a very expensive operation if rapid updates are expected, since the entire database might be need to be loaded be reconstructed on every small update. It is therefore recommended to use `subscribe()` instead or create many observers to individual small objects and perform any needed operation immediately, rather than trying to maintain an up-to-date copy of the entire root object tree or a large branch node.
 
-## `unsubscribe`
+## `unsubscribe` and `unobserve`
 
 Unsubscribe a handler previously set by calling `subscribe()` or `observe()`.
 
@@ -462,6 +462,8 @@ Unsubscribe a handler previously set by calling `subscribe()` or `observe()`.
 
 ```ts
 db.unsubscribe(handler)
+_or_
+db.unobserve(handler)
 ```
 
 **Return value**:
