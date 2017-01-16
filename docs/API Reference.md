@@ -462,7 +462,7 @@ Unsubscribe a handler previously set by calling `subscribe()` or `observe()`.
 
 ```ts
 db.unsubscribe(handler)
-_or_
+// or
 db.unobserve(handler)
 ```
 
