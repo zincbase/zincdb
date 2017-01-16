@@ -35,6 +35,7 @@ namespace ZincDB {
 				}
 
 				await operationPromise;
+				await this.runSQL("PRAGMA synchronous=NORMAL");
 			}
 
 			async createObjectStoresIfNeeded(objectStoreNames: string[]): Promise<void> {
