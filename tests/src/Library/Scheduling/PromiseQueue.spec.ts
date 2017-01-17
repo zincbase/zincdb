@@ -45,7 +45,7 @@ namespace ZincDB {
 				const numbers = [0, 1, 2, 3];
 				const promiseQueue = new PromiseQueue();
 
-				promiseQueue.add(() => PromiseX.start(() => {
+				const promise1 = promiseQueue.add(() => PromiseX.start(() => {
 					expect(promiseQueue.pendingPromiseCount === 3);
 
 					numbers[0] = 100;
@@ -54,14 +54,14 @@ namespace ZincDB {
 					throw new Error("This error should not prevent the next promise from starting");
 				}));
 
-				promiseQueue.add(() => PromiseX.start(() => {
+				const promise2 = promiseQueue.add(() => PromiseX.start(() => {
 					expect(promiseQueue.pendingPromiseCount === 2);
 
 					numbers[2] = 100;
 					expect(numbers).toEqual([100, 1, 100, 3]);
 				}));
 
-				promiseQueue.add(() => PromiseX.start(() => {
+				const promise3 = promiseQueue.add(() => PromiseX.start(() => {
 					expect(promiseQueue.pendingPromiseCount === 1);
 
 					numbers[3] = 100;
@@ -70,7 +70,7 @@ namespace ZincDB {
 					throw new Error("This error should not prevent the next promise from starting");
 				}));
 
-				promiseQueue.add(() => PromiseX.start(() => {
+				const promise4 = promiseQueue.add(() => PromiseX.start(() => {
 					expect(promiseQueue.pendingPromiseCount === 0);
 
 					numbers[1] = 100;
@@ -78,6 +78,11 @@ namespace ZincDB {
 
 					done();
 				}));
+
+				promise1.catch((e) => {});
+				promise2.catch((e) => {});
+				promise3.catch((e) => {});
+				promise4.catch((e) => {});
 			});
 		})
 	})
