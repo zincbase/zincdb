@@ -399,7 +399,7 @@ namespace ZincDB {
 			private static deserializeValueAndMetadata(serializedValueAndMetadata: Uint8Array): { value: any, metadata: EntryMetadata } {
 				const firstTabCharacterLocation = serializedValueAndMetadata.indexOf(9);
 				if (firstTabCharacterLocation === -1)
-					throw new Error("Invalid data in entry found");
+					throw new Error("Found a serialized value with no tab separator");
 
 				const metadata = Tools.parseJSONOrUndefined(Encoding.UTF8.decode(serializedValueAndMetadata.subarray(0, firstTabCharacterLocation)))
 				const value = Encoding.OmniBinary.decode(serializedValueAndMetadata.subarray(firstTabCharacterLocation + 1));
