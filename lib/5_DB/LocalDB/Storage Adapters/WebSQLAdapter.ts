@@ -306,7 +306,7 @@ namespace ZincDB {
 				return {
 					key: entry.key,
 					value: Encoding.OmniString.encode(entry.value),
-					metadata: Encoding.OmniString.encode(entry.metadata)
+					metadata: Tools.stringifyJSONOrUndefined(entry.metadata)
 				}
 			}
 
@@ -314,7 +314,7 @@ namespace ZincDB {
 				return {
 					key: rowObject.key,
 					value: Encoding.OmniString.decode(rowObject.value),
-					metadata: Encoding.OmniString.decode(rowObject.metadata)
+					metadata: Tools.parseJSONOrUndefined(rowObject.metadata)
 				}
 			}			
 		}
