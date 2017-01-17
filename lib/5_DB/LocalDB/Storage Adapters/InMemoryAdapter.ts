@@ -4,6 +4,9 @@ namespace ZincDB {
 			private objectStores: { [name: string]: Map<string, Entry<any>> } = {};
 			private opened = false;
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Initialization operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			constructor(public dbName: string) {
 			}
 
@@ -11,6 +14,9 @@ namespace ZincDB {
 				this.opened = true;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Object store operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async createObjectStoresIfNeeded(objectStoreNames: string[]): Promise<void> {
 				for (const objectStoreName of objectStoreNames)
 					if (this.objectStores[objectStoreName] === undefined)
@@ -41,6 +47,9 @@ namespace ZincDB {
 				return results;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Write operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> } }): Promise<void> {
 				for (const objectStoreName in transactionObject)
 					if (this.objectStores[objectStoreName] === undefined)
@@ -61,6 +70,9 @@ namespace ZincDB {
 				}
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Read operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async get<V>(key: string, objectStoreName: string, indexName?: string): Promise<Entry<V>>
 			async get<V>(keys: string[], objectStoreName: string, indexName?: string): Promise<Entry<V>[]>
 			async get<V>(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<Entry<V> | Entry<V>[]> {
@@ -144,8 +156,8 @@ namespace ZincDB {
 
 			async createIterator(objectStoreName: string,
 				indexName: string,
-				options: { rangeOptions?: { [key: string]: any }, transactionScope?: string[], transactionMode?: "readonly" | "readwrite" },
-				onIteration: (result: Entry<any>, transactionContext: IDBTransaction | undefined, moveNext: Action, onError: (e: Error) => void) => void
+				options: {},
+				onIteration: (result: Entry<any>) => Promise<void>
 			): Promise<void> {
 				const objectStore = this.objectStores[objectStoreName];
 				if (objectStore === undefined)
@@ -157,13 +169,13 @@ namespace ZincDB {
 
 				for (let i = 0; i < allKeys.length; i++) {
 					const value = LocalDBOperations.cloneEntry(objectStore.get(allKeys[i]));
-
-					const iterationPromise = new OpenPromise();
-					onIteration(value, undefined, () => iterationPromise.resolve(), (e) => iterationPromise.reject(e));
-					await iterationPromise;
+					await onIteration(value);
 				}
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Finalization operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async close(): Promise<void> {
 				this.opened = false;
 			}
@@ -177,6 +189,9 @@ namespace ZincDB {
 				return this.opened;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Static methods
+			//////////////////////////////////////////////////////////////////////////////////////
 			static get isAvailable(): boolean {
 				return true;
 			}

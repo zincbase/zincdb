@@ -13,6 +13,10 @@ namespace ZincDB {
 		if (NodeSQLiteAdapter.isAvailable)
 			testStorageAdapter("SQLite", new NodeSQLiteAdapter(dbName, `tests/temp`));
 
+		if (LevelUpAdapter.isAvailable)
+			testStorageAdapter("LevelDB", new LevelUpAdapter(dbName, `tests/temp`));
+			
+
 		function testStorageAdapter(adapterName: LocalDBOptions['storageMedium'], db: StorageAdapter) {
 			describe(`Storage adapter: '${adapterName}'`, () => {
 				const testEntry1 = { key: "key1", value: "value1", metadata: { timestamp: 1000, longevity: 1000 } };
@@ -22,6 +26,7 @@ namespace ZincDB {
 
 				beforeEach(async () => {
 					await db.open();
+					
 					if ((await db.getObjectStoreNames()).indexOf("testObjectStore1") >= 0)
 						await db.clearObjectStores(["testObjectStore1"]);
 
@@ -30,11 +35,6 @@ namespace ZincDB {
 
 				afterEach(async () => {
 					await db.close();
-				});
-
-				it("Opens DB", async () => {
-					await db.open()
-					expect(true).toBe(true);
 				});
 
 				it("Deletes and creates new object stores", async () => {
@@ -93,7 +93,7 @@ namespace ZincDB {
 
 					let iterationNumber = 1;
 
-					const onIteratorResult = (result: DB.Entry<any>, transaction: IDBTransaction, moveNext: Action) => {
+					const onIteratorResult = async (result: DB.Entry<any>) => {
 						if (iterationNumber === 1)
 							expect(result).toEqual(testEntry1);
 						else if (iterationNumber === 2)
@@ -102,9 +102,6 @@ namespace ZincDB {
 							expect(result).toEqual(testEntry3);
 
 						iterationNumber++;
-
-						expect(typeof moveNext === "function");
-						moveNext();
 					}
 
 					await db.createIterator("testObjectStore1", undefined, {}, onIteratorResult);

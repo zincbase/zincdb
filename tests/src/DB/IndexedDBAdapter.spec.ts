@@ -121,7 +121,8 @@ namespace ZincDB {
 			it("Opens and executes an iterator", async () => {
 				let iterationNumber = 1;
 
-				const onIteratorResult = (result: DB.Entry<any>, transaction: IDBTransaction, moveNext: Action) => {
+				const onIteration = async (result: DB.Entry<any>, transaction: IDBTransaction) => {
+					log(iterationNumber)
 					if (iterationNumber === 1)
 						expect(result).toEqual(testEntry1);
 					else if (iterationNumber === 2)
@@ -132,18 +133,15 @@ namespace ZincDB {
 					//expect(transaction instanceof IDBTransaction).toBe(true);
 
 					iterationNumber++;
-
-					expect(typeof moveNext === "function");
-					moveNext();
 				}
 
-				await db.createIterator("testObjectStore1", undefined, {}, onIteratorResult);
+				await db.createIterator("testObjectStore1", undefined, {}, onIteration);
 			});
 
 			it("Opens and executes an iterator that starts new request at every iteration", async () => {
 				let iterationNumber = 1;
 
-				const onIteratorResult = (result: DB.Entry<any>, transaction: IDBTransaction, moveNext: Action, onError: (e: any) => void) => {
+				const onIteratorResult = async (result: DB.Entry<any>, transaction: IDBTransaction) => {
 					if (iterationNumber === 1)
 						expect(result).toEqual(testEntry1);
 					else if (iterationNumber === 2)
@@ -155,18 +153,19 @@ namespace ZincDB {
 
 					iterationNumber++;
 
-					expect(typeof moveNext === "function");
-
+					const requestPromise = new OpenPromise<void>();
 					const request = transaction.objectStore("testObjectStore1").get(result.key);
 
 					request.onsuccess = (e) => {
 						expect(request.result).toEqual(result);
-						moveNext();
+						requestPromise.resolve();
 					}
 
 					request.onerror = (e) => {
-						onError(e);
+						requestPromise.reject(e);
 					}
+
+					await requestPromise;
 				}
 
 				await db.createIterator("testObjectStore1", undefined, {}, onIteratorResult);

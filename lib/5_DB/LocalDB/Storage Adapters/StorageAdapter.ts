@@ -28,7 +28,7 @@ namespace ZincDB {
 			createIterator(objectStoreName: string,
 				indexName: string | undefined,
 				options: { [key: string]: any },
-				onIteration: (result: Entry<any>, transactionContext: any, moveNext: Action, onError: (e: Error) => void) => void
+				onIteration: (result: Entry<any>, transactionContext?: any) => Promise<void>
 			): Promise<void>
 
 			close(): Promise<void>
