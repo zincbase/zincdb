@@ -231,7 +231,7 @@ namespace ZincDB {
 				const prefix = LevelUpAdapter.encodeObjectStoreName(objectStoreName);
 
 				await this.createRawIterator({ keys: true, values: true, gte: prefix, lte: prefix + String.fromCharCode(65535) }, async (result) => {
-					await onIteration({ key: result.key!, ...LevelUpAdapter.deserializeValueAndMetadata(result.value!) });
+					await onIteration({ key: result.key!.substr(prefix.length), ...LevelUpAdapter.deserializeValueAndMetadata(result.value!) });
 				});
 			}
 
