@@ -46,15 +46,14 @@ namespace ZincDB {
 						break;
 
 					case "OnDisk":
-						if (IndexedDBAdapter.isAvailable)
+						if (LevelUpAdapter.isAvailable)
+							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");					
+						else if (IndexedDBAdapter.isAvailable)
 							this.db = new IndexedDBAdapter(localDBIdentifier);
-						else if (WebSQLAdapter.isAvailable)
-							this.db = new WebSQLAdapter(localDBIdentifier);
 						else if (NodeSQLiteAdapter.isAvailable)
 							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
-						else if (LevelUpAdapter.isAvailable)
-							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
-							
+						else if (WebSQLAdapter.isAvailable)
+							this.db = new WebSQLAdapter(localDBIdentifier);
 						else
 							this.db = new InMemoryAdapter(localDBIdentifier);
 						break;
