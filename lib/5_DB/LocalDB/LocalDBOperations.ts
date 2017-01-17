@@ -34,8 +34,15 @@ namespace ZincDB {
 					case "SQLite":
 						if (!NodeSQLiteAdapter.isAvailable)
 							throw new Error("SQLite is not available at the current context.");
-						
+
 						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
+						break;
+
+					case "LevelDB":
+						if (!LevelUpAdapter.isAvailable)
+							throw new Error("LevelDB is not available at the current context.");
+
+						this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
 						break;
 
 					case "OnDisk":
@@ -45,6 +52,9 @@ namespace ZincDB {
 							this.db = new WebSQLAdapter(localDBIdentifier);
 						else if (NodeSQLiteAdapter.isAvailable)
 							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
+						else if (LevelUpAdapter.isAvailable)
+							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
+							
 						else
 							this.db = new InMemoryAdapter(localDBIdentifier);
 						break;
@@ -359,7 +369,7 @@ namespace ZincDB {
 					if (!newEntry.metadata)
 						newEntry.metadata = {};
 
-					if (existingEntry && existingEntry.metadata && existingEntry.metadata.referenceSyncTimestamp > 0) {
+					if (existingEntry && existingEntry.metadata && existingEntry.metadata.referenceSyncTimestamp! > 0) {
 						newEntry.metadata.referenceSyncTimestamp = existingEntry.metadata.referenceSyncTimestamp;
 					} else {
 						newEntry.metadata.referenceSyncTimestamp = latestServerMetadata.lastModified;
@@ -652,7 +662,7 @@ namespace ZincDB {
 					const remoteEntry = matchingRemoteEntries[i];
 
 					if (!remoteEntry ||
-						localEntry.metadata.referenceSyncTimestamp > remoteEntry.metadata.commitTime ||
+						localEntry.metadata.referenceSyncTimestamp! > remoteEntry.metadata.commitTime! ||
 						LocalDBOperations.valuesAreEqual(localEntry.value, remoteEntry.value)) {
 						continue;
 					}
@@ -696,21 +706,18 @@ namespace ZincDB {
 				const keysSeenInLocalEntries = new StringSet();
 				await this.db.createIterator(LocalEntriesStoreName, undefined, {
 					transactionMode: "readonly"
-				}, (entry, transaction, moveNext) => {
+				}, async (entry) => {
 					if (entry.value !== undefined)
 						foreachFunc(entry.value, entry.key, <number>entry.metadata.updateTime);
 
 					keysSeenInLocalEntries.add(entry.key);
-					moveNext();
 				})
 
 				await this.db.createIterator(RemoteEntriesStoreName, undefined, {
 					transactionMode: "readonly"
-				}, (entry, transaction, moveNext) => {
+				}, async (entry) => {
 					if (entry.value !== undefined && !keysSeenInLocalEntries.has(entry.key))
 						foreachFunc(entry.value, entry.key, <number>entry.metadata.updateTime);
-
-					moveNext();
 				})
 			}
 

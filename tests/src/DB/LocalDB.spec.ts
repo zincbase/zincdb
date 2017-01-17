@@ -13,6 +13,9 @@ namespace ZincDB {
 			if (NodeSQLiteAdapter.isAvailable)
 				runDBTests("SQLite", false);
 
+			if (LevelUpAdapter.isAvailable)
+				runDBTests("LevelDB", false);
+
 			if (webWorkersAvailable()) {
 				runDBTests("InMemory", true);
 

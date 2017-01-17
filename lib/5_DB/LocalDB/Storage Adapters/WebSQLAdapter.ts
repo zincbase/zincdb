@@ -1,8 +1,13 @@
 namespace ZincDB {
 	export namespace DB {
+		type RowObject = { key: string, value: string, metadata: string };
+
 		export class WebSQLAdapter implements StorageAdapter {
 			db: Database;
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Initialization operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			constructor(public dbName: string) {
 			}
 
@@ -15,6 +20,9 @@ namespace ZincDB {
 				}
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Object store operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async createObjectStoresIfNeeded(objectStoreNames: string[]) {
 				if (!this.isOpen) {
 					throw new Error("Database is not open");
@@ -111,6 +119,9 @@ namespace ZincDB {
 				return await operationPromise;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Write operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> } }): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
@@ -125,7 +136,7 @@ namespace ZincDB {
 								t.executeSql(`DELETE FROM "${objectStoreName}" WHERE key=?`, [key]);
 							}
 							else {
-								const rowObject = WebSQLAdapter.serializeToRowObject(operationsForObjectstore[key]);
+								const rowObject = WebSQLAdapter.serializeRowObject(operationsForObjectstore[key]);
 								t.executeSql(`INSERT INTO "${objectStoreName}" (key, value, metadata) VALUES (?, ?, ?)`, [rowObject.key, rowObject.value, rowObject.metadata])
 							}
 						}
@@ -137,6 +148,9 @@ namespace ZincDB {
 				await operationPromise;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Read operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async get<V>(key: string, objectStoreName: string, indexName?: string): Promise<Entry<V>>
 			async get<V>(keys: string[], objectStoreName: string, indexName?: string): Promise<Entry<V>[]>
 			async get<V>(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<Entry<V> | Entry<V>[] | undefined> {
@@ -148,7 +162,7 @@ namespace ZincDB {
 						return undefined;
 					}
 
-					return WebSQLAdapter.parseRowObject(resultSet.rows.item(0));
+					return WebSQLAdapter.deserializeRowObject(resultSet.rows.item(0));
 				} else if (Array.isArray(keyOrKeys)) {
 					if (keyOrKeys.length === 0)
 						return [];
@@ -162,7 +176,7 @@ namespace ZincDB {
 
 					const resultLookup: EntryObject<V> = {};
 					for (let i = 0; i < resultSet.rows.length; i++) {
-						const entry = WebSQLAdapter.parseRowObject(resultSet.rows.item(i));
+						const entry = WebSQLAdapter.deserializeRowObject(resultSet.rows.item(i));
 						resultLookup[entry.key] = entry;
 					}
 
@@ -208,7 +222,7 @@ namespace ZincDB {
 				const results: Entry<V>[] = [];
 
 				for (let i = 0; i < resultSet.rows.length; i++)
-					results.push(WebSQLAdapter.parseRowObject(resultSet.rows.item(i)));
+					results.push(WebSQLAdapter.deserializeRowObject(resultSet.rows.item(i)));
 
 				return results;
 			}
@@ -228,6 +242,44 @@ namespace ZincDB {
 				return resultSet.rows.item(0)["count(key)"];
 			}
 
+			async createIterator(objectStoreName: string,
+				indexName: string,
+				options: {},
+				onIteration: (result: Entry<any>) => Promise<void>
+			): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				const allKeys = await this.getAllKeys(objectStoreName);
+
+				for (const key of allKeys) {
+					await onIteration(await this.get(key, objectStoreName));
+				}
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Finalization operations
+			//////////////////////////////////////////////////////////////////////////////////////	
+			async close(): Promise<void> {
+				this.db = <any>undefined;
+			}
+
+			async destroy(): Promise<void> {
+				const names = await this.getObjectStoreNames();
+				await this.deleteObjectStores(names);
+				await this.close();
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Getters
+			//////////////////////////////////////////////////////////////////////////////////////	
+			get isOpen() {
+				return this.db !== undefined;
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Private methods
+			//////////////////////////////////////////////////////////////////////////////////////			
 			private runSingleQueryReadTransaction(sql: string, args?: any[]): Promise<SqlResultSet> {
 				return new Promise((resolve, reject) => {
 					if (!this.isOpen) {
@@ -243,47 +295,14 @@ namespace ZincDB {
 				});
 			}
 
-			async createIterator(objectStoreName: string,
-				indexName: string,
-				options: {},
-				onIteration: (result: Entry<any>, transactionContext: any, moveNext: Action, onError: (e: Error) => void) => void
-			): Promise<void> {
-				if (!this.isOpen)
-					throw new Error("Database is not open");
-
-				const allKeys = await this.getAllKeys(objectStoreName);
-
-				for (const key of allKeys) {
-					const iterationPromise = new OpenPromise<void>();
-
-					this.get(key, objectStoreName)
-						.then((value) => {
-							onIteration(value, null, () => iterationPromise.resolve(), (e) => iterationPromise.reject(e));
-						}).catch((e) => iterationPromise.reject(e));
-
-					await iterationPromise;
-				}
-			}
-
-			async close(): Promise<void> {
-				this.db = <any>undefined;
-			}
-
-			async destroy(): Promise<void> {
-				const names = await this.getObjectStoreNames();
-				await this.deleteObjectStores(names);
-				await this.close();
-			}
-
-			get isOpen() {
-				return this.db !== undefined;
-			}
-
 			static get isAvailable(): boolean {
 				return typeof openDatabase === "function";
 			}
 
-			static serializeToRowObject(entry: Entry<any>): RowObject {
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Static methods
+			//////////////////////////////////////////////////////////////////////////////////////		
+			static serializeRowObject(entry: Entry<any>): RowObject {
 				return {
 					key: entry.key,
 					value: Encoding.OmniString.encode(entry.value),
@@ -291,15 +310,13 @@ namespace ZincDB {
 				}
 			}
 
-			static parseRowObject(rowObject: RowObject): Entry<any> {
+			static deserializeRowObject(rowObject: RowObject): Entry<any> {
 				return {
 					key: rowObject.key,
 					value: Encoding.OmniString.decode(rowObject.value),
 					metadata: Encoding.OmniString.decode(rowObject.metadata)
 				}
-			}
+			}			
 		}
-
-		type RowObject = { key: string, value: string, metadata: string };
 	}
 }

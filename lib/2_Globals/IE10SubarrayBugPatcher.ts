@@ -7,7 +7,7 @@
 // the bug.
 // https://connect.microsoft.com/IE/feedback/details/771452/typed-array-subarray-issue
 if (typeof Uint8Array === "function" && new Uint8Array(1).subarray(1).byteLength !== 0) {
-	const subarray = function (this: any, start?: number, end?: number) {
+	const subarray = function (this: any, start: number, end: number) {
 		const clamp = (v: number, min: number, max: number) => v < min ? min : v > max ? max : v;
 
 		start = start | 0;

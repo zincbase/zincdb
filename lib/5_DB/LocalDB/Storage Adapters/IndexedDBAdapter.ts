@@ -3,6 +3,9 @@ namespace ZincDB {
 		export class IndexedDBAdapter implements StorageAdapter {
 			db: IDBDatabase;
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Initialization operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			constructor(public dbName: string) {
 			}
 
@@ -18,7 +21,7 @@ namespace ZincDB {
 					request = indexedDB.open(this.dbName);
 				else
 					request = indexedDB.open(this.dbName, newVersionNumber);
-				
+
 				const operationPromise = new OpenPromise<IDBDatabase>();
 
 				let upgradeEventTriggered = false;
@@ -73,19 +76,9 @@ namespace ZincDB {
 				this.db = await operationPromise;
 			}
 
-			async close(): Promise<void> {
-								
-				if (this.db) {
-					this.db.close();
-					this.db = <any> undefined;
-				}
-			}
-
-			async destroy(): Promise<void> {
-				await this.close();
-				await this.createPromiseForRequest<void>(indexedDB.deleteDatabase(this.dbName));
-			}
-
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Object store operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async createObjectStoresIfNeeded(objectStoreNames: string[]): Promise<void> {
 				if (!this.isOpen)
 					throw new Error(`createObjectStoresIfNeeded: db is not open`);
@@ -152,16 +145,41 @@ namespace ZincDB {
 
 				for (let i = 0; i < nameList.length; i++) {
 					const item = nameList.item(i);
-					
+
 					if (item != null)
 						results.push(item);
 				}
 
-				results.sort((a, b) => Comparers.simpleStringComparer(a, b)); 
+				results.sort((a, b) => Comparers.simpleStringComparer(a, b));
 
 				return results;
 			}
 
+			async clearObjectStores(objectStoreNames: string[]): Promise<void> {
+				if (!this.isOpen)
+					throw new Error(`clearObjectStores: db is not open`);
+
+				for (const objectStoreName of objectStoreNames) {
+					if (!this.db.objectStoreNames.contains(objectStoreName))
+						throw new Error(`Object store '${objectStoreName}' was not found`);
+				}
+
+				const transaction = this.db.transaction(objectStoreNames, "readwrite");
+				const requests: IDBRequest[] = [];
+
+				for (const objectStoreName of objectStoreNames) {
+					if (!this.db.objectStoreNames.contains(objectStoreName))
+						continue;
+
+					requests.push(transaction.objectStore(objectStoreName).clear());
+				}
+
+				return await this.createUnifiedPromiseForTransaction<void>(transaction, requests);
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Index operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async createIndex(indexName: string, objectStoreName: string, keypath: string | string[], params?: IDBIndexParameters): Promise<void> {
 				if (!this.isOpen)
 					throw new Error(`createIndex: db is not open`);
@@ -237,28 +255,9 @@ namespace ZincDB {
 				return await operationPromise;
 			}
 
-			async clearObjectStores(objectStoreNames: string[]): Promise<void> {
-				if (!this.isOpen)
-					throw new Error(`clearObjectStores: db is not open`);
-
-				for (const objectStoreName of objectStoreNames) {
-					if (!this.db.objectStoreNames.contains(objectStoreName))
-						throw new Error(`Object store '${objectStoreName}' was not found`);
-				}
-
-				const transaction = this.db.transaction(objectStoreNames, "readwrite");
-				const requests: IDBRequest[] = [];
-
-				for (const objectStoreName of objectStoreNames) {
-					if (!this.db.objectStoreNames.contains(objectStoreName))
-						continue;
-
-					requests.push(transaction.objectStore(objectStoreName).clear());
-				}
-
-				return await this.createUnifiedPromiseForTransaction<void>(transaction, requests);
-			}
-
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Write operations
+			//////////////////////////////////////////////////////////////////////////////////////			
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> | null } }): Promise<void> {
 				if (!this.isOpen)
 					throw new Error(`set: db is not open`);
@@ -295,6 +294,9 @@ namespace ZincDB {
 				return await this.createUnifiedPromiseForTransaction<void>(transaction, requests);
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Read operations
+			//////////////////////////////////////////////////////////////////////////////////////				
 			async get<V>(key: string, objectStoreName: string, indexName?: string): Promise<Entry<V>>
 			async get<V>(keys: string[], objectStoreName: string, indexName?: string): Promise<Entry<V>[]>
 			async get<V>(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<Entry<V> | Entry<V>[]> {
@@ -336,19 +338,19 @@ namespace ZincDB {
 			async has(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<boolean | boolean[]> {
 				if (!this.isOpen)
 					throw new Error(`get: db is not open`);
-				
+
 				if (typeof keyOrKeys === "string") {
 					const result = await this.get<any>(keyOrKeys, objectStoreName, indexName);
-					return result !== undefined;				
+					return result !== undefined;
 				} else if (Array.isArray(keyOrKeys)) {
 					if (keyOrKeys.length === 0)
 						return [];
-											
+
 					const results = await this.get<any>(keyOrKeys, objectStoreName, indexName);
-					return results.map((entry) => entry !== undefined);				
+					return results.map((entry) => entry !== undefined);
 				} else {
 					throw new TypeError("First argument must be a string or array of strings.");
-				}	
+				}
 			}
 
 			/// Get all records
@@ -403,7 +405,7 @@ namespace ZincDB {
 					return requestResult;
 				}
 
-				
+
 				if (!this.isOpen)
 					throw new Error(`getRange: database is not open`);
 
@@ -492,7 +494,7 @@ namespace ZincDB {
 					return requestResults;
 				}
 
-				
+
 				if (!this.isOpen)
 					throw new Error(`getKeyRange: database is not open`);
 
@@ -544,7 +546,7 @@ namespace ZincDB {
 			async createIterator(objectStoreName: string,
 				indexName: string | undefined,
 				options: { rangeOptions?: IndexedDBAdapterRangeOptions, transactionScope?: string[], transactionMode?: "readonly" | "readwrite" },
-				onIteration: (result: Entry<any>, transactionContext: IDBTransaction, moveNext: Action, onError: (e: Error) => void) => void
+				onIteration: (result: Entry<any>, transactionContext: IDBTransaction) => Promise<void>
 			): Promise<void> {
 				if (!this.isOpen)
 					throw new Error(`createIterator: database is not open`);
@@ -561,11 +563,11 @@ namespace ZincDB {
 				if (typeof onIteration !== "function")
 					throw new Error(`createIterator: invalid callback function supplied`);
 
-				const transaction = this.db.transaction(<string[]> options.transactionScope, options.transactionMode)
+				const transaction = this.db.transaction(<string[]>options.transactionScope, options.transactionMode)
 				const transactionPromise = this.createPromiseForTransaction(transaction);
 
 				const objectStore = transaction.objectStore(objectStoreName);
-				const range = this.rangeOptionsToIDBKeyRange(<any> options.rangeOptions);
+				const range = this.rangeOptionsToIDBKeyRange(<any>options.rangeOptions);
 
 				const cursorPromise = new OpenPromise<void>();
 				let cursorRequest: IDBRequest;
@@ -575,20 +577,20 @@ namespace ZincDB {
 				else
 					cursorRequest = objectStore.openCursor(range);
 
-				cursorRequest.onsuccess = (event: any) => {
+				cursorRequest.onsuccess = async (event: any) => {
 					const cursor: IDBCursorWithValue = event.target.result;
 
 					if (cursor) {
-						const onIterationFunctionError = (e: any) => {
-							cursorPromise.reject(e);
-							transaction.abort();
-						}
-
 						try {
-							onIteration(cursor.value, transaction, () => cursor.continue(), (e) => onIterationFunctionError(e));
+							// Note the hander promise is not awaited here due to a limitation
+							// of IndexedDB
+							onIteration(cursor.value, transaction);
+							cursor.continue();
 						}
 						catch (e) {
-							onIterationFunctionError(e);
+							cursorPromise.reject(e);
+							transaction.abort();
+							return;
 						}
 					}
 					else {
@@ -601,7 +603,32 @@ namespace ZincDB {
 				await <any>Promise.all([cursorPromise, transactionPromise]);
 			}
 
-			// Helpers
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Finalization operations
+			//////////////////////////////////////////////////////////////////////////////////////
+			async close(): Promise<void> {
+
+				if (this.db) {
+					this.db.close();
+					this.db = <any>undefined;
+				}
+			}
+
+			async destroy(): Promise<void> {
+				await this.close();
+				await this.createPromiseForRequest<void>(indexedDB.deleteDatabase(this.dbName));
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Getters
+			//////////////////////////////////////////////////////////////////////////////////////			
+			get isOpen() {
+				return this.db !== undefined;
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Private methods
+			//////////////////////////////////////////////////////////////////////////////////////
 			private rangeOptionsToIDBKeyRange(rangeOptions: IndexedDBAdapterRangeOptions): IDBKeyRange {
 				if (!rangeOptions)
 					rangeOptions = {};
@@ -627,7 +654,7 @@ namespace ZincDB {
 				else if (rangeOptions.equals)
 					range = IDBKeyRange.only(rangeOptions.equals);
 				else
-					range = <any> null;
+					range = <any>null;
 
 				return range;
 			}
@@ -669,10 +696,9 @@ namespace ZincDB {
 					.then(([requestPromiseResults]) => requestPromiseResults);
 			}
 
-			get isOpen() {
-				return this.db !== undefined;
-			}
-
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Static methods
+			//////////////////////////////////////////////////////////////////////////////////////
 			static compare(a: any, b: any): number {
 				return indexedDB.cmp(a, b);
 			}
@@ -733,17 +759,16 @@ namespace ZincDB {
 				if (navigator && navigator.userAgent) {
 					const userAgent = navigator.userAgent;
 
-					if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) 
+					if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent))
 						return false;
-					
+
 					if (/Android 4\.3/.test(userAgent))
 						return false;
 				}
 
-				return true; 
+				return true;
 			}
 		}
-
 
 		export interface IndexedDBAdapterRangeOptions {
 			range?: IDBKeyRange;

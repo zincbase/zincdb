@@ -117,7 +117,7 @@ namespace ZincDB {
 
 	// Similar to the minstd_rand function (C++11)
 	export class LehmerRandomGenerator extends RandomGenerator {
-		constructor(seed?: number) {
+		constructor(seed: number = 0) {
 			if (seed > 186596491780)
 				throw new RangeError(`A seed larger than 186596491780 should not be used as it significantly decreases the quality of the psuedorandom values (186596491780 * 48271 is the last multiplication result still smaller than 2^53)`);
 
@@ -146,7 +146,7 @@ namespace ZincDB {
 	export class MultiplyWithCarryRandomGenerator extends RandomGenerator {
 		private carry = 1;
 
-		constructor(seed?: number) {
+		constructor(seed: number = 0) {
 			super(seed | 0);
 		}
 

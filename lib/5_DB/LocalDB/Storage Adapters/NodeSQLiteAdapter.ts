@@ -1,36 +1,35 @@
 namespace ZincDB {
 	export namespace DB {
 		type SQLStatement = [string, any[]];
+		type SQLiteRowObject = { key: string, value: Uint8Array, metadata: string };
 
 		export class NodeSQLiteAdapter implements StorageAdapter {
 			db: NodeSQLiteDatabase;
 			databaseFilePath: string;
 
-			constructor(public dbName: string, public storageDirectory: string) {
-				if (storageDirectory != null && storageDirectory.length > 0)
-					this.databaseFilePath = this.storageDirectory + "/" + this.dbName;
-				else
-					this.databaseFilePath = this.dbName;
-
-				this.databaseFilePath = require("path").posix.normalize(this.databaseFilePath);				
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Initialization operations
+			//////////////////////////////////////////////////////////////////////////////////////
+			constructor(public dbName: string, storageDirectory: string) {
+				this.databaseFilePath = buildNodeDatabaseFilePath(dbName, storageDirectory);
 			}
 
 			async open(): Promise<void> {
 				const operationPromise = new OpenPromise<void>();
 				const SQLite3 = require("sqlite3").verbose();
-				
+
 				try {
 					this.db = new SQLite3.Database(this.databaseFilePath, SQLite3.OPEN_READWRITE | SQLite3.OPEN_CREATE, (err: any) => {
 						if (err === null) {
 							operationPromise.resolve();
 						} else {
-							this.db = <any> undefined;
+							this.db = <any>undefined;
 							operationPromise.reject(err);
 						}
 					});
 				}
 				catch (e) {
-					this.db = <any> undefined;
+					this.db = <any>undefined;
 					operationPromise.reject(e);
 				}
 
@@ -38,13 +37,16 @@ namespace ZincDB {
 				await this.runSQL("PRAGMA synchronous=NORMAL");
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Object store operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async createObjectStoresIfNeeded(objectStoreNames: string[]): Promise<void> {
 				if (!this.isOpen) {
 					throw new Error("Database is not open");
 				}
 
-				const statements: SQLStatement[] = objectStoreNames.map<SQLStatement>((objectStoreName) => 
-					[`CREATE TABLE IF NOT EXISTS "${objectStoreName}" (key TEXT PRIMARY KEY ON CONFLICT REPLACE, value TEXT, metadata TEXT)`, []]
+				const statements: SQLStatement[] = objectStoreNames.map<SQLStatement>((objectStoreName) =>
+					[`CREATE TABLE IF NOT EXISTS "${objectStoreName}" (key TEXT PRIMARY KEY ON CONFLICT REPLACE, value BLOB, metadata TEXT)`, []]
 				);
 
 				return this.runSQLTransaction(statements);
@@ -55,8 +57,8 @@ namespace ZincDB {
 					throw new Error("Database is not open");
 				}
 
-				const statements = objectStoreNames.map<SQLStatement>((objectStoreName) => 
-					[`DROP TABLE IF EXISTS "${objectStoreName}"`,[]]
+				const statements = objectStoreNames.map<SQLStatement>((objectStoreName) =>
+					[`DROP TABLE IF EXISTS "${objectStoreName}"`, []]
 				);
 
 				return this.runSQLTransaction(statements);
@@ -67,8 +69,8 @@ namespace ZincDB {
 					throw new Error("Database is not open");
 				}
 
-				const statements = objectStoreNames.map<SQLStatement>((objectStoreName) => 
-					[`DELETE from "${objectStoreName}"`,[]]
+				const statements = objectStoreNames.map<SQLStatement>((objectStoreName) =>
+					[`DELETE from "${objectStoreName}"`, []]
 				);
 
 				return this.runSQLTransaction(statements);
@@ -78,7 +80,7 @@ namespace ZincDB {
 				if (!this.isOpen) {
 					throw new Error("Database is not open");
 				}
-				
+
 				const queryResults: any[] = await this.runSQL(`SELECT name FROM sqlite_master WHERE type="table" ORDER BY name`, []);
 				const results: any[] = [];
 
@@ -86,10 +88,13 @@ namespace ZincDB {
 					if (queryResult.name !== "__WebKitDatabaseInfoTable__")
 						results.push(queryResult.name);
 				}
-				
+
 				return results;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Write operations
+			//////////////////////////////////////////////////////////////////////////////////////			
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> } }): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
@@ -104,7 +109,7 @@ namespace ZincDB {
 							statements.push([`DELETE FROM "${objectStoreName}" WHERE key=?`, [key]]);
 						}
 						else {
-							const rowObject = WebSQLAdapter.serializeToRowObject(operationsForObjectstore[key]);
+							const rowObject = NodeSQLiteAdapter.serializeRowObject(operationsForObjectstore[key]);
 							statements.push([`INSERT INTO "${objectStoreName}" (key, value, metadata) VALUES (?, ?, ?)`, [rowObject.key, rowObject.value, rowObject.metadata]])
 						}
 					}
@@ -113,17 +118,20 @@ namespace ZincDB {
 				return this.runSQLTransaction(statements);
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Read operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async get<V>(key: string, objectStoreName: string, indexName?: string): Promise<Entry<V>>
 			async get<V>(keys: string[], objectStoreName: string, indexName?: string): Promise<Entry<V>[]>
 			async get<V>(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<Entry<V> | Entry<V>[] | undefined> {
 				if (typeof keyOrKeys === "string") {
 					const rows = await this.runSQL(`SELECT key, value, metadata FROM "${objectStoreName}" WHERE key=?;`, [keyOrKeys]);
-					
+
 					if (rows.length === 0) {
 						return undefined;
 					}
 
-					return WebSQLAdapter.parseRowObject(rows[0]);
+					return NodeSQLiteAdapter.deserializeRowObject(rows[0]);
 				} else if (Array.isArray(keyOrKeys)) {
 					if (keyOrKeys.length === 0)
 						return [];
@@ -137,7 +145,7 @@ namespace ZincDB {
 
 					const resultLookup: EntryObject<V> = {};
 					for (const row of rows) {
-						const entry = WebSQLAdapter.parseRowObject(row);
+						const entry = NodeSQLiteAdapter.deserializeRowObject(row);
 						resultLookup[entry.key] = entry;
 					}
 
@@ -183,7 +191,7 @@ namespace ZincDB {
 				const results: Entry<V>[] = [];
 
 				for (const row of rows)
-					results.push(WebSQLAdapter.parseRowObject(row));
+					results.push(NodeSQLiteAdapter.deserializeRowObject(row));
 
 				return results;
 			}
@@ -206,7 +214,7 @@ namespace ZincDB {
 			async createIterator(objectStoreName: string,
 				indexName: string,
 				options: {},
-				onIteration: (result: Entry<any>, transactionContext: any, moveNext: Action, onError: (e: Error) => void) => void
+				onIteration: (result: Entry<any>) => Promise<void>
 			): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
@@ -214,52 +222,23 @@ namespace ZincDB {
 				const allKeys = await this.getAllKeys(objectStoreName);
 
 				for (const key of allKeys) {
-					const iterationPromise = new OpenPromise<void>();
-
-					this.get(key, objectStoreName)
-						.then((value) => {
-							onIteration(value, null, () => iterationPromise.resolve(), (e) => iterationPromise.reject(e));
-						}).catch((e) => iterationPromise.reject(e));
-
-					await iterationPromise;
+					await onIteration(await this.get(key, objectStoreName));
 				}
 			}
-			
-			/////////////
-			async runSQLTransaction(statements: SQLStatement[]): Promise<void> {
-				await this.runSQL("BEGIN TRANSACTION");
 
-				for (const statement of statements) {
-					await this.runSQL(statement[0], statement[1]);
-				}
-
-				await this.runSQL("COMMIT TRANSACTION");
-			}
-
-			runSQL(statement: string, params: any[] = []): Promise<any[]> {
-				const operationPromise = new OpenPromise<any[]>();
-
-				this.db.all(statement, params, (err: any, rows: any[]) => {
-					if (err == null) {
-						operationPromise.resolve(rows);
-					} else {
-						operationPromise.reject(err);
-					}
-				});
-
-				return operationPromise;
-			}			
-
-			close(): Promise<void> {
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Finalization operations
+			//////////////////////////////////////////////////////////////////////////////////////
+			async close(): Promise<void> {
 				if (!this.isOpen)
-					return Promise.resolve();
+					return
 
 				const operationPromise = new OpenPromise<void>();
 
 				this.db.close((err) => {
 					if (err == null) {
 						operationPromise.resolve();
-						this.db = <any>undefined;						
+						this.db = <any>undefined;
 					} else {
 						operationPromise.reject(err);
 						this.db = <any>undefined;
@@ -276,7 +255,7 @@ namespace ZincDB {
 				const names = await this.getObjectStoreNames();
 				await this.deleteObjectStores(names);
 				await this.close();
-				
+
 				try {
 					const NodeFS: typeof fs = require("fs")
 					NodeFS.unlinkSync(this.databaseFilePath);
@@ -285,12 +264,61 @@ namespace ZincDB {
 				}
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Getters
+			//////////////////////////////////////////////////////////////////////////////////////
 			get isOpen() {
 				return this.db !== undefined;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Private methods
+			//////////////////////////////////////////////////////////////////////////////////////
+			private async runSQLTransaction(statements: SQLStatement[]): Promise<void> {
+				await this.runSQL("BEGIN TRANSACTION");
+
+				for (const statement of statements) {
+					await this.runSQL(statement[0], statement[1]);
+				}
+
+				await this.runSQL("COMMIT TRANSACTION");
+			}
+
+			private async runSQL(statement: string, params: any[] = []): Promise<any[]> {
+				const operationPromise = new OpenPromise<any[]>();
+
+				this.db.all(statement, params, (err: any, rows: any[]) => {
+					if (err == null) {
+						operationPromise.resolve(rows);
+					} else {
+						operationPromise.reject(err);
+					}
+				});
+
+				return operationPromise;
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Static methods
+			//////////////////////////////////////////////////////////////////////////////////////
 			static get isAvailable(): boolean {
 				return runningInNodeJS() && typeof require("sqlite3") === "object";
+			}
+
+			private static serializeRowObject(entry: Entry<any>): SQLiteRowObject {
+				return {
+					key: entry.key,
+					value: Encoding.OmniBinary.encode(entry.value),
+					metadata: Tools.stringifyJSONOrUndefined(entry.metadata)
+				}
+			}
+
+			private static deserializeRowObject(rowObject: SQLiteRowObject): Entry<any> {
+				return {
+					key: rowObject.key,
+					value: Encoding.OmniBinary.decode(rowObject.value),
+					metadata: Tools.parseJSONOrUndefined(rowObject.metadata)
+				}
 			}
 		}
 	}
