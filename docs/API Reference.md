@@ -51,11 +51,11 @@ ZincDB.open(name, options?);
 	* `remoteSyncURL` (string, optional): A full URL of a remote datastore to synchronize with.
 	* `remoteAccessKey` (string, optional): An access key to use when communicating with the remote datastore host. If provided, must be 32 lowercase hexadecimal characters.
 	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries that are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.	
-	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"IndexedDB"`, `"WebSQL"` or `"SQLite"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
+	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"IndexedDB"`, `"WebSQL"` or `"SQLite"` or `"LevelDB"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
 	* `useWebWorker`(boolean, optional): Execute most operations in a web worker, if available. Defaults to `false`.
 	* `workerURI` (string, optional): A URI or relative script path to load the worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used.
 	* `verifyServerCertificate` (boolean, optional). Verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.	
-	* `storagePath` (string, optional). A storage directory path for SQLite databases (or any other engine that would be supported in the future as well). This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"` or `"OnDisk"`. Defaults to current working directory.
+	* `storagePath` (string, optional). A storage directory path for SQLite and LevelDB databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"`, `"LevelDB"` or `"OnDisk"`. Defaults to current working directory.
 
 **Return value**:
 
