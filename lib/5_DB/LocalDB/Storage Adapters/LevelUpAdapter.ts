@@ -71,7 +71,7 @@ namespace ZincDB {
 				const batch: LevelUp.BatchOperation[] = [];
 
 				for (const prefix of encodedObjectStoreNames) {
-					await this.createRawIterator({ keys: true, values: false, gte: prefix, lte: prefix + String.fromCharCode(65535) }, async (result) => {
+					await this.createRawIterator({ keys: true, values: false, gte: prefix, lte: prefix + String.fromCharCode(65535) }, (result) => {
 						batch.push({ type: "del", key: result.key! });
 					});
 				}
@@ -188,7 +188,7 @@ namespace ZincDB {
 				const prefix = LevelUpAdapter.encodeObjectStoreName(objectStoreName);
 				const matchingEntries: Entry<any>[] = [];
 
-				await this.createRawIterator({ keys: true, values: true, gte: prefix, lte: prefix + String.fromCharCode(65535) }, async (result) => {
+				await this.createRawIterator({ keys: true, values: true, gte: prefix, lte: prefix + String.fromCharCode(65535) }, (result) => {
 					matchingEntries.push({ key: result.key!.substr(prefix.length), ...LevelUpAdapter.deserializeValueAndMetadata(result.value!) });
 				});
 
@@ -202,7 +202,7 @@ namespace ZincDB {
 				const prefix = LevelUpAdapter.encodeObjectStoreName(objectStoreName);
 				const matchingKeys: string[] = [];
 
-				await this.createRawIterator({ keys: true, values: false, gte: prefix, lte: prefix + String.fromCharCode(65535) }, async (result) => {
+				await this.createRawIterator({ keys: true, values: false, gte: prefix, lte: prefix + String.fromCharCode(65535) }, (result) => {
 					const key = result.key!;
 
 					if (Tools.stringStartsWith(key, prefix)) {
@@ -229,10 +229,18 @@ namespace ZincDB {
 					throw new Error("Database is not open");
 
 				const prefix = LevelUpAdapter.encodeObjectStoreName(objectStoreName);
+				const operationPromise = new OpenPromise<void>();
 
 				await this.createRawIterator({ keys: true, values: true, gte: prefix, lte: prefix + String.fromCharCode(65535) }, async (result) => {
-					await onIteration({ key: result.key!.substr(prefix.length), ...LevelUpAdapter.deserializeValueAndMetadata(result.value!) });
+					try {
+						await onIteration({ key: result.key!.substr(prefix.length), ...LevelUpAdapter.deserializeValueAndMetadata(result.value!) });
+					} catch (err) {
+						operationPromise.reject(err);
+					}
 				});
+
+				operationPromise.resolve();
+				return operationPromise;
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +341,7 @@ namespace ZincDB {
 			}
 
 			private async createRawIterator(options: LevelUp.ReadStreamOptions,
-				onIteration: (result: { key?: string; value?: Uint8Array }) => Promise<void>
+				onIteration: (result: { key?: string; value?: Uint8Array }) => void
 			): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
@@ -342,17 +350,16 @@ namespace ZincDB {
 
 				const stream = this.db.createReadStream(options);
 
-				stream.on("data", async (data: string | { key: string, value: Uint8Array }) => {
+				stream.on("data", (data: string | { key: string, value: Uint8Array }) => {
 					try {
 						if (options.keys && options.values)
-							await onIteration(<any>data);
+							onIteration(<any>data);
 						else if (options.keys)
-							await onIteration({ key: <any>data });
+							onIteration({ key: <any>data });
 						else if (options.values)
-							await onIteration({ value: <any>data });
+							onIteration({ value: <any>data });
 						else
-							await onIteration({});
-
+							onIteration({});
 					}
 					catch (e) {
 						operationPromise.reject(e);
