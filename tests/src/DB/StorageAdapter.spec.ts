@@ -15,33 +15,24 @@ namespace ZincDB {
 
 		if (LevelUpAdapter.isAvailable)
 			testStorageAdapter("LevelDB", new LevelUpAdapter(dbName, `tests/temp`));
-			
+
 
 		function testStorageAdapter(adapterName: LocalDBOptions['storageMedium'], db: StorageAdapter) {
 			describe(`Storage adapter: '${adapterName}'`, () => {
-				const testEntry1 = { key: "key1", value: "value1", metadata: { timestamp: 1000, longevity: 1000 } };
-				const testEntry2 = { key: "key2", value: "value2", metadata: { timestamp: 1001, longevity: 1000 } };
-				const testEntry3 = { key: "key3", value: "value3", metadata: { timestamp: 1002, longevity: 1000 } };
-				const testEntry4 = { key: "key4", value: "value4", metadata: { timestamp: 1003, longevity: 1000 } };
+				const testEntry1: Entry<any> = { key: "key1", value: "Hello World!", metadata: { updateTime: 1000, commitTime: 2000 } };
+				const testEntry2: Entry<any> = { key: "key2", value: { "Testing this": { "Hey": 95123.43 } }, metadata: { updateTime: 1001, commitTime: 2001 } };
+				const testEntry3: Entry<any> = { key: "key3", value: new Uint8Array([1, 2, 3, 4, 5]), metadata: { updateTime: 1002, commitTime: 2002 } };
+				const testEntry4: Entry<any> = { key: "key4", value: { "Hi": ["a a a", 342, true, null], "yo o": [{ a: "bbb" }] }, metadata: { updateTime: 1003, commitTime: 2003 } };
 
 				beforeEach(async () => {
 					await db.open();
-					
-					if ((await db.getObjectStoreNames()).indexOf("testObjectStore1") >= 0)
-						await db.clearObjectStores(["testObjectStore1"]);
-
-					await db.createObjectStoresIfNeeded(["testObjectStore1"]);
+					const objectStoreNames = await db.getObjectStoreNames();
+					await db.deleteObjectStores(objectStoreNames);
+					await db.createObjectStoresIfNeeded(["testObjectStore1", "testObjectStore2", "testObjectStore3"]);
 				});
 
 				afterEach(async () => {
 					await db.close();
-				});
-
-				it("Deletes and creates new object stores", async () => {
-					await db.deleteObjectStores(["testObjectStore1"]);
-					expect(await db.getObjectStoreNames()).toEqual([]);
-					await db.createObjectStoresIfNeeded(["testObjectStore1"]);
-					expect(await db.getObjectStoreNames()).toEqual(["testObjectStore1"]);
 				});
 
 				it("Sets and retrieves a single record", async () => {
@@ -74,22 +65,22 @@ namespace ZincDB {
 				});
 
 				it("Counts all records", async () => {
-					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });					
+					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
 					expect(await db.count({}, "testObjectStore1")).toEqual(3);
 				});
 
 				it("Gets all records", async () => {
-					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
-					expect(await db.getAll("testObjectStore1")).toEqual([testEntry1, testEntry2, testEntry3]);
+					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
+					expect(await db.getAll("testObjectStore1")).toEqual([testEntry1, testEntry2, testEntry3, testEntry4]);
 				});
 
 				it("Gets all keys", async () => {
-					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });					
-					expect(await db.getAllKeys("testObjectStore1")).toEqual(["key1", "key2", "key3"]);
+					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
+					expect(await db.getAllKeys("testObjectStore1")).toEqual(["key1", "key2", "key3", "key4"]);
 				});
 
 				it("Opens and executes an iterator", async () => {
-					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
+					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
 
 					let iterationNumber = 1;
 
@@ -100,6 +91,8 @@ namespace ZincDB {
 							expect(result).toEqual(testEntry2);
 						else if (iterationNumber === 3)
 							expect(result).toEqual(testEntry3);
+						else if (iterationNumber === 4)
+							expect(result).toEqual(testEntry4);
 
 						iterationNumber++;
 					}
@@ -107,20 +100,27 @@ namespace ZincDB {
 					await db.createIterator("testObjectStore1", undefined, {}, onIteratorResult);
 				});
 
+				it("Gets object store names", async () => {
+					expect(await db.getObjectStoreNames()).toEqual(["testObjectStore1", "testObjectStore2", "testObjectStore3"]);
+				});
+
 				it("Clears all records from an object store", async () => {
-					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
+					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
+					await db.set({ "testObjectStore2": { "key1": testEntry1, "key4": testEntry4 } });
+					expect(await db.count({}, "testObjectStore1")).toEqual(4);
+					expect(await db.count({}, "testObjectStore2")).toEqual(2);
 					await db.clearObjectStores(["testObjectStore1"])
 					expect(await db.count({}, "testObjectStore1")).toEqual(0);
+					expect(await db.count({}, "testObjectStore2")).toEqual(2);
+					await db.clearObjectStores(["testObjectStore2"])
+					expect(await db.count({}, "testObjectStore2")).toEqual(0);
 				});
 
-				it("Gets object store names", async () => {
-					expect (await db.getObjectStoreNames()).toEqual(["testObjectStore1"]);
-				});
-
-				it("Deletes an object store", async () =>
-				{
-					await db.deleteObjectStores(["testObjectStore1"]);
-					expect (await db.getObjectStoreNames()).toEqual([]);
+				it("Deletes and creates new object stores", async () => {
+					await db.deleteObjectStores(["testObjectStore2"]);
+					expect(await db.getObjectStoreNames()).toEqual(["testObjectStore1", "testObjectStore3"]);
+					await db.createObjectStoresIfNeeded(["testObjectStore4"]);
+					expect(await db.getObjectStoreNames()).toEqual(["testObjectStore1", "testObjectStore3", "testObjectStore4"]);
 				});
 
 				it("Destroys the database", async () => {
