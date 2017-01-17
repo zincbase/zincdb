@@ -18,9 +18,8 @@ db.transaction()
 // Read operations
 db.get(path)
 db.subscribe(path, handler)
-db.unsubscribe(handler)
 db.observe(path, handler)
-db.unobserve(handler)
+db.unsubscribe(handler)
 
 // Sync related operations
 db.pullRemoteChanges(options?)
@@ -454,7 +453,7 @@ await db.subscribe([], (changeEvent) => {
 * Remote changes that are shadowed by conflicting local changes would not be announced to the subscriber. The only current way to access them is when resolving conflicts using a custom conflict handler.
 * Applying `observe()` to large and complex objects like the root may be a very expensive operation if rapid updates are expected, since the entire database might be need to be loaded be reconstructed on every small update. It is therefore recommended to use `subscribe()` instead or create many observers to individual small objects and perform any needed operation immediately, rather than trying to maintain an up-to-date copy of the entire root object tree or a large branch node.
 
-## `unsubscribe` and `unobserve`
+## `unsubscribe`
 
 Unsubscribe a handler previously set by calling `subscribe()` or `observe()`.
 
@@ -462,8 +461,6 @@ Unsubscribe a handler previously set by calling `subscribe()` or `observe()`.
 
 ```ts
 db.unsubscribe(handler)
-// or
-db.unobserve(handler)
 ```
 
 **Return value**:
