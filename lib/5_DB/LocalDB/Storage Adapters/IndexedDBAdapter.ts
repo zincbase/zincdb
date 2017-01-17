@@ -577,19 +577,25 @@ namespace ZincDB {
 				else
 					cursorRequest = objectStore.openCursor(range);
 
-				cursorRequest.onsuccess = async (event: any) => {
+				cursorRequest.onsuccess = (event: any) => {
 					const cursor: IDBCursorWithValue = event.target.result;
 
 					if (cursor) {
+						const failCursor = (err: any) => {
+							cursorPromise.reject(err);
+							transaction.abort();
+						}
+
 						try {
 							// Note the hander promise is not awaited here due to a limitation
 							// of IndexedDB
-							onIteration(cursor.value, transaction);
+							onIteration(cursor.value, transaction)
+								.catch((err) => failCursor(err))
+
 							cursor.continue();
 						}
-						catch (e) {
-							cursorPromise.reject(e);
-							transaction.abort();
+						catch (err) {
+							failCursor(err);
 							return;
 						}
 					}
