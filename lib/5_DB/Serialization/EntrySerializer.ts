@@ -4,7 +4,7 @@ namespace ZincDB {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Entry serialization
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export function serializeEntries(entries: EntryArray<any>, encryptionKeyHex?: string): Uint8Array {
+			export const serializeEntries = function (entries: EntryArray<any>, encryptionKeyHex?: string): Uint8Array {
 				if (entries == null)
 					throw new TypeError("serializeEntries: entries are null or undefined");
 
@@ -16,7 +16,7 @@ namespace ZincDB {
 				return ArrayTools.concatUint8Arrays(serializedEntries);
 			}
 
-			export function serializeEntry(entry: Entry<any>, encryptionKeyHex?: string): Uint8Array {
+			export const serializeEntry = function (entry: Entry<any>, encryptionKeyHex?: string): Uint8Array {
 				if (entry == null)
 					throw new TypeError("serializeEntry: entry is null or undefined");
 
@@ -73,14 +73,14 @@ namespace ZincDB {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Entry deserialization
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export function deserializeFirstEntry(bytes: Uint8Array, decryptionKeyHex?: string): Entry<any> {
+			export const deserializeFirstEntry = function (bytes: Uint8Array, decryptionKeyHex?: string): Entry<any> {
 				const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes);
 				const entry = deserializeEntryBody(entryBytes, header, decryptionKeyHex);
 
 				return entry;
 			}
 
-			export function deserializeEntries(bytes: Uint8Array, decryptionKeyHex?: string): EntryArray<any> {
+			export const deserializeEntries = function (bytes: Uint8Array, decryptionKeyHex?: string): EntryArray<any> {
 				if (bytes == null)
 					throw new TypeError("deserializeEntries: input is null or undefined");
 
@@ -101,13 +101,13 @@ namespace ZincDB {
 				return deserializedEntries;
 			}
 
-			export function compactAndDeserializeEntries(bytes: Uint8Array, decryptionKeyHex?: string): EntryArray<any> {
+			export const compactAndDeserializeEntries = function (bytes: Uint8Array, decryptionKeyHex?: string): EntryArray<any> {
 				if (bytes == null)
 					throw new TypeError("deserializeEntries: input is null or undefined");
 
 				if (!(bytes instanceof Uint8Array))
 					throw new TypeError("deserializeEntries: input is not a Uint8Array");
-				
+
 				type SerializedEntry = { offset: number, header: EntryHeader, entryBytes: Uint8Array };
 				const compactionMap = new StringMap<SerializedEntry>();
 
@@ -138,7 +138,7 @@ namespace ZincDB {
 				return deserializedEntries;
 			}
 
-			export function deserializeEntryBody(entryBytes: Uint8Array, header: EntryHeader, decryptionKeyHex?: string): Entry<any> {
+			export const deserializeEntryBody = function (entryBytes: Uint8Array, header: EntryHeader, decryptionKeyHex?: string): Entry<any> {
 				const payloadStartOffset = EntryHeaderSize + header.secondaryHeaderSize;
 				let keyBytes = entryBytes.subarray(payloadStartOffset, payloadStartOffset + header.keySize);
 				let valueBytes = entryBytes.subarray(payloadStartOffset + header.keySize);
@@ -158,7 +158,7 @@ namespace ZincDB {
 				return { key: key, value: value, metadata: headerToMetadata(header) }
 			}
 
-			export function deserializeKeyAndValueToEncoding(keyBytes: Uint8Array, valueBytes: Uint8Array, keyEncoding: DataEncoding, valueEncoding: DataEncoding): [any, any] {
+			export const deserializeKeyAndValueToEncoding = function (keyBytes: Uint8Array, valueBytes: Uint8Array, keyEncoding: DataEncoding, valueEncoding: DataEncoding): [any, any] {
 				if (keyBytes == null || valueBytes == null)
 					throw new TypeError("deserializeBytesToEncoding: input is null or undefined");
 
@@ -198,7 +198,7 @@ namespace ZincDB {
 				return [key, value];
 			}
 
-			export function deserializeHeaderAndValidateEntryBytes(bytes: Uint8Array): [EntryHeader, Uint8Array] {
+			export const deserializeHeaderAndValidateEntryBytes = function (bytes: Uint8Array): [EntryHeader, Uint8Array] {
 				if (bytes.length < EntryHeaderSize)
 					throw new EntryCorruptionError("Bytes has length shorter than primary header size, this may be due to corruption");
 
@@ -218,7 +218,7 @@ namespace ZincDB {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Encryption and decryption of keys and values
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export function encryptKeyAndValueBytes(keyBytes: Uint8Array, valueBytes: Uint8Array, encryptionKeyHex: string): [Uint8Array, Uint8Array] {
+			export const encryptKeyAndValueBytes = function (keyBytes: Uint8Array, valueBytes: Uint8Array, encryptionKeyHex: string): [Uint8Array, Uint8Array] {
 				const encryptedKeyBytes = Crypto.AES_CBC.encrypt(keyBytes, encryptionKeyHex, Crypto.AES_CBC.zeroBlock);
 
 				let encryptedValueBytes: Uint8Array;
@@ -234,7 +234,7 @@ namespace ZincDB {
 				return [encryptedKeyBytes, encryptedValueBytes];
 			}
 
-			export function decryptKeyAndValueBytes(encryptedKeyBytes: Uint8Array, encryptedValueBytes: Uint8Array, decryptionKeyHex: string): [Uint8Array, Uint8Array] {
+			export const decryptKeyAndValueBytes = function (encryptedKeyBytes: Uint8Array, encryptedValueBytes: Uint8Array, decryptionKeyHex: string): [Uint8Array, Uint8Array] {
 				const decryptedKeyBytes = Crypto.AES_CBC.decrypt(encryptedKeyBytes, decryptionKeyHex, Crypto.AES_CBC.zeroBlock);
 				let decryptedValueBytes: Uint8Array;
 
@@ -251,7 +251,7 @@ namespace ZincDB {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Header serialization and deserialization
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export function serializeHeader(header: EntryHeader): Uint8Array {
+			export const serializeHeader = function (header: EntryHeader): Uint8Array {
 				const headerBytes = new Uint8Array(EntryHeaderSize);
 				const dataView = new DataView(headerBytes.buffer);
 
@@ -268,13 +268,13 @@ namespace ZincDB {
 
 				dataView.setUint32(8, updateTimeLow, true);
 				dataView.setUint32(12, updateTimeHigh, true);
-				
+
 				// Commit time field
 				const commitTimeLow = (header.commitTime >>> 0);
 				const commitTimeHigh = (header.commitTime - commitTimeLow) / 4294967296
 
 				dataView.setUint32(16, commitTimeLow, true);
-				dataView.setUint32(20, commitTimeHigh, true);				
+				dataView.setUint32(20, commitTimeHigh, true);
 
 				dataView.setUint16(24, header.keySize, true);
 				dataView.setUint8(26, header.keyEncoding);
@@ -286,7 +286,7 @@ namespace ZincDB {
 				return headerBytes;
 			}
 
-			export function deserializeHeader(headerBytes: Uint8Array): EntryHeader {
+			export const deserializeHeader = function (headerBytes: Uint8Array): EntryHeader {
 				const header: EntryHeader = <any>{};
 				const dataView = new DataView(headerBytes.buffer, headerBytes.byteOffset, headerBytes.byteLength);
 
@@ -305,7 +305,7 @@ namespace ZincDB {
 				return header;
 			}
 
-			export function headerToMetadata(header: EntryHeader): EntryMetadata {
+			export const headerToMetadata = function (header: EntryHeader): EntryMetadata {
 				const metadata: EntryMetadata = {}
 
 				metadata.updateTime = header.updateTime || 0;
@@ -321,7 +321,7 @@ namespace ZincDB {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Entry array to object conversion
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export function entriesToObject<R>(entries: EntryArray<any>): R {
+			export const entriesToObject = function <R>(entries: EntryArray<any>): R {
 				const result = {};
 
 				for (const entry of entries) {
@@ -331,7 +331,7 @@ namespace ZincDB {
 				return <R>result;
 			}
 
-			export function objectToEntries(obj: any): EntryArray<any> {
+			export const objectToEntries = function (obj: any): EntryArray<any> {
 				const results: EntryArray<any> = [];
 
 				for (const key in obj)
@@ -342,25 +342,23 @@ namespace ZincDB {
 
 		}
 
-		export type EntryHeader =
-			{
-				// All fields are little-endian
-				totalSize: number; // 64 bit unsigned integer
-				updateTime: number; // 64 bit unsigned integer
-				commitTime: number; // 64 bit unsigned integer
-				keySize: number; // 16 bit unsigned integer
-				keyEncoding: DataEncoding; // 8 bit unsigned int
-				valueEncoding: DataEncoding; // 8 bit unsigned int
-				encryptionMethod: EncryptionMethod; // 4 bit unsigned integer
-				flags: EntryFlags; // 8 bit unsigned int
-				secondaryHeaderSize: number // 16 bit unsigned int
-			}
+		export type EntryHeader = {
+			// All fields are little-endian
+			totalSize: number; // 64 bit unsigned integer
+			updateTime: number; // 64 bit unsigned integer
+			commitTime: number; // 64 bit unsigned integer
+			keySize: number; // 16 bit unsigned integer
+			keyEncoding: DataEncoding; // 8 bit unsigned int
+			valueEncoding: DataEncoding; // 8 bit unsigned int
+			encryptionMethod: EncryptionMethod; // 4 bit unsigned integer
+			flags: EntryFlags; // 8 bit unsigned int
+			secondaryHeaderSize: number // 16 bit unsigned int
+		}
 
-		export type ParsedEntry =
-			{
-				header: EntryHeader,
-				entryBytes: Uint8Array
-			}
+		export type ParsedEntry = {
+			header: EntryHeader,
+			entryBytes: Uint8Array
+		}
 
 		export const enum DataEncoding {
 			Binary = 0,

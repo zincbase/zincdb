@@ -25,7 +25,7 @@ namespace ZincDB {
 
 			async deleteObjectStores(objectStoreNames: string[]): Promise<void> {
 				for (const objectStoreName of objectStoreNames)
-					this.objectStores[objectStoreName] = <any> undefined;
+					this.objectStores[objectStoreName] = <any>undefined;
 			}
 
 			async clearObjectStores(objectStoreNames: string[]): Promise<void> {
@@ -107,7 +107,7 @@ namespace ZincDB {
 				} else if (Array.isArray(keyOrKeys)) {
 					if (keyOrKeys.length === 0)
 						return [];
-						
+
 					return keyOrKeys.map((key) => objectStore.has(key));
 				} else {
 					throw new TypeError("First argument must be 'string' or 'string[]'");

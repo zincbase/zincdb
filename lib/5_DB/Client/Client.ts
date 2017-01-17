@@ -12,11 +12,11 @@ namespace ZincDB {
 				}, options)
 
 				const response = await this.readRaw({ updatedAfter: options.updatedAfter, waitUntilNonempty: options.waitUntilNonempty });
-				const results = this.deserializeGetResponseBody(<Uint8Array> response.body, options.compactResults);				
+				const results = this.deserializeGetResponseBody(<Uint8Array>response.body, options.compactResults);
 				return results;
 			}
 
-			async readRaw(options: { updatedAfter?: number , waitUntilNonempty?: boolean }): Promise<HTTPClientResponse> {
+			async readRaw(options: { updatedAfter?: number, waitUntilNonempty?: boolean }): Promise<HTTPClientResponse> {
 				options = ObjectTools.override({
 				}, options)
 
@@ -48,7 +48,7 @@ namespace ZincDB {
 					abortSignalSource: this.abortSignalSource,
 					verifyServerCertificate: this.options.verifyServerCertificate
 				})
-				
+
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
 			}
 
@@ -70,7 +70,7 @@ namespace ZincDB {
 					abortSignalSource: this.abortSignalSource,
 					verifyServerCertificate: this.options.verifyServerCertificate
 				})
-				
+
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
 			}
 
@@ -89,7 +89,7 @@ namespace ZincDB {
 				}, options);
 
 				if (typeof callback !== "function")
-					throw new TypeError("Callback argument is not a function");		
+					throw new TypeError("Callback argument is not a function");
 
 				const connectionPromise = new OpenPromise<void>();
 				const url = this.buildRequestURL({ updatedAfter: options.updatedAfter }).replace(/^http/, "ws");
@@ -117,7 +117,7 @@ namespace ZincDB {
 								connectionPromise.cancel();
 							else
 								connectionPromise.reject(e);
-						}); 
+						});
 				}
 
 				webSocket.onerror = (e: ErrorEvent) => {
@@ -127,12 +127,12 @@ namespace ZincDB {
 
 				webSocket.onclose = (e: CloseEvent) => {
 					connectionPromise.reject(new NetworkError(`Websocket connection with ${url} was closed unexpectedly.`));
-					
+
 					this.abortSignalSource.unsubscribe(onAbortSignal);
 
 					//log(`Connection to websocket '${url}' closed.`)
 				}
-				
+
 				await connectionPromise;
 			}
 
@@ -147,7 +147,7 @@ namespace ZincDB {
 
 				if (this.options.accessKey)
 					argumentStrings.push(`accessKey=${this.options.accessKey}`);
-				
+
 				if (argumentStrings.length > 0)
 					return `${this.options.datastoreURL}?${argumentStrings.join("&")}`;
 				else
@@ -168,7 +168,7 @@ namespace ZincDB {
 			async abortActiveRequests(): Promise<void> {
 				await this.abortSignalSource.signal();
 			}
-			
+
 			private static parseJSONObjectFromResponseBody<T>(response: HTTPClientResponse): T {
 				if (response.statusCode === 200) {
 					if (typeof response.body === "string") {
@@ -180,7 +180,7 @@ namespace ZincDB {
 						catch (e) {
 							throw new Error(`Could not parse response body '${response.body}' as JSON.`);
 						}
-						
+
 						return parsedBody;
 					}
 					else {

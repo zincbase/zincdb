@@ -44,7 +44,7 @@ namespace ZincDB {
 
 						if (!scriptElement || !scriptElement["src"])
 							throw new Error("Couldn't start a worker as a document script element with the id 'zincdb' wasn't found.");
-							
+
 						scriptURI = scriptElement["src"];
 					}
 
@@ -120,13 +120,13 @@ namespace ZincDB {
 			async get(pathOrPaths: EntityPath | EntityPath[] | string): Promise<any | any[]> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
-				
+
 				if (typeof pathOrPaths === "string")
 					pathOrPaths = [pathOrPaths];
-				
+
 				if (!Array.isArray(pathOrPaths))
 					throw new TypeError("Invalid first argument provided: must be an  array, array of arrays or string.");
-				
+
 				if (Array.isArray(pathOrPaths[0])) {
 					const paths = <EntityPath[]>pathOrPaths;
 					return Promise.all(paths.map((path) => this.getEntity(path)));
@@ -566,7 +566,7 @@ namespace ZincDB {
 		}
 	}
 
-	export const open = async function(name: string, customOptions?: Partial<DB.LocalDBOptions>): Promise<DB.LocalDB> {
+	export const open = async function (name: string, customOptions?: Partial<DB.LocalDBOptions>): Promise<DB.LocalDB> {
 		const db = new DB.LocalDB(name, <DB.LocalDBOptions>customOptions);
 		await db.open();
 
@@ -576,15 +576,15 @@ namespace ZincDB {
 		return db;
 	}
 
-	export const parsePath = function(path: string) {
+	export const parsePath = function (path: string) {
 		return Keypath.parse(path);
 	}
 
-	export const stringifyPath = function(path: DB.EntityPath) {
+	export const stringifyPath = function (path: DB.EntityPath) {
 		return Keypath.stringify(path);
 	}
 
-	export const randKey = function(): string {
+	export const randKey = function (): string {
 		return Crypto.Random.getAlphanumericString(16);
 	}
 }

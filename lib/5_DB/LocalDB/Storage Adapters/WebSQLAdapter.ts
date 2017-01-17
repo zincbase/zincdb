@@ -316,7 +316,7 @@ namespace ZincDB {
 					value: Encoding.OmniString.decode(rowObject.value),
 					metadata: Tools.parseJSONOrUndefined(rowObject.metadata)
 				}
-			}			
+			}
 		}
 	}
 }

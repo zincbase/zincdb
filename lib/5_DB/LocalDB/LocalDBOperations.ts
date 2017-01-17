@@ -47,7 +47,7 @@ namespace ZincDB {
 
 					case "OnDisk":
 						if (LevelUpAdapter.isAvailable)
-							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");					
+							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
 						else if (IndexedDBAdapter.isAvailable)
 							this.db = new IndexedDBAdapter(localDBIdentifier);
 						else if (NodeSQLiteAdapter.isAvailable)

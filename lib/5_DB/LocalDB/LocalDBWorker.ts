@@ -37,7 +37,7 @@ namespace ZincDB {
 			}
 		}
 
-		const initializeIfRunningInWorker = function() {
+		const initializeIfRunningInWorker = function () {
 			let operations: Dispatcher<any>;
 
 			if (runningInWebWorker()) {
@@ -58,27 +58,27 @@ namespace ZincDB {
 					return;
 
 				//log(`Main thread request: ${JSON.stringify(message)}`);					
-				
+
 				operations.exec(<any>message.operation, message.args).then((returnValue) => {
-						self.postMessage({ operation: message.operation, result: returnValue, token: message.token }, <any> []);
+					self.postMessage({ operation: message.operation, result: returnValue, token: message.token }, <any>[]);
 
-						if (message.operation === "close" || message.operation === "destroyLocalData")
-							self.close();
-					}).catch((err) => {
-						let errObject;
+					if (message.operation === "close" || message.operation === "destroyLocalData")
+						self.close();
+				}).catch((err) => {
+					let errObject;
 
-						if (err instanceof Error) {
-							errObject = { name: err.name, message: err.message, stack: err.stack }
-						} else {
-							errObject = { name: "error", message: JSON.stringify(err) }
-						}
+					if (err instanceof Error) {
+						errObject = { name: err.name, message: err.message, stack: err.stack }
+					} else {
+						errObject = { name: "error", message: JSON.stringify(err) }
+					}
 
-						self.postMessage({ operation: message.operation, error: errObject, token: message.token }, <any> []);
+					self.postMessage({ operation: message.operation, error: errObject, token: message.token }, <any>[]);
 
-						if (message.operation === "close" || message.operation === "destroyLocalData")
-							self.close();						
-					});
-			}				
+					if (message.operation === "close" || message.operation === "destroyLocalData")
+						self.close();
+				});
+			}
 		}
 
 		initializeIfRunningInWorker();

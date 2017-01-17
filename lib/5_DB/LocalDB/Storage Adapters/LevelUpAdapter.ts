@@ -388,7 +388,7 @@ namespace ZincDB {
 			private static encodeObjectStoreName(name: string): string {
 				return Keypath.stringify([name]);
 			}
-	
+
 			private static serializeValueAndMetadata(entry: Entry<any>): Uint8Array {
 				return ArrayTools.concatUint8Arrays([
 					Encoding.UTF8.encode(Tools.stringifyJSONOrUndefined(entry.metadata) + "\t"),

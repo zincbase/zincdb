@@ -32,11 +32,11 @@ namespace ZincDB {
 			remoteUpdateTime: number;
 			remoteCommitTime: number;
 		}
-		
-		export type SubscriberEventObject = { 
-			origin: "local" | "remote", 
-			changes: PathEntries, 
-			newValue?: any 
+
+		export type SubscriberEventObject = {
+			origin: "local" | "remote",
+			changes: PathEntries,
+			newValue?: any
 		}
 
 		export type SubscriberHandler = (changes: SubscriberEventObject) => void;
