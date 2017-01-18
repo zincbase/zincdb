@@ -27,7 +27,7 @@ ZincServer is highly configurable and can provide a partial or even full replace
 
 Features:
 
-* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md). A design analogous to a cross between a transactional kev-value datastore and a message broker.
+* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md). A design analogous to a cross between a transactional key-value datastore and a message broker.
 * Built on a custom, on-disk, fully ACID, high performance storage engine based on append-only files. Written in Go.
 * Can serve an arbitrary number of datastores and up to several tens of thousands concurrent requests on consumer hardware, with low memory footprint for any given instance.
 * WebSocket and COMET support for real-time synchronization.
