@@ -5,7 +5,7 @@ namespace ZincDB {
 				if (input instanceof Uint8Array)
 					return "BB64" + Base64.encode(input)
 				else if (typeof input === "string")
-					return "UTF8" + input;
+					return "TEXT" + input;
 				else
 					return "JSON" + ZincDB.Tools.stringifyJSONOrUndefined(input);
 			}
@@ -17,7 +17,7 @@ namespace ZincDB {
 				const valuePrefix = input.substr(0, 4);
 				const valuePayload = input.substr(4);
 
-				if (valuePrefix === "UTF8")
+				if (valuePrefix === "TEXT")
 					return valuePayload;
 				else if (valuePrefix === "JSON")
 					return ZincDB.Tools.parseJSONOrUndefined(valuePayload)
