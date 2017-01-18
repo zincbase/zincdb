@@ -64,7 +64,7 @@ namespace ZincDB {
 
 		exec(operation: string, args: any[]): Promise<any> {
 			return new Promise((resolve, reject) => {
-				const requestMessage = {
+				const requestMessage: TokenizedRequest = {
 					operation,
 					args,
 					token: this.baseToken + "_" + Crypto.Random.getAlphanumericString(16)
