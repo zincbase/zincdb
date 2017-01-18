@@ -42,7 +42,7 @@ The use cases are highly varied, and are not only limited to web applications:
 
 * Web applications that require per-user storage, either local-only, or in the cloud (one remote datastore per user).
 * Web applications that provide online collaboration between multiple concurrent participants (one datastore per group).
-* A distributed embedded server-side-only database with eventual consistency (one or more datastore per server cluster).
+* A distributed embedded server-side-only database with eventual consistency (one or more datastores per server cluster).
 * Single-page web sites, which may be dynamically generated and updated with data cached locally and/or fetched from a remote server (one or several datastores for the whole website). This may include binary data like images or raw resources.
 * Browser extensions that require synchronization of data.
 * Desktop or mobile applications developed in frameworks like electron, nw.js, UWP or Apache Cordova.
