@@ -47,7 +47,7 @@ namespace ZincDB {
 		token: string;		
 	}
 	
-	export type TokenizedRequestHandler = (response: TokenizedResponse) => void
+	export type TokenizedRequestHandler = (request: TokenizedRequest) => void
 	export type TokenizedResponseHandler = (response: TokenizedResponse) => void
 
 	export class TokenizedDispatcher implements Dispatcher<any> {
