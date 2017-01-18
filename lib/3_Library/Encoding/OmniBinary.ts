@@ -4,7 +4,7 @@ namespace ZincDB {
 			const enum EncodingIndex { Binary = 0, UTF8 = 1, JSON = 2, Base64 = 3 };
 
 			const encodingIdentifiers = [
-				new Uint8Array([82, 66, 73, 78]), // "RBIN"
+				new Uint8Array([66, 82, 65, 87]), // "BRAW"
 				new Uint8Array([85, 84, 70, 56]), // "UTF8"
 				new Uint8Array([74, 83, 79, 78]), // "JSON"
 				new Uint8Array([66, 66, 54, 52]), // "BB64"
