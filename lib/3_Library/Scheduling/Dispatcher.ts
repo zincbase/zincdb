@@ -51,7 +51,7 @@ namespace ZincDB {
 	export type TokenizedResponseHandler = (response: TokenizedResponse) => void
 
 	export class TokenizedDispatcher implements Dispatcher<any> {
-		private baseToken: string;
+		public readonly baseToken: string;
 		private responseHandlers: Map<string, TokenizedResponseHandler>
 
 		constructor(private requestHandler: TokenizedRequestHandler) {
@@ -85,9 +85,6 @@ namespace ZincDB {
 		}
 
 		announceResponse(responseMessage: TokenizedResponse) {
-			if (!this.isOwnMessage(responseMessage))
-				return
-
 			const matchingResponseHandler = this.responseHandlers.get(responseMessage.token);
 
 			if (matchingResponseHandler)

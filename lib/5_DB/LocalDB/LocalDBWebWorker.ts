@@ -12,6 +12,10 @@ namespace ZincDB {
 
 				this.worker.addEventListener("message", (event) => {
 					const message: TokenizedResponse = event.data;
+
+					if (!this.dispatcher.isOwnMessage(message))
+						return;
+
 					//log(`Worker response: ${JSON.stringify(message)}`);
 
 					if (message.error)

@@ -16,6 +16,9 @@ namespace ZincDB {
 				});
 
 				this.worker.on("message", (encodedMessage: string) => {
+					if (typeof encodedMessage !== "string" || encodedMessage.indexOf(this.dispatcher.baseToken) === -1)
+						return;
+
 					//log(`Worker response: ${encodedMessage}`);
 
 					const message: TokenizedResponse = Encoding.OmniJson.decode(encodedMessage);
@@ -24,8 +27,8 @@ namespace ZincDB {
 						message.error = new Error(message.error.message);
 
 					if (message.operation === "close" || message.operation === "destroyLocalData")
-						this.worker.kill();
-
+						this.worker.disconnect();
+					
 					this.dispatcher.announceResponse(message);
 				});
 
@@ -40,7 +43,7 @@ namespace ZincDB {
 		}
 
 		const initializeIfRunningInNodeWorker = function () {
-			if (!runningInNodeJS() || typeof process.send !== "function")
+			if (!runningInNodeChildProcess())
 				return;
 			
 			const encode = Encoding.OmniJson.encode;
@@ -48,9 +51,11 @@ namespace ZincDB {
 
 			const operations = new MethodDispatcher(new LocalDBOperations());
 
-			process.on("message", async (encodedMessage: any, sendHandle?: any) => {
-				//log(`Main process request: ${encodedMessage}`);
+			process.on("message", async (encodedMessage: string, sendHandle?: any) => {
+				if (typeof encodedMessage !== "string" || encodedMessage.indexOf("TokenizedDispatcherMessage_") === -1)
+					return;
 
+				//log(`Main process request: ${encodedMessage}`);
 				const message = decode(encodedMessage);
 
 				try {
