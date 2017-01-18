@@ -1,32 +1,32 @@
-interface Function {
-	methodName: string;
-}
-
 namespace ZincDB {
-	export const runningInNodeJS = function() {
+	export const runningInNodeJS = function () {
 		return ((typeof process === "object") && (typeof process.versions === "object") && (typeof process.versions.node === "string"));
 	}
 
-	export const runningInMainNodeJSModule = function() {
+	export const runningInMainNodeJSModule = function () {
 		return runningInNodeJS() && require.main === module;
 	}
 
-	export const commonJSAvailable = function() {
+	export const commonJSAvailable = function () {
 		return typeof module === "object" && typeof module.exports === "object";
-	}		
+	}
 
-	export const runningInWebWorker = function() {
+	export const runningInWebWorker = function () {
 		return typeof window === "undefined" && typeof self === "object" && typeof self.addEventListener === "function" && typeof self.close === "function";
 	}
 
-	export const runningInNullOrigin = function(): boolean {
+	export const runningInNodeChildProcess = function () {
+		return runningInNodeJS() && typeof process.send === "function";
+	}
+
+	export const runningInNullOrigin = function (): boolean {
 		if (typeof window !== "object" || typeof window.location !== "object")
 			return false;
 
 		return document.location.protocol !== 'http:' && document.location.protocol !== 'https:';
 	}
 
-	export const webWorkersAvailable = function(): boolean {
+	export const webWorkersAvailable = function (): boolean {
 		if (typeof Worker !== "function" || runningInNullOrigin())
 			return false;
 
@@ -39,11 +39,11 @@ namespace ZincDB {
 		return true;
 	}
 
-	export const webSocketsAvailable = function(): boolean {
+	export const webSocketsAvailable = function (): boolean {
 		return (typeof WebSocket === "function");
 	}
 
-	export const log = function(message: any, appendToDocument = false) {
+	export const log = function (message: any, appendToDocument = false) {
 		if (typeof console !== "object")
 			return;
 
@@ -53,10 +53,10 @@ namespace ZincDB {
 			document.body.innerHTML += message + "<br/>";
 	}
 
-	export const createErrorMessage = function(exception: any, title = "Unhandled exception"): string {
+	export const createErrorMessage = function (exception: any, title = "Unhandled exception"): string {
 		if (exception == null)
 			return title;
-			
+
 		title += ": ";
 
 		if (typeof exception.content === "object") {
@@ -84,7 +84,7 @@ namespace ZincDB {
 		log(createErrorMessage(exception, title));
 	}
 
-	export const getGlobalObject = function(): any {
+	export const getGlobalObject = function (): any {
 		if (typeof window === "object")
 			return window;
 		else if (typeof self === "object")
@@ -93,10 +93,6 @@ namespace ZincDB {
 			return global;
 		else
 			return undefined;
-	}
-
-	if (runningInNodeJS()) {
-		global["WebSocket"] = require("ws");
 	}
 
 	if (commonJSAvailable()) {

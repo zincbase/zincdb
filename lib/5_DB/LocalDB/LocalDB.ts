@@ -1,4 +1,8 @@
 namespace ZincDB {
+	if (runningInNodeJS()) {
+		global["WebSocket"] = require("ws");
+	}
+	
 	export namespace DB {
 		export class LocalDB {
 			readonly options: LocalDBOptions;
