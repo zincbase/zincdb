@@ -1,18 +1,18 @@
 # Technical overview
 
-ZincBase is a distributed database platform aiming to provide a full solution for the storage and retrieval of application data, both locally and in the cloud. It consists of two independents components:
+ZincBase is a distributed database platform aiming to provide a full solution for the storage and retrieval of structured application data, both locally and in the cloud. It consists of two independents components:
 
 ## [ZincDB](https://github.com/zincbase/zincdb)
 
-A Javascript object database managed through a high-level API, available as a library. Provides local storage using either browser based persistence (IndexedDB/WebSQL), an external library (SQLite in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
+A Javascript object database managed through a high-level API, available as a library. Provides a local database using either browser based persistence (IndexedDB/WebSQL), an external library (SQLite or LevelDB in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
 
 Features:
 
 * Hierarchal data model. Compatible with plain JavaScript objects.
 * Fully asynchronous (promise based).
-* Selectable IndexedDB/WebSQL/SQLite/In-memory storage adapters with automatic fallbacks based on availability.
-* Runs in a web worker (if available). Designed for short loading times and minimal impact over the responsiveness of the main application or web-page.
-* Supports raw binary data.
+* Selectable IndexedDB/WebSQL/SQLite/LevelDB/In-memory storage adapters with automatic fallbacks based on availability.
+* Runs in a web worker (if available) or a child-process in Node.js (planned). Designed for short loading times and minimal impact over the responsiveness of the main application, server, or web-page.
+* Supports raw binary data in all storage adapters.
 * Fine-grained customization of background synchronization types (manual, automatic, unidirectional, bidirectional, WebSocket, COMET etc.).
 * Asynchronous, sophisticated interactive conflict resolution.
 * Built-in end-to-end encryption (optional).
@@ -27,7 +27,7 @@ ZincServer is highly configurable and can provide a partial or even full replace
 
 Features:
 
-* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md).
+* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md). A design analogous to a cross between a transactional kev-value datastore and a message broker.
 * Built on a custom, on-disk, fully ACID, high performance storage engine based on append-only files. Written in Go.
 * Can serve an arbitrary number of datastores and up to several tens of thousands concurrent requests on consumer hardware, with low memory footprint for any given instance.
 * WebSocket and COMET support for real-time synchronization.
@@ -42,13 +42,13 @@ The use cases are highly varied, and are not only limited to web applications:
 
 * Web applications that require per-user storage, either local-only, or in the cloud (one remote datastore per user).
 * Web applications that provide online collaboration between multiple concurrent participants (one datastore per group).
-* Single-page web sites, which may be dynamically generated and updated according to raw data cached locally and/or fetched from a remote server (one or several datastores for the whole website). This may include binary data like images or raw resources.
+* A distributed embedded server-side-only database with eventual consistency (one or more datastore per server cluster).
+* Single-page web sites, which may be dynamically generated and updated with data cached locally and/or fetched from a remote server (one or several datastores for the whole website). This may include binary data like images or raw resources.
 * Browser extensions that require synchronization of data.
 * Desktop or mobile applications developed in frameworks like electron, nw.js, UWP or Apache Cordova.
 * Web-based enterprise applications.
 * IoT and embedded applications, especially ones requiring real-time tracking and monitoring (one or several datastores per device).
-* Caching of database query result sets or other types of structured data.
-* A distributed server-side-only database.
+* Server or client-side caching of database query result sets or other types of structured data.
 
 ## Use cases (server only)
 
