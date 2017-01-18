@@ -51,7 +51,7 @@ ZincDB.open(name, options?);
 	* `remoteAccessKey` (string, optional): An access key to use when communicating with the remote datastore host. If provided, must be 32 lowercase hexadecimal characters.
 	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries that are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.	
 	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"IndexedDB"`, `"WebSQL"` or `"SQLite"` or `"LevelDB"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
-	* `useWebWorker`(boolean, optional): Execute most operations in a web worker, if available. Defaults to `false`.
+	* `useWorker`(boolean, optional): Execute operations in a web worker (browser), if available or child-process (Node.js, not implemented yet). Defaults to `false`.
 	* `workerURI` (string, optional): A URI or relative script path to load the worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used.
 	* `verifyServerCertificate` (boolean, optional). Verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.	
 	* `storagePath` (string, optional). A storage directory path for SQLite and LevelDB databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"`, `"LevelDB"` or `"OnDisk"`. Defaults to current working directory.
@@ -84,7 +84,7 @@ const db = await ZincDB.open("MyDB", {
 	remoteSyncURL: "https://example.com:1337/datastore/MyDB",
 	remoteAccessKey: "3da541559918a808c2402bba5012f6c6",
 	storageMedium: "OnDisk",
-	useWebWorker: true,
+	useWorker: true,
 	encryptionKey: "912ec803b2ce49e4a541068d495ab570"
 });
 ```

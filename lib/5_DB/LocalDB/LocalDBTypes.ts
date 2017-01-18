@@ -16,7 +16,7 @@ namespace ZincDB {
 			remoteSyncURL: string;
 			remoteAccessKey: string;
 			encryptionKey?: string;
-			useWebWorker: boolean;
+			useWorker: boolean;
 			pullAfterOpened: boolean;
 			workerURI?: string;
 			verifyServerCertificate?: boolean;

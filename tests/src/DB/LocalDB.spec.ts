@@ -23,15 +23,15 @@ namespace ZincDB {
 					runDBTests("IndexedDB", true);
 			}
 
-			function runDBTests(storageMedium: LocalDBOptions['storageMedium'], useWebWorker: boolean) {
-				describe(`Persistence: ${storageMedium}, Uses web worker: ${useWebWorker}:`, () => {
+			function runDBTests(storageMedium: LocalDBOptions['storageMedium'], useWorker: boolean) {
+				describe(`Persistence: ${storageMedium}, Uses worker: ${useWorker}:`, () => {
 					describe("Basic operations on local entries only:", () => {
 						let db: LocalDB;
 
 						beforeEach(async () => {
 							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, { 
 								storageMedium, 
-								useWebWorker,
+								useWorker,
 								storagePath: "tests/temp"
 							});
 						});
@@ -377,7 +377,7 @@ namespace ZincDB {
 
 							db = await open(`Test_${dbName}`, {
 								storageMedium,
-								useWebWorker,
+								useWorker,
 								remoteSyncURL: `${ZincDBTestConfig.host}/datastore/${dbName}`,
 								remoteAccessKey: ZincDBTestConfig.accessKey,
 								encryptionKey: "4d2d3fb0356cf6a66617e6454641697b",

@@ -19,7 +19,7 @@ namespace ZincDB {
 					remoteAccessKey: "",
 					encryptionKey: undefined,
 					storageMedium: "InMemory",
-					useWebWorker: false,
+					useWorker: false,
 					pullAfterOpened: false,
 					workerURI: undefined,
 					verifyServerCertificate: true,
@@ -33,7 +33,7 @@ namespace ZincDB {
 					verifyServerCertificate: this.options.verifyServerCertificate
 				});
 
-				if (this.options.useWebWorker === true && webWorkersAvailable()) {
+				if (this.options.useWorker === true && webWorkersAvailable()) {
 					let scriptURI = this.options.workerURI;
 
 					if (!scriptURI) {
