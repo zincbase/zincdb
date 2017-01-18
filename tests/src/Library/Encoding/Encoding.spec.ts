@@ -110,5 +110,19 @@ namespace ZincDB {
 				});
 			}
 		});
+
+		describe("OmniJson:", () => {
+			it("Encodes and decodes a regular JSON object", () => {
+				const test = { "Hi there": 342, hello: ["a b c d", "a", true, 2342], d: { bbbb: "sssss" } };
+				const encodedTest = Encoding.OmniJson.encode(test);
+				expect(Encoding.OmniJson.decode(encodedTest)).toEqual(test);
+			});
+
+			it("Encodes and decodes a JSON object containing Uint8Arrays", () => {
+				const test = { "Hi there": 342, zzz: new Uint8Array([]), hello: ["a b c d", "a", true, 2342, new Uint8Array([4, 3, 2, 1])], d: { bbbb: "sssss", dddd: new Uint8Array([255, 35, 99, 104]) } };
+				const encodedTest = Encoding.OmniJson.encode(test);
+				expect(Encoding.OmniJson.decode(encodedTest)).toEqual(test);
+			});			
+		});
 	});
 }

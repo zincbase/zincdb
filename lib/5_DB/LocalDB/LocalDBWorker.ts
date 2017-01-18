@@ -41,7 +41,6 @@ namespace ZincDB {
 			let operations: Dispatcher<any>;
 
 			if (runningInWebWorker()) {
-				//importScripts("promise.js");
 				operations = new MethodDispatcher(new LocalDBOperations());
 
 				self.addEventListener("message", onMessage);
