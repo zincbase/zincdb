@@ -368,10 +368,10 @@ namespace ZincDB {
 					if (!newEntry.metadata)
 						newEntry.metadata = {};
 
-					if (existingEntry && existingEntry.metadata && existingEntry.metadata.referenceSyncTimestamp! > 0) {
-						newEntry.metadata.referenceSyncTimestamp = existingEntry.metadata.referenceSyncTimestamp;
+					if (existingEntry && existingEntry.metadata && existingEntry.metadata.syncReferenceTime! > 0) {
+						newEntry.metadata.syncReferenceTime = existingEntry.metadata.syncReferenceTime;
 					} else {
-						newEntry.metadata.referenceSyncTimestamp = latestServerMetadata.lastModified;
+						newEntry.metadata.syncReferenceTime = latestServerMetadata.lastModified;
 					}
 
 					newEntry.metadata.updateTime = timestamp;
@@ -534,7 +534,7 @@ namespace ZincDB {
 						continue;
 
 					localEntry.metadata.commitTime = commitTimestamp;
-					localEntry.metadata.referenceSyncTimestamp = undefined;
+					localEntry.metadata.syncReferenceTime = undefined;
 					entriesObject[localEntry.key] = localEntry;
 
 					clearingObject[keys[i]] = null;
@@ -661,7 +661,7 @@ namespace ZincDB {
 					const remoteEntry = matchingRemoteEntries[i];
 
 					if (!remoteEntry ||
-						localEntry.metadata.referenceSyncTimestamp! > remoteEntry.metadata.commitTime! ||
+						localEntry.metadata.syncReferenceTime! > remoteEntry.metadata.commitTime! ||
 						LocalDBOperations.valuesAreEqual(localEntry.value, remoteEntry.value)) {
 						continue;
 					}

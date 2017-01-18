@@ -9,7 +9,7 @@ namespace ZincDB {
 		export interface EntryMetadata {
 			updateTime?: number;
 			commitTime?: number;
-			referenceSyncTimestamp?: number;
+			syncReferenceTime?: number;
 			isCreationEvent?: boolean;
 		}
 	}
