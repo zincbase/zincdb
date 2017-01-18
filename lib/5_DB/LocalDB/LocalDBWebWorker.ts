@@ -1,12 +1,8 @@
 /// <reference path="LocalDBOperations.ts"/>
 
 namespace ZincDB {
-	if (runningInNodeJS()) {
-		//global["Worker"] = require("tiny-worker");
-	}
-
 	export namespace DB {
-		export class LocalDBWorkerDispatcher implements Dispatcher<LocalDBOperationsSchema> {
+		export class LocalDBWebWorkerDispatcher implements Dispatcher<LocalDBOperationsSchema> {
 			worker: Worker;
 			dispatcher: TokenizedDispatcher;
 
@@ -37,20 +33,13 @@ namespace ZincDB {
 			}
 		}
 
-		const initializeIfRunningInWorker = function () {
-			let operations: Dispatcher<any>;
+		const initializeIfRunningInWebWorker = function () {
+			if (!runningInWebWorker())
+				return;
 
-			if (runningInWebWorker()) {
-				operations = new MethodDispatcher(new LocalDBOperations());
+			const operations = new MethodDispatcher(new LocalDBOperations());
 
-				self.addEventListener("message", onMessage);
-
-				self.addEventListener("error", (e: ErrorEvent) => {
-					printExceptionAndStackTraceToConsole(e, "LocalDB Web Worker exception");
-				});
-			}
-
-			function onMessage(event: MessageEvent) {
+			self.addEventListener("message", async (event: MessageEvent) => {
 				const message: TokenizedRequest = event.data;
 
 				if (!Tools.stringStartsWith(message.token, "TokenizedDispatcherMessage"))
@@ -58,12 +47,15 @@ namespace ZincDB {
 
 				//log(`Main thread request: ${JSON.stringify(message)}`);					
 
-				operations.exec(<any>message.operation, message.args).then((returnValue) => {
+				try {
+					const returnValue = await operations.exec(<any>message.operation, message.args)
+
 					self.postMessage({ operation: message.operation, result: returnValue, token: message.token }, <any>[]);
 
 					if (message.operation === "close" || message.operation === "destroyLocalData")
 						self.close();
-				}).catch((err) => {
+				}
+				catch (err) {
 					let errObject;
 
 					if (err instanceof Error) {
@@ -76,10 +68,14 @@ namespace ZincDB {
 
 					if (message.operation === "close" || message.operation === "destroyLocalData")
 						self.close();
-				});
-			}
+				}
+			});
+
+			self.addEventListener("error", (e: ErrorEvent) => {
+				printExceptionAndStackTraceToConsole(e, "LocalDB Web Worker exception");
+			});
 		}
 
-		initializeIfRunningInWorker();
+		initializeIfRunningInWebWorker();
 	}
 }

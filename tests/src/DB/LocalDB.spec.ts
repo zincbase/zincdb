@@ -9,18 +9,28 @@ namespace ZincDB {
 
 			if (WebSQLAdapter.isAvailable)
 				runDBTests("WebSQL", false);
-
+/*
 			if (NodeSQLiteAdapter.isAvailable)
 				runDBTests("SQLite", false);
 
 			if (LevelUpAdapter.isAvailable)
 				runDBTests("LevelDB", false);
-
+*/
 			if (webWorkersAvailable()) {
 				runDBTests("InMemory", true);
 
 				if (IndexedDBAdapter.isAvailable)
 					runDBTests("IndexedDB", true);
+			}
+
+			if (runningInNodeJS()) {
+				runDBTests("InMemory", true);
+
+				if (NodeSQLiteAdapter.isAvailable)
+					runDBTests("SQLite", true);
+
+				if (LevelUpAdapter.isAvailable)
+					runDBTests("LevelDB", true);				
 			}
 
 			function runDBTests(storageMedium: LocalDBOptions['storageMedium'], useWorker: boolean) {

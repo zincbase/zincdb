@@ -33,7 +33,9 @@ namespace ZincDB {
 					verifyServerCertificate: this.options.verifyServerCertificate
 				});
 
-				if (this.options.useWorker === true && webWorkersAvailable()) {
+				if (this.options.useWorker && runningInNodeJS()) {
+					this.operations = new LocalDBNodeWorkerDispatcher();
+				} else if (this.options.useWorker && webWorkersAvailable()) {
 					let scriptURI = this.options.workerURI;
 
 					if (!scriptURI) {
@@ -48,7 +50,7 @@ namespace ZincDB {
 						scriptURI = scriptElement["src"];
 					}
 
-					this.operations = new LocalDBWorkerDispatcher(scriptURI!);
+					this.operations = new LocalDBWebWorkerDispatcher(scriptURI!);
 				} else {
 					this.operations = new MethodDispatcher(new LocalDBOperations());
 				}
