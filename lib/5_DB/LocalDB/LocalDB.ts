@@ -21,7 +21,7 @@ namespace ZincDB {
 					storageMedium: "InMemory",
 					useWorker: false,
 					pullAfterOpened: false,
-					workerURI: undefined,
+					webWorkerURI: undefined,
 					verifyServerCertificate: true,
 					storagePath: ""
 				}, customOptions);
@@ -36,7 +36,7 @@ namespace ZincDB {
 				if (this.options.useWorker && runningInNodeJS()) {
 					this.operations = new LocalDBNodeWorkerDispatcher();
 				} else if (this.options.useWorker && webWorkersAvailable()) {
-					let scriptURI = this.options.workerURI;
+					let scriptURI = this.options.webWorkerURI;
 
 					if (!scriptURI) {
 						if (typeof document === "undefined")

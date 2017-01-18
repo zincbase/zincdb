@@ -18,7 +18,7 @@ namespace ZincDB {
 			encryptionKey?: string;
 			useWorker: boolean;
 			pullAfterOpened: boolean;
-			workerURI?: string;
+			webWorkerURI?: string;
 			verifyServerCertificate?: boolean;
 			storagePath?: string;
 		}
