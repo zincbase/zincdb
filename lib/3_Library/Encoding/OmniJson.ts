@@ -22,12 +22,18 @@ namespace ZincDB {
 				11: Date as string containing millisecond UNIX timestamp
 				12: RegExp (not supported yet)
 			*/
+			//const prototypeIdentifier = Object.prototype.toString;
 
 			export const encode = function (input: any): string {
 				if (input === undefined)
 					return "";
 
-				return JSON.stringify(input, (key, value) => {
+				// This workaround is required for Dates to be correctly processed:
+				const oldDateToJSON = Date.prototype.toJSON;
+				Date.prototype.toJSON = <any> undefined;
+				//
+
+				const result = JSON.stringify(input, (key, value) => {
 					if (value == null)
 						return value;
 
@@ -41,10 +47,10 @@ namespace ZincDB {
 
 						const valueAsTypedArrayToBase64 = (): string =>
 							Base64.encode(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
-
-						const prototypeName = toString.call(value);
-
-						switch (prototypeName) {
+						
+						const prototypeIdentifier = Object.prototype.toString.call(value);
+						
+						switch (prototypeIdentifier) {
 							case "[object Uint8Array]":
 								return "01" + Base64.encode(value);
 							case "[object Int8Array]":
@@ -73,6 +79,12 @@ namespace ZincDB {
 						}
 					}
 				});
+
+				// Restore Date.toJSON
+				Date.prototype.toJSON = oldDateToJSON;
+				//
+
+				return result;
 			}
 
 			export const decode = function (input: string): any {
@@ -91,9 +103,15 @@ namespace ZincDB {
 
 					const decodeAsBase64ToArrayBuffer = () => {
 						const bytes = Base64.decode(str);
-						
-						// Note buffer.slice may not work in IE10:
-						return bytes.buffer.slice(bytes.byteOffset, bytes.byteLength);
+
+						// Check if the result is  a subarray of some sort
+						if (bytes.length !== bytes.buffer.byteLength) {
+							const clone = new Uint8Array(bytes.length);
+							clone.set(bytes);
+							return clone.buffer;
+						} else {
+							return bytes.buffer;
+						}
 					}
 
 					switch (encodingType) {
