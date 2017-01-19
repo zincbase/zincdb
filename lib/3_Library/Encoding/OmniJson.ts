@@ -103,7 +103,7 @@ namespace ZincDB {
 					const decodeAsBase64ToArrayBuffer = () => {
 						const bytes = Base64.decode(str);
 
-						// Check if the result is  a subarray of some sort
+						// Handle the case Base64.decode gives out a subarray of some sort
 						if (bytes.length !== bytes.buffer.byteLength) {
 							const clone = new Uint8Array(bytes.length);
 							clone.set(bytes);
