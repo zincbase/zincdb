@@ -1,7 +1,7 @@
 namespace ZincDB {
 	export namespace Encoding {
 		export namespace OmniBinary {
-			const enum EncodingType { Binary = 0, UTF8 = 1, JSON = 2, Base64 = 3 };
+			const enum EncodingType { Uint8Array = 0, UTF8 = 1, JSON = 2, OmniJson = 3 };
 			
 			const encodingIdentifiers: Uint8Array[] = [];
 			for (let i = 0; i < 256; i++)
@@ -11,9 +11,9 @@ namespace ZincDB {
 				if (typeof input === "string") {
 					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.UTF8], UTF8.encode(input)]);
 				} else if (input instanceof Uint8Array) {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.Binary], input]);
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.Uint8Array], input]);
 				} else {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.JSON], UTF8.encode(JsonX.encode(input))]);
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.OmniJson], UTF8.encode(OmniJson.encode(input))]);
 				}
 			}
 
@@ -22,14 +22,14 @@ namespace ZincDB {
 				const payload = input.subarray(1);
 
 				switch (encodingType) {
-					case EncodingType.Binary:
+					case EncodingType.Uint8Array:
 						return payload;
 					case EncodingType.UTF8:
 						return Encoding.UTF8.decode(payload);
 					case EncodingType.JSON:
 						return Encoding.JsonX.decode(UTF8.decode(payload));
-					case EncodingType.Base64:
-						return Base64.decode(UTF8.decode(payload));
+					case EncodingType.OmniJson:
+						return OmniJson.decode(UTF8.decode(payload));
 					default:
 						throw new TypeError(`Encunterened an unsupported input with type identifer ${encodingType}`);
 				}

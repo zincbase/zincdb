@@ -305,16 +305,16 @@ namespace ZincDB {
 			static serializeRowObject(entry: Entry<any>): RowObject {
 				return {
 					key: entry.key,
-					value: Encoding.OmniString.encode(entry.value),
-					metadata: Encoding.OmniString.encode(entry.metadata)
+					value: Encoding.OmniJson.encode(entry.value),
+					metadata: Encoding.OmniJson.encode(entry.metadata)
 				}
 			}
 
 			static deserializeRowObject(rowObject: RowObject): Entry<any> {
 				return {
 					key: rowObject.key,
-					value: Encoding.OmniString.decode(rowObject.value),
-					metadata: Encoding.OmniString.decode(rowObject.metadata)
+					value: Encoding.OmniJson.decode(rowObject.value),
+					metadata: Encoding.OmniJson.decode(rowObject.metadata)
 				}
 			}
 		}
