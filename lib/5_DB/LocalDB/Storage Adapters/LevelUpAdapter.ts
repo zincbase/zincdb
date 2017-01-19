@@ -173,10 +173,9 @@ namespace ZincDB {
 			async has(keys: string[], objectStoreName: string): Promise<boolean[]>;
 			async has(keyOrKeys: string | string[], objectStoreName: string): Promise<boolean | boolean[]> {
 				if (typeof keyOrKeys === "string") {
-					return (await this.get<any>(keyOrKeys, objectStoreName)) != null;
+					return (await this.getRawValue(LevelUpAdapter.encodeObjectStoreName(objectStoreName) + keyOrKeys)) !== undefined;
 				} else if (Array.isArray(keyOrKeys)) {
-					const results = await this.get<any>(keyOrKeys, objectStoreName);
-					return results.map((result) => result != null);
+					return Promise.all(keyOrKeys.map((key) => this.has(key, objectStoreName)));
 				} else
 					throw new Error("get: invalid first argument type");
 			}
@@ -395,7 +394,7 @@ namespace ZincDB {
 
 				const result = new Uint8Array(2 + metadataBytes.length + valueBytes.length);
 
-				// Add 16 bit little endian size of serialized metadata
+				// Add 16 bit little endian encoded size of serialized metadata
 				result[0] = metadataBytes.length & 255;
 				result[1] = metadataBytes.length >>> 8;
 				
