@@ -2,7 +2,7 @@ namespace ZincDB {
 	export interface DispatcherSchema { [name: string]: { Args: any[]; ReturnValue: any } };
 
 	export interface Dispatcher<Schema extends DispatcherSchema> {
-		exec<K extends keyof Schema>(name: K, args: Schema[K]['Args']): Promise<Schema[K]['ReturnValue']>;
+		exec<K extends keyof Schema>(target: string, name: K, args: Schema[K]['Args']): Promise<Schema[K]['ReturnValue']>;
 	}
 
 	export class MethodDispatcher implements Dispatcher<any> {
@@ -11,7 +11,7 @@ namespace ZincDB {
 				throw new TypeError("Handler object is not an object.");
 		}
 
-		async exec(operation: string, args: any[]): Promise<any> {
+		async exec(target: string, operation: string, args: any[]): Promise<any> {
 			const handler: Function = this.handlerObject[operation];
 
 			if (typeof handler !== "function")
@@ -29,18 +29,20 @@ namespace ZincDB {
 	export class SerializingMethodDispatcher extends MethodDispatcher {
 		private promiseQueue = new PromiseQueue();
 
-		async exec(operation: string, args: any[]): Promise<any> {
-			return this.promiseQueue.add(() => super.exec(operation, args));
+		async exec(target: string, operation: string, args: any[]): Promise<any> {
+			return this.promiseQueue.add(() => super.exec(target, operation, args));
 		}
 	}
 
 	export type TokenizedRequest = {
+		target: string;
 		operation: string;
 		args: any[];
 		token: string;
 	}
 
 	export type TokenizedResponse = {
+		target: string;
 		operation: string;
 		result?: any;
 		error?: Error;
@@ -62,9 +64,10 @@ namespace ZincDB {
 			this.responseHandlers = new StringMap<TokenizedResponseHandler>();
 		}
 
-		exec(operation: string, args: any[]): Promise<any> {
+		exec(target: string, operation: string, args: any[]): Promise<any> {
 			return new Promise((resolve, reject) => {
 				const requestMessage: TokenizedRequest = {
+					target,
 					operation,
 					args,
 					token: this.baseToken + "_" + Crypto.Random.getAlphanumericString(16)
@@ -92,7 +95,7 @@ namespace ZincDB {
 
 		abortAllPendingOperations(e: any) {
 			this.responseHandlers.forEach((callback, token) => {
-				callback({ token, operation: "", error: e });
+				callback({ target: "", token, operation: "", error: e });
 			});
 
 			this.responseHandlers.clear();
