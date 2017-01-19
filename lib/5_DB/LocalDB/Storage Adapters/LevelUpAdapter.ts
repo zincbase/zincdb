@@ -145,13 +145,7 @@ namespace ZincDB {
 						return [];
 
 					const encodedObjectStoreName = LevelUpAdapter.encodeObjectStoreName(objectStoreName)
-					const promises: Promise<Uint8Array>[] = [];
-
-					for (const key of keyOrKeys) {
-						promises.push(this.getRawValue(encodedObjectStoreName + key));
-					}
-
-					const encodedEntries = await Promise.all(promises);
+					const encodedEntries = await Promise.all(keyOrKeys.map((key) => this.getRawValue(encodedObjectStoreName + key)));
 					const results: Entry<any>[] = [];
 
 					for (let i = 0; i < encodedEntries.length; i++) {
