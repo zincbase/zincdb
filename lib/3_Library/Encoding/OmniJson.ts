@@ -22,8 +22,6 @@ namespace ZincDB {
 				11: Date as string containing millisecond UNIX timestamp
 				12: RegExp (not supported yet)
 			*/
-			//const prototypeIdentifier = Object.prototype.toString;
-
 			export const encode = function (input: any): string {
 				if (input === undefined)
 					return "";
@@ -41,42 +39,41 @@ namespace ZincDB {
 
 					if (typeofValue === "string")
 						return "00" + value;
-					else {
-						if (typeofValue !== "object")
+
+					if (typeofValue !== "object")
+						return value;
+
+					const valueAsTypedArrayToBase64 = (): string =>
+						Base64.encode(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
+					
+					const prototypeIdentifier = Object.prototype.toString.call(value);
+					
+					switch (prototypeIdentifier) {
+						case "[object Uint8Array]":
+							return "01" + Base64.encode(value);
+						case "[object Int8Array]":
+							return "02" + valueAsTypedArrayToBase64();
+						case "[object Uint16Array]":
+							return "03" + valueAsTypedArrayToBase64();
+						case "[object Int16Array]":
+							return "04" + valueAsTypedArrayToBase64();
+						case "[object Uint32Array]":
+							return "05" + valueAsTypedArrayToBase64();
+						case "[object Int32Array]":
+							return "06" + valueAsTypedArrayToBase64();
+						case "[object Float32Array]":
+							return "07" + valueAsTypedArrayToBase64();
+						case "[object Float64Array]":
+							return "08" + valueAsTypedArrayToBase64();
+						case "[object Uint8ClampedArray]":
+							return "09" + valueAsTypedArrayToBase64();
+						case "[object ArrayBuffer]":
+							return "10" + Base64.encode(new Uint8Array(value));
+
+						case "[object Date]":
+							return "11" + JSON.stringify(value.valueOf());
+						default:
 							return value;
-
-						const valueAsTypedArrayToBase64 = (): string =>
-							Base64.encode(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
-						
-						const prototypeIdentifier = Object.prototype.toString.call(value);
-						
-						switch (prototypeIdentifier) {
-							case "[object Uint8Array]":
-								return "01" + Base64.encode(value);
-							case "[object Int8Array]":
-								return "02" + valueAsTypedArrayToBase64();
-							case "[object Uint16Array]":
-								return "03" + valueAsTypedArrayToBase64();
-							case "[object Int16Array]":
-								return "04" + valueAsTypedArrayToBase64();
-							case "[object Uint32Array]":
-								return "05" + valueAsTypedArrayToBase64();
-							case "[object Int32Array]":
-								return "06" + valueAsTypedArrayToBase64();
-							case "[object Float32Array]":
-								return "07" + valueAsTypedArrayToBase64();
-							case "[object Float64Array]":
-								return "08" + valueAsTypedArrayToBase64();
-							case "[object Uint8ClampedArray]":
-								return "09" + valueAsTypedArrayToBase64();
-							case "[object ArrayBuffer]":
-								return "10" + Base64.encode(new Uint8Array(value));
-
-							case "[object Date]":
-								return "11" + JSON.stringify(value.valueOf());
-							default:
-								return value;
-						}
 					}
 				});
 

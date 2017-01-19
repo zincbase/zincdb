@@ -21,7 +21,8 @@ namespace ZincDB {
 					d: { bbbb: "sssss", dddd: new Int8Array([255, -254, 99, 104]) },
 					v: { a: { t: new Float32Array([-234234.23423, 1000000.543]) } },
 					"v 3 235": { a: { t: new Float64Array([-23423453454334.2333, 23423453454334.543]) } },
-					"asd 35": { a: { t: [new Uint16Array([53433, 4234])] }, b: new Date() },					
+					"asd 35": { a: { t: [new Uint16Array([53433, 4234])] }, b: new Date() },
+					"sss": { x: [new Uint32Array([5555, 6666, 7777]).buffer] }
 				};
 
 				const encodedTest = Encoding.OmniJson.encode(test);
