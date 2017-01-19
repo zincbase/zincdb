@@ -14,9 +14,9 @@ namespace ZincDB {
 				if (input instanceof Uint8Array) {
 					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.Binary], input]);
 				} else if (typeof input === "string") {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.UTF8], Encoding.UTF8.encode(input)]);
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.UTF8], UTF8.encode(input)]);
 				} else {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.JSON], Encoding.UTF8.encode(ZincDB.Tools.stringifyJSONOrUndefined(input))]);
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.JSON], UTF8.encode(JsonX.encode(input))]);
 				}
 			}
 
@@ -29,15 +29,15 @@ namespace ZincDB {
 				}
 
 				if (hasEncoding(EncodingIndex.JSON)) {
-					return ZincDB.Tools.parseJSONOrUndefined(Encoding.UTF8.decode(payload));
+					return JsonX.decode(UTF8.decode(payload));
 				} else if (hasEncoding(EncodingIndex.UTF8)) {
-					return Encoding.UTF8.decode(payload);
+					return UTF8.decode(payload);
 				} else if (hasEncoding(EncodingIndex.Binary)) {
 					return payload;
 				} else if (hasEncoding(EncodingIndex.Base64)) {
-					return Encoding.Base64.decode(Encoding.UTF8.decode(payload));
+					return Base64.decode(UTF8.decode(payload));
 				} else
-					throw new TypeError(`Encunterened an unsupported input with type identifer ${Encoding.UTF8.decode(input.subarray(0, 4))}`);
+					throw new TypeError(`Encunterened an unsupported input with type identifer ${UTF8.decode(input.subarray(0, 4))}`);
 			}
 		}
 	}
