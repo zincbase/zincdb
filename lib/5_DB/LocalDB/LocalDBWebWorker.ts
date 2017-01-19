@@ -21,9 +21,6 @@ namespace ZincDB {
 					if (message.error)
 						message.error = new Error(message.error.message);
 
-					if (message.operation === "close" || message.operation === "destroyLocalData")
-						this.worker.terminate();
-
 					this.dispatcher.announceResponse(message);
 				});
 
@@ -32,8 +29,8 @@ namespace ZincDB {
 				});
 			}
 
-			async exec(operation: string, args: any[]) {
-				return this.dispatcher.exec(operation, args);
+			async exec(target: string, operation: string, args: any[]) {
+				return this.dispatcher.exec(target, operation, args);
 			}
 		}
 
@@ -41,7 +38,7 @@ namespace ZincDB {
 			if (!runningInWebWorker())
 				return;
 
-			const operations = new MethodDispatcher(new LocalDBOperations());
+			const targets: { [databaseName: string]: MethodDispatcher } = {};				
 
 			self.addEventListener("message", async (event: MessageEvent) => {
 				const message: TokenizedRequest = event.data;
@@ -49,15 +46,17 @@ namespace ZincDB {
 				if (!Tools.stringStartsWith(message.token, "TokenizedDispatcherMessage"))
 					return;
 
-				//log(`Main thread request: ${JSON.stringify(message)}`);					
+				//log(`Main thread request: ${JSON.stringify(message)}`);
+
+				if (targets[message.target] === undefined)
+					targets[message.target] = new MethodDispatcher(new LocalDBOperations());
+
+				const operations = targets[message.target];
 
 				try {
-					const returnValue = await operations.exec(<any>message.operation, message.args)
-
-					self.postMessage({ operation: message.operation, result: returnValue, token: message.token }, <any>[]);
-
-					if (message.operation === "close" || message.operation === "destroyLocalData")
-						self.close();
+					const returnValue = await operations.exec(message.target, <any>message.operation, message.args);
+					const responseMessage: TokenizedResponse = { target: message.target, operation: message.operation, result: returnValue, token: message.token }
+					self.postMessage(responseMessage , <any>[]);
 				}
 				catch (err) {
 					let errObject;
@@ -68,10 +67,8 @@ namespace ZincDB {
 						errObject = { name: "error", message: JSON.stringify(err) }
 					}
 
-					self.postMessage({ operation: message.operation, error: errObject, token: message.token }, <any>[]);
-
-					if (message.operation === "close" || message.operation === "destroyLocalData")
-						self.close();
+					const responseMessage: TokenizedResponse = { target: message.target, operation: message.operation, error: errObject, token: message.token };
+					self.postMessage(responseMessage, <any>[]);
 				}
 			});
 

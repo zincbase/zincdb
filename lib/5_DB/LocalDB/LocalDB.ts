@@ -38,30 +38,37 @@ namespace ZincDB {
 				});
 
 				if (this.options.useWorker && runningInNodeJS()) {
-					this.operations = new LocalDBNodeWorkerDispatcher();
+					if (!LocalDB.globalNodeWorker)
+						LocalDB.globalNodeWorker = new LocalDBNodeWorkerDispatcher();
+
+					this.operations = LocalDB.globalNodeWorker;
 				} else if (this.options.useWorker && webWorkersAvailable()) {
-					let scriptURI = this.options.webWorkerURI;
+					if (!LocalDB.globalWebWorker) {
+						let scriptURI = this.options.webWorkerURI;
 
-					if (!scriptURI) {
-						if (typeof document === "undefined")
-							throw new Error("Couldn't start a worker as a document object was not found.");
+						if (!scriptURI) {
+							if (typeof document === "undefined")
+								throw new Error("Couldn't start a worker as a document object was not found.");
 
-						const scriptElement = document.getElementById("zincdb");
+							const scriptElement = document.getElementById("zincdb");
 
-						if (!scriptElement || !scriptElement["src"])
-							throw new Error("Couldn't start a worker as a document script element with the id 'zincdb' wasn't found.");
+							if (!scriptElement || !scriptElement["src"])
+								throw new Error("Couldn't start a worker as a document script element with the id 'zincdb' wasn't found.");
 
-						scriptURI = scriptElement["src"];
+							scriptURI = scriptElement["src"];
+						}
+
+						LocalDB.globalWebWorker = new LocalDBWebWorkerDispatcher(scriptURI!);
 					}
 
-					this.operations = new LocalDBWebWorkerDispatcher(scriptURI!);
+					this.operations = LocalDB.globalWebWorker;
 				} else {
 					this.operations = new MethodDispatcher(new LocalDBOperations());
 				}
 			}
 
 			async open() {
-				await this.operations.exec("open", [this.name, this.options]);
+				await this.exec("open", [this.name, this.options]);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,22 +106,22 @@ namespace ZincDB {
 			}
 
 			async commitLocalTransaction(transaction: Transaction): Promise<void> {
-				const diff = await this.operations.exec("commitLocalTransaction", [transaction]);
+				const diff = await this.exec("commitLocalTransaction", [transaction]);
 				await this.announceChanges("local", diff);
 			}
 
 			async commitLocalEntries(newEntries: EntryArray<any>) {
-				const diff = await this.operations.exec("commitLocalEntries", [newEntries]);
+				const diff = await this.exec("commitLocalEntries", [newEntries]);
 				await this.announceChanges("local", diff);
 			}
 
 			protected async commitSerializedRemoteEntries(serializedEntries: Uint8Array) {
-				const diff = await this.operations.exec("commitSerializedRemoteEntries", [serializedEntries, this.options.encryptionKey]);
+				const diff = await this.exec("commitSerializedRemoteEntries", [serializedEntries, this.options.encryptionKey]);
 				await this.announceChanges("remote", diff);
 			}
 
 			protected async setAsRemotelyCommited(keys: string[], commitTimestamp: number) {
-				return this.operations.exec("setAsRemotelyCommited", [keys, commitTimestamp]);
+				return this.exec("setAsRemotelyCommited", [keys, commitTimestamp]);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,19 +149,19 @@ namespace ZincDB {
 			}
 
 			protected async getEntity(path: EntityPath): Promise<any> {
-				return this.operations.exec("getEntity", [path]);
+				return this.exec("getEntity", [path]);
 			}
 
 			async getAllEntries(): Promise<EntryArray<any>> {
-				return this.operations.exec("getAllEntries", []);
+				return this.exec("getAllEntries", []);
 			}
 
 			async getAllKeys(): Promise<string[]> {
-				return this.operations.exec("getAllKeys", []);
+				return this.exec("getAllKeys", []);
 			}
 
 			async getAll(): Promise<PathEntries> {
-				return this.operations.exec("getAll", []);
+				return this.exec("getAll", []);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,7 +418,7 @@ namespace ZincDB {
 			}
 
 			async getLatestServerMetadata() {
-				return this.operations.exec("getLatestServerMetadata", []);
+				return this.exec("getLatestServerMetadata", []);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -452,7 +459,7 @@ namespace ZincDB {
 			}
 
 			async discardLocalEntryKeys(keys: string[]): Promise<void> {
-				const diff = await this.operations.exec("discardLocalEntryKeys", [keys]);
+				const diff = await this.exec("discardLocalEntryKeys", [keys]);
 				await this.announceChanges("local", diff);
 			}
 
@@ -528,19 +535,19 @@ namespace ZincDB {
 			}
 
 			protected async getConflictingEntries(): Promise<ConflictInfo[]> {
-				return this.operations.exec("getConflictingEntries", []);
+				return this.exec("getConflictingEntries", []);
 			}
 
 			protected async getSerializedLocalEntries(basePathString: string = "") {
-				return this.operations.exec("getSerializedLocalEntries", [basePathString, this.options.encryptionKey]);
+				return this.exec("getSerializedLocalEntries", [basePathString, this.options.encryptionKey]);
 			}
 
 			protected async getLocalEntries(basePathString: string = "") {
-				return this.operations.exec("getLocalEntries", [basePathString]);
+				return this.exec("getLocalEntries", [basePathString]);
 			}
 
 			protected async getLocalEntryKeys(basePathString: string = "") {
-				return this.operations.exec("getLocalEntryKeys", [basePathString]);
+				return this.exec("getLocalEntryKeys", [basePathString]);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -551,7 +558,7 @@ namespace ZincDB {
 					throw new Error("Database has been closed.");
 
 				this.isClosed = true;
-				return this.operations.exec("destroyLocalData", []);
+				return this.exec("destroyLocalData", []);
 			}
 
 			async destroyRemoteData() {
@@ -563,12 +570,21 @@ namespace ZincDB {
 
 			async close() {
 				this.isClosed = true;
-				return this.operations.exec("close", []);
+				return this.exec("close", []);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Utilities
 			////////////////////////////////////////////////////////////////////////////////////////////////
+			async exec(operationName: keyof LocalDBOperationsSchema, args: any[]): Promise<any> {
+				return this.operations.exec(this.name, operationName, args);
+			}
+
+			////////////////////////////////////////////////////////////////////////////////////////////////
+			// Static
+			////////////////////////////////////////////////////////////////////////////////////////////////
+			static globalNodeWorker: LocalDBNodeWorkerDispatcher;
+			static globalWebWorker: LocalDBWebWorkerDispatcher;
 		}
 	}
 
