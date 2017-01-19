@@ -393,17 +393,25 @@ namespace ZincDB {
 				const metadataBytes = Encoding.OmniBinary.encode(entry.metadata);
 				const valueBytes = Encoding.OmniBinary.encode(entry.value);
 
-				return ArrayTools.concatUint8Arrays([
-					new Uint8Array([metadataBytes.length]),
-					metadataBytes,
-					valueBytes
-				]);
+				const result = new Uint8Array(2 + metadataBytes.length + valueBytes.length);
+
+				// Add 16 bit little endian size of serialized metadata
+				result[0] = metadataBytes.length & 255;
+				result[1] = metadataBytes.length >>> 8;
+				
+				// Add serialized metadata
+				result.set(metadataBytes, 2);
+				
+				// Add serialized value
+				result.set(valueBytes, 2 + metadataBytes.length);
+
+				return result;
 			}
 
 			private static deserializeValueAndMetadata(serializedValueAndMetadata: Uint8Array): { value: any, metadata: EntryMetadata } {
-				const metadataSize = serializedValueAndMetadata[0];
-				const metadataBytes = serializedValueAndMetadata.subarray(1, 1 + metadataSize);
-				const valueBytes = serializedValueAndMetadata.subarray(1 + metadataSize)
+				const metadataSize = serializedValueAndMetadata[0] | (serializedValueAndMetadata[1] << 8);
+				const metadataBytes = serializedValueAndMetadata.subarray(2, 2 + metadataSize);
+				const valueBytes = serializedValueAndMetadata.subarray(2 + metadataSize)
 				
 				const metadata = Encoding.OmniBinary.decode(metadataBytes);
 				const value = Encoding.OmniBinary.decode(valueBytes);
