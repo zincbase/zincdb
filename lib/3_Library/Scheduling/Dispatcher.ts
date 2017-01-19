@@ -6,13 +6,13 @@ namespace ZincDB {
 	}
 
 	export class MethodDispatcher implements Dispatcher<any> {
-		constructor(private handlerObject: any) {
+		constructor(private handlerObject: object) {
 			if (typeof handlerObject !== "object")
 				throw new TypeError("Handler object is not an object.");
 		}
 
 		async exec(operation: string, args: any[]): Promise<any> {
-			const handler = this.handlerObject[operation];
+			const handler: Function = this.handlerObject[operation];
 
 			if (typeof handler !== "function")
 				throw new Error(`Invalid or missing handler for '${operation}.'`);
@@ -73,11 +73,10 @@ namespace ZincDB {
 				this.responseHandlers.set(requestMessage.token, (response) => {
 					this.responseHandlers.delete(requestMessage.token);
 
-					if (response.error)
-						reject(response.error);
-					else {
+					if (response.error == null)
 						resolve(response.result);
-					}
+					else
+						reject(response.error);
 				});
 
 				this.requestHandler(requestMessage);
