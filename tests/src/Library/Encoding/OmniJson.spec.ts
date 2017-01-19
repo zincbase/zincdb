@@ -13,7 +13,7 @@ namespace ZincDB {
 				expect(Encoding.OmniJson.decode(encodedTest)).toEqual(test);
 			});
 
-			it("Encodes and decodes a JSON object containing various kinds of typed arrays", () => {
+			it("Encodes and decodes a JSON object containing various kinds of special objects", () => {
 				const test = {
 					"Hi there": 342,
 					zzz: new Int16Array([]),
@@ -22,7 +22,8 @@ namespace ZincDB {
 					v: { a: { t: new Float32Array([-234234.23423, 1000000.543]) } },
 					"v 3 235": { a: { t: new Float64Array([-23423453454334.2333, 23423453454334.543]) } },
 					"asd 35": { a: { t: [new Uint16Array([53433, 4234])] }, b: new Date() },
-					"sss": { x: [new Uint32Array([5555, 6666, 7777]).buffer] }
+					"sss": { x: [new Uint32Array([5555, 6666, 7777]).buffer] },
+					bbb: [/abcd/, /^([01][0-9][0-9]|2[0-4][0-9]|25[0-5])$/gi, "acdc"]
 				};
 
 				const encodedTest = Encoding.OmniJson.encode(test);

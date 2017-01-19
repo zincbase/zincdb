@@ -20,7 +20,7 @@ namespace ZincDB {
 				10: ArrayBuffer as Base64
 
 				11: Date as string containing millisecond UNIX timestamp
-				12: RegExp (not supported yet)
+				12: RegExp
 			*/
 			export const encode = function (input: any): string {
 				if (input === undefined)
@@ -28,7 +28,7 @@ namespace ZincDB {
 
 				// This workaround is required for Dates to be correctly processed:
 				const oldDateToJSON = Date.prototype.toJSON;
-				Date.prototype.toJSON = <any> undefined;
+				Date.prototype.toJSON = <any>undefined;
 				//
 
 				const result = JSON.stringify(input, (key, value) => {
@@ -45,9 +45,9 @@ namespace ZincDB {
 
 					const valueAsTypedArrayToBase64 = (): string =>
 						Base64.encode(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
-					
+
 					const prototypeIdentifier = Object.prototype.toString.call(value);
-					
+
 					switch (prototypeIdentifier) {
 						case "[object Uint8Array]":
 							return "01" + Base64.encode(value);
@@ -72,6 +72,8 @@ namespace ZincDB {
 
 						case "[object Date]":
 							return "11" + JSON.stringify(value.valueOf());
+						case "[object RegExp]":
+							return "12" + RegExpString.encode(value);
 						default:
 							return value;
 					}
@@ -95,8 +97,8 @@ namespace ZincDB {
 					if (typeof value !== "string")
 						return value;
 
-					const encodingType = value.substr(0, 2);
-					const str = value.substr(2);
+					const encodingType = value.substring(0, 2);
+					const str = value.substring(2);
 
 					const decodeAsBase64ToArrayBuffer = () => {
 						const bytes = Base64.decode(str);
@@ -141,6 +143,8 @@ namespace ZincDB {
 						// Misc objects:
 						case "11": // Date
 							return new Date(JSON.parse(str));
+						case "12": // RegExp
+							return RegExpString.decode(str);
 
 						default:
 							throw new TypeError(`An unsupported encoding identifier '${encodingType}' was encountered in the string '${input}'.`);
