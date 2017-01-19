@@ -49,7 +49,7 @@ namespace ZincDB {
 				//log(`Main thread request: ${JSON.stringify(message)}`);
 
 				if (targets[message.target] === undefined)
-					targets[message.target] = new MethodDispatcher(new LocalDBOperations());
+					targets[message.target] = new SerializingMethodDispatcher(new LocalDBOperations());
 
 				const operations = targets[message.target];
 

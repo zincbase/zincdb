@@ -63,7 +63,10 @@ namespace ZincDB {
 
 					this.operations = LocalDB.globalWebWorker;
 				} else {
-					this.operations = new MethodDispatcher(new LocalDBOperations());
+					if (LocalDB.globalConnectionCache[this.name] === undefined)
+						LocalDB.globalConnectionCache[this.name] = new SerializingMethodDispatcher(new LocalDBOperations());
+
+					this.operations = LocalDB.globalConnectionCache[this.name];
 				}
 			}
 
@@ -583,6 +586,7 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Static
 			////////////////////////////////////////////////////////////////////////////////////////////////
+			static globalConnectionCache: { [databaseName: string]: Dispatcher<LocalDBOperationsSchema> } = {};
 			static globalNodeWorker: LocalDBNodeWorkerDispatcher;
 			static globalWebWorker: LocalDBWebWorkerDispatcher;
 		}

@@ -12,6 +12,9 @@ namespace ZincDB {
 			}
 
 			async open(): Promise<void> {
+				if (this.isOpen)
+					return;
+					
 				try {
 					this.db = openDatabase(this.dbName, "", this.dbName, 4 * 1024 * 1024);
 				}

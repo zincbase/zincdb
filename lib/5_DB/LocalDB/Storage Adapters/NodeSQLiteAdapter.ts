@@ -15,6 +15,9 @@ namespace ZincDB {
 			}
 
 			async open(): Promise<void> {
+				if (this.isOpen)
+					return;
+					
 				const operationPromise = new OpenPromise<void>();
 				const SQLite3 = require("sqlite3").verbose();
 

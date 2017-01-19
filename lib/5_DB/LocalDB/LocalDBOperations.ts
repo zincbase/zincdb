@@ -7,9 +7,18 @@ namespace ZincDB {
 
 		export class LocalDBOperations {
 			private db: StorageAdapter;
+			private currentOpenOptions?: LocalDBOptions;
+
 			protected readonly nodeLookup: NodeLookup = new NodeLookup();
 
 			async open(name: string, options: LocalDBOptions) {
+				if (this.db !== undefined) {
+					if (ObjectTools.compareJSONObjects(options, this.currentOpenOptions) === true)
+						return;
+					else
+						throw new Error(`Database '${name}' is already open with conflicting initialization options`);
+				}
+
 				const localDBIdentifier = `ZincDB_${name}`;
 
 				switch (options.storageMedium) {
@@ -62,9 +71,16 @@ namespace ZincDB {
 						throw new Error("Invalid storage medium specified.")
 				}
 
-				await this.db.open();
-				await this.db.createObjectStoresIfNeeded(ObjectStoreNames);
-				this.nodeLookup.addPathStrings(await this.getAllKeys());
+				try {
+					await this.db.open();
+					await this.db.createObjectStoresIfNeeded(ObjectStoreNames);
+					this.nodeLookup.addPathStrings(await this.getAllKeys());
+				} catch (err) {
+					this.close();
+					throw err;
+				}
+
+ 				this.currentOpenOptions = options;
 			}
 
 			async getEntity(path: EntityPath): Promise<any> {
@@ -735,6 +751,7 @@ namespace ZincDB {
 				await this.db.close();
 				this.db = <any>undefined;
 				this.nodeLookup.clear();
+				this.currentOpenOptions = undefined;
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////
