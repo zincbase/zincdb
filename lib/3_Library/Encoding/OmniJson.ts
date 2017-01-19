@@ -15,8 +15,8 @@ namespace ZincDB {
 			}
 
 			export const decode = function (input: string): any {
-				if (input == null)
-					return input;
+				if (typeof input !== "string")
+					throw new TypeError("Given input is not a string");
 
 				if (input === "")
 					return undefined;

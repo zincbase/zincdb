@@ -1,30 +1,46 @@
 namespace ZincDB {
 	export namespace Encoding {
 		export namespace OmniString {
+			/*
+			00: Text
+			01: JSONX
+			02: OmniJson
+			03: Date
+			04: Uint8Array as Base64
+			*/
+
 			export const encode = function (input: any): string {
-				if (input instanceof Uint8Array)
-					return "BB64" + Base64.encode(input)
-				else if (typeof input === "string")
-					return "TEXT" + input;
+				if (typeof input === "string")
+					return "00" + input;
+				else if (input instanceof Date)
+					return "03" + JSON.stringify(input.valueOf());
+				else if (input instanceof Uint8Array)
+					return "04" + Base64.encode(input);
 				else
-					return "JSON" + JsonX.encode(input);
+					return "02" + OmniJson.encode(input);
 			}
 
 			export const decode = function (input: string): any {
 				if (input == null)
 					return input;
 
-				const valuePrefix = input.substr(0, 4);
-				const valuePayload = input.substr(4);
+				const encodingType = input.substr(0, 2);
+				const str = input.substr(2);
 
-				if (valuePrefix === "TEXT")
-					return valuePayload;
-				else if (valuePrefix === "JSON")
-					return JsonX.decode(valuePayload)
-				else if (valuePrefix === "BB64")
-					return Base64.decode(valuePayload)
-				else
-					throw new Error(`Encountered a value with an unsupported encoding '${valuePrefix}`);
+				switch (encodingType) {
+					case "00": // Text
+						return str;
+					case "01": // JSONX
+						return JsonX.decode(str);
+					case "02": // OmniJson
+						return OmniJson.decode(str);
+					case "03": // Date
+						return new Date(JSON.parse(str));
+					case "04": // Uint8Array as Base64
+						return Base64.decode(str);
+					default:
+						throw new Error(`Encountered a value with an unsupported encoding '${encodingType}`);
+				}
 			}
 		}
 	}
