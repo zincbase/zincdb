@@ -1,6 +1,6 @@
 {
   "name": "zincdb",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "A database and synchronization library for Javascript applications.",
   "keywords": [
     "database",
@@ -31,7 +31,7 @@
   "devDependencies": {
     "@types/react": "^15.0.0",
     "@types/react-dom": "^0.14.20",
-    "expectations": "^0.6.0",
+    "expectations": "^0.7.0",
     "font-awesome": "^4.7.0",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "^1.0.0",
