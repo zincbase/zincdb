@@ -1,43 +1,38 @@
 namespace ZincDB {
 	export namespace Encoding {
 		export namespace OmniBinary {
-			const enum EncodingIndex { Binary = 0, UTF8 = 1, JSON = 2, Base64 = 3 };
-
-			const encodingIdentifiers = [
-				new Uint8Array([66, 82, 65, 87]), // "BRAW"
-				new Uint8Array([85, 84, 70, 56]), // "UTF8"
-				new Uint8Array([74, 83, 79, 78]), // "JSON"
-				new Uint8Array([66, 66, 54, 52]), // "BB64"
-			];
+			const enum EncodingType { Binary = 0, UTF8 = 1, JSON = 2, Base64 = 3 };
+			
+			const encodingIdentifiers: Uint8Array[] = [];
+			for (let i = 0; i < 256; i++)
+				encodingIdentifiers.push(new Uint8Array([i]));
 
 			export const encode = function (input: any): Uint8Array {
-				if (input instanceof Uint8Array) {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.Binary], input]);
-				} else if (typeof input === "string") {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.UTF8], UTF8.encode(input)]);
+				if (typeof input === "string") {
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.UTF8], UTF8.encode(input)]);
+				} else if (input instanceof Uint8Array) {
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.Binary], input]);
 				} else {
-					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingIndex.JSON], UTF8.encode(JsonX.encode(input))]);
+					return ArrayTools.concatUint8Arrays([encodingIdentifiers[EncodingType.JSON], UTF8.encode(JsonX.encode(input))]);
 				}
 			}
 
 			export const decode = function (input: Uint8Array): any {
-				const payload = input.subarray(4);
+				const encodingType: EncodingType = input[0];
+				const payload = input.subarray(1);
 
-				const hasEncoding = (index: EncodingIndex) => {
-					const identifierBytes = encodingIdentifiers[index];
-					return input[0] === identifierBytes[0] && input[1] === identifierBytes[1] && input[2] === identifierBytes[2] && input[3] === identifierBytes[3];
+				switch (encodingType) {
+					case EncodingType.Binary:
+						return payload;
+					case EncodingType.UTF8:
+						return Encoding.UTF8.decode(payload);
+					case EncodingType.JSON:
+						return Encoding.JsonX.decode(UTF8.decode(payload));
+					case EncodingType.Base64:
+						return Base64.decode(UTF8.decode(payload));
+					default:
+						throw new TypeError(`Encunterened an unsupported input with type identifer ${encodingType}`);
 				}
-
-				if (hasEncoding(EncodingIndex.JSON)) {
-					return JsonX.decode(UTF8.decode(payload));
-				} else if (hasEncoding(EncodingIndex.UTF8)) {
-					return UTF8.decode(payload);
-				} else if (hasEncoding(EncodingIndex.Binary)) {
-					return payload;
-				} else if (hasEncoding(EncodingIndex.Base64)) {
-					return Base64.decode(UTF8.decode(payload));
-				} else
-					throw new TypeError(`Encunterened an unsupported input with type identifer ${UTF8.decode(input.subarray(0, 4))}`);
 			}
 		}
 	}
