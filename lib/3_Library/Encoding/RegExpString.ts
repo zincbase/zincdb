@@ -13,19 +13,22 @@ namespace ZincDB {
 				if (regexp["unicode"]) flags += 'u';
 				if (regexp["sticky"]) flags += 'y';
 
-				return flags + ":" + regexp.source;
+				return "/" + regexp.source + "/" + flags;
 			}
 
 			export const decode = function (input: string): any {
 				if (typeof input !== "string")
 					throw new TypeError("The given input is not a string");
 				
-				const separatorIndex = input.indexOf(":");
+				if (input[0] !== "/")
+					throw new Error(`The given input '${input}' is not a valid RegExpString as it doesn't start with a '/'`);
 
-				if (separatorIndex === -1)
-					throw new Error(`The given input '${input}' is not a valid RegExpString as it doesn't contain the separator ':'`);
+				const finalSeparatorIndex = input.lastIndexOf("/");
+
+				if (finalSeparatorIndex === 0)
+					throw new Error(`The given input '${input}' is not a valid RegExpString as it doesn't contain a closing separator '/'`);
 				
-				return new RegExp(input.substring(separatorIndex + 1), input.substring(0, separatorIndex));
+				return new RegExp(input.substring(1, finalSeparatorIndex), input.substring(finalSeparatorIndex + 1));
 			}
 		}
 	}
