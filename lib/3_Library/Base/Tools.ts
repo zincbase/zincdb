@@ -109,20 +109,6 @@ namespace ZincDB {
 			return result;
 		}
 
-		export const stringifyJSONOrUndefined = function(jsonOrUndefined: any): string {
-			if (jsonOrUndefined === undefined)
-				return "";
-			else
-				return JSON.stringify(jsonOrUndefined);
-		}
-
-		export function parseJSONOrUndefined(json: string): any {
-			if (json === "")
-				return undefined;
-			else
-				return JSON.parse(json);
-		}
-
 		export const stringStartsWith = function(str: string, prefix: string) {
 			if (typeof str !== "string" || typeof prefix !== "string")
 				return false;

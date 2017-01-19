@@ -33,7 +33,7 @@ namespace ZincDB {
 					valueEncoding = DataEncoding.Binary;
 				}
 				else {
-					valueBytes = Encoding.UTF8.encode(Tools.stringifyJSONOrUndefined(entry.value));
+					valueBytes = Encoding.UTF8.encode(Encoding.JsonX.encode(entry.value));
 					valueEncoding = DataEncoding.Json;
 				}
 

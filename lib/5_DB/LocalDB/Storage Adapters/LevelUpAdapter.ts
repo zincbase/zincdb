@@ -390,19 +390,23 @@ namespace ZincDB {
 			}
 
 			private static serializeValueAndMetadata(entry: Entry<any>): Uint8Array {
+				const metadataBytes = Encoding.OmniBinary.encode(entry.metadata);
+				const valueBytes = Encoding.OmniBinary.encode(entry.value);
+
 				return ArrayTools.concatUint8Arrays([
-					Encoding.UTF8.encode(Tools.stringifyJSONOrUndefined(entry.metadata) + "\t"),
-					Encoding.OmniBinary.encode(entry.value)
+					new Uint8Array([metadataBytes.length]),
+					metadataBytes,
+					valueBytes
 				]);
 			}
 
 			private static deserializeValueAndMetadata(serializedValueAndMetadata: Uint8Array): { value: any, metadata: EntryMetadata } {
-				const firstTabCharacterLocation = serializedValueAndMetadata.indexOf(9);
-				if (firstTabCharacterLocation === -1)
-					throw new Error("Found a serialized value with no tab separator");
-
-				const metadata = Tools.parseJSONOrUndefined(Encoding.UTF8.decode(serializedValueAndMetadata.subarray(0, firstTabCharacterLocation)))
-				const value = Encoding.OmniBinary.decode(serializedValueAndMetadata.subarray(firstTabCharacterLocation + 1));
+				const metadataSize = serializedValueAndMetadata[0];
+				const metadataBytes = serializedValueAndMetadata.subarray(1, 1 + metadataSize);
+				const valueBytes = serializedValueAndMetadata.subarray(1 + metadataSize)
+				
+				const metadata = Encoding.OmniBinary.decode(metadataBytes);
+				const value = Encoding.OmniBinary.decode(valueBytes);
 
 				return { metadata, value }
 			}

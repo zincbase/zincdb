@@ -1,7 +1,7 @@
 namespace ZincDB {
 	export namespace DB {
 		type SQLStatement = [string, any[]];
-		type SQLiteRowObject = { key: string, value: Uint8Array, metadata: string };
+		type SQLiteRowObject = { key: string, value: Uint8Array, metadata: Uint8Array };
 
 		export class NodeSQLiteAdapter implements StorageAdapter {
 			db: NodeSQLiteDatabase;
@@ -46,7 +46,7 @@ namespace ZincDB {
 				}
 
 				const statements: SQLStatement[] = objectStoreNames.map<SQLStatement>((objectStoreName) =>
-					[`CREATE TABLE IF NOT EXISTS "${objectStoreName}" (key TEXT PRIMARY KEY ON CONFLICT REPLACE, value BLOB, metadata TEXT)`, []]
+					[`CREATE TABLE IF NOT EXISTS "${objectStoreName}" (key TEXT PRIMARY KEY ON CONFLICT REPLACE, value BLOB, metadata BLOB)`, []]
 				);
 
 				return this.runSQLTransaction(statements);
@@ -309,7 +309,7 @@ namespace ZincDB {
 				return {
 					key: entry.key,
 					value: Encoding.OmniBinary.encode(entry.value),
-					metadata: Tools.stringifyJSONOrUndefined(entry.metadata)
+					metadata: Encoding.OmniBinary.encode(entry.metadata)
 				}
 			}
 
@@ -317,7 +317,7 @@ namespace ZincDB {
 				return {
 					key: rowObject.key,
 					value: Encoding.OmniBinary.decode(rowObject.value),
-					metadata: Tools.parseJSONOrUndefined(rowObject.metadata)
+					metadata: Encoding.OmniBinary.decode(rowObject.metadata)
 				}
 			}
 		}

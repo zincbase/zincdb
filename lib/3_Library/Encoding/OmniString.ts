@@ -7,7 +7,7 @@ namespace ZincDB {
 				else if (typeof input === "string")
 					return "TEXT" + input;
 				else
-					return "JSON" + ZincDB.Tools.stringifyJSONOrUndefined(input);
+					return "JSON" + JsonX.encode(input);
 			}
 
 			export const decode = function (input: string): any {
@@ -20,7 +20,7 @@ namespace ZincDB {
 				if (valuePrefix === "TEXT")
 					return valuePayload;
 				else if (valuePrefix === "JSON")
-					return ZincDB.Tools.parseJSONOrUndefined(valuePayload)
+					return JsonX.decode(valuePayload)
 				else if (valuePrefix === "BB64")
 					return Base64.decode(valuePayload)
 				else
