@@ -23,7 +23,7 @@ namespace ZincDB {
 				const separatorIndex = input.indexOf(":");
 
 				if (separatorIndex === -1)
-					throw new Error(`The given input '${input}' is not a valid RegExpString as id doesn't contain the separator ':'`);
+					throw new Error(`The given input '${input}' is not a valid RegExpString as it doesn't contain the separator ':'`);
 				
 				return new RegExp(input.substring(separatorIndex + 1), input.substring(0, separatorIndex));
 			}

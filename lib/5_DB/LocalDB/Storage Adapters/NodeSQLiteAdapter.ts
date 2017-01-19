@@ -5,7 +5,7 @@ namespace ZincDB {
 
 		export class NodeSQLiteAdapter implements StorageAdapter {
 			db: NodeSQLiteDatabase;
-			databaseFilePath: string;
+			readonly databaseFilePath: string;
 
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Initialization operations

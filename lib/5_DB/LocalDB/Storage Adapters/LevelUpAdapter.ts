@@ -2,7 +2,7 @@ namespace ZincDB {
 	export namespace DB {
 		export class LevelUpAdapter implements StorageAdapter {
 			db: LevelUp.Database;
-			databaseFilePath: string;
+			readonly databaseFilePath: string;
 
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Initialization operations
