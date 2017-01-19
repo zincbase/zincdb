@@ -29,6 +29,13 @@ namespace ZincDB {
 				const decodedResult = Encoding.OmniJson.decode(encodedTest);
 				expect(decodedResult).toEqual(test);
 			});
+
+			it("Encodes and decodes a typed array", () => {
+				const test = new Int16Array([-4453, 47567, 45]);
+				const encodedTest = Encoding.OmniJson.encode(test);
+				const decodedResult = Encoding.OmniJson.decode(encodedTest);
+				expect(decodedResult).toEqual(test);
+			});			
 		});
 	});
 }
