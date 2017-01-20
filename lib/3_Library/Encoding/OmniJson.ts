@@ -4,8 +4,12 @@ namespace ZincDB {
 			/*
 				(For future enhancements - structured clone reference: 
 				    https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm)
-			
+
 				Encoding type identifiers:
+
+				S: Regular string
+
+				0: ArrayBuffer as Base64				
 				1: Int8Array as Base64
 				2: Uint8Array as Base64
 				3: Uint8ClampedArray as Base64
@@ -16,13 +20,9 @@ namespace ZincDB {
 				8: Float32Array as Base64
 				9: Float64Array as Base64
 
-				A: ArrayBuffer as Base64
 				B: Blob as Base64 (future)
-				C: (unused)
 				D: Date as string containing millisecond UNIX timestamp
 				R: RegExp
-
-				T: Text
 			*/
 			export const encode = function (input: any): string {
 				if (input === undefined)
@@ -37,12 +37,10 @@ namespace ZincDB {
 					if (value == null)
 						return value;
 
-					const typeofValue = typeof value;
+					if (typeof value === "string")
+						return "S" + value;
 
-					if (typeofValue === "string")
-						return "T" + value;
-
-					if (typeofValue !== "object")
+					if (typeof value !== "object")
 						return value;
 
 					const valueAsTypedArrayToBase64 = (): string =>
@@ -51,6 +49,8 @@ namespace ZincDB {
 					const prototypeIdentifier = Object.prototype.toString.call(value);
 
 					switch (prototypeIdentifier) {
+						case "[object ArrayBuffer]":
+							return "0" + Base64.encode(new Uint8Array(value));						
 						case "[object Int8Array]":
 							return "1" + valueAsTypedArrayToBase64();						
 						case "[object Uint8Array]":
@@ -69,8 +69,6 @@ namespace ZincDB {
 							return "8" + valueAsTypedArrayToBase64();
 						case "[object Float64Array]":
 							return "9" + valueAsTypedArrayToBase64();
-						case "[object ArrayBuffer]":
-							return "A" + Base64.encode(new Uint8Array(value));
 
 						case "[object Date]":
 							return "D" + JSON.stringify(value.valueOf());
@@ -118,10 +116,12 @@ namespace ZincDB {
 
 					switch (typeSignifier) {
 						// Plain string
-						case "T": // Text
+						case "S": // Regular string
 							return payload;
 
 						// Typed Arrays:
+						case "0": // ArrayBuffer as Base64
+							return decodeAsBase64ToArrayBuffer();						
 						case "1": // Int8Array as Base64
 							return new Int8Array(decodeAsBase64ToArrayBuffer());
 						case "2": // Uint8Array as Base64
@@ -140,8 +140,6 @@ namespace ZincDB {
 							return new Float32Array(decodeAsBase64ToArrayBuffer());
 						case "9": // Float64Array as Base64
 							return new Float64Array(decodeAsBase64ToArrayBuffer());
-						case "A": // ArrayBuffer as Base64
-							return decodeAsBase64ToArrayBuffer();
 
 						// Misc objects:
 						case "D": // Date
