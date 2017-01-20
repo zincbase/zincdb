@@ -6,21 +6,23 @@ namespace ZincDB {
 				    https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm)
 			
 				Encoding type identifiers:
-				00: Text
+				1: Int8Array as Base64
+				2: Uint8Array as Base64
+				3: Uint8ClampedArray as Base64
+				4: Int16Array as Base64
+				5: Uint16Array as Base64
+				6: Int32Array as Base64
+				7: Uint32Array as Base64
+				8: Float32Array as Base64
+				9: Float64Array as Base64
 
-				01: Uint8Array as Base64
-				02: Int8Array as Base64
-				03: Uint16Array as Base64
-				04: Int16Array as Base64
-				05: Uint32Array as Base64
-				06: Int32Array as Base64
-				07: Float32Array as Base64
-				08: Float64Array as Base64
-				09: Uint8ClampedArray as Base64
-				10: ArrayBuffer as Base64
+				A: ArrayBuffer as Base64
+				B: Blob as Base64 (future)
+				C: (unused)
+				D: Date as string containing millisecond UNIX timestamp
+				R: RegExp
 
-				11: Date as string containing millisecond UNIX timestamp
-				12: RegExp
+				T: Text
 			*/
 			export const encode = function (input: any): string {
 				if (input === undefined)
@@ -38,7 +40,7 @@ namespace ZincDB {
 					const typeofValue = typeof value;
 
 					if (typeofValue === "string")
-						return "00" + value;
+						return "T" + value;
 
 					if (typeofValue !== "object")
 						return value;
@@ -49,31 +51,32 @@ namespace ZincDB {
 					const prototypeIdentifier = Object.prototype.toString.call(value);
 
 					switch (prototypeIdentifier) {
-						case "[object Uint8Array]":
-							return "01" + Base64.encode(value);
 						case "[object Int8Array]":
-							return "02" + valueAsTypedArrayToBase64();
-						case "[object Uint16Array]":
-							return "03" + valueAsTypedArrayToBase64();
-						case "[object Int16Array]":
-							return "04" + valueAsTypedArrayToBase64();
-						case "[object Uint32Array]":
-							return "05" + valueAsTypedArrayToBase64();
-						case "[object Int32Array]":
-							return "06" + valueAsTypedArrayToBase64();
-						case "[object Float32Array]":
-							return "07" + valueAsTypedArrayToBase64();
-						case "[object Float64Array]":
-							return "08" + valueAsTypedArrayToBase64();
+							return "1" + valueAsTypedArrayToBase64();						
+						case "[object Uint8Array]":
+							return "2" + Base64.encode(value);
 						case "[object Uint8ClampedArray]":
-							return "09" + valueAsTypedArrayToBase64();
+							return "3" + valueAsTypedArrayToBase64();							
+						case "[object Int16Array]":
+							return "4" + valueAsTypedArrayToBase64();
+						case "[object Uint16Array]":
+							return "5" + valueAsTypedArrayToBase64();
+						case "[object Int32Array]":
+							return "6" + valueAsTypedArrayToBase64();
+						case "[object Uint32Array]":
+							return "7" + valueAsTypedArrayToBase64();
+						case "[object Float32Array]":
+							return "8" + valueAsTypedArrayToBase64();
+						case "[object Float64Array]":
+							return "9" + valueAsTypedArrayToBase64();
 						case "[object ArrayBuffer]":
-							return "10" + Base64.encode(new Uint8Array(value));
+							return "A" + Base64.encode(new Uint8Array(value));
 
 						case "[object Date]":
-							return "11" + JSON.stringify(value.valueOf());
+							return "D" + JSON.stringify(value.valueOf());
 						case "[object RegExp]":
-							return "12" + RegExpString.encode(value);
+							return "R" + RegExpString.encode(value);
+
 						default:
 							return value;
 					}
@@ -97,11 +100,11 @@ namespace ZincDB {
 					if (typeof value !== "string")
 						return value;
 
-					const encodingType = value.substring(0, 2);
-					const str = value.substring(2);
+					const typeSignifier = value[0];
+					const payload = value.substring(1);
 
 					const decodeAsBase64ToArrayBuffer = () => {
-						const bytes = Base64.decode(str);
+						const bytes = Base64.decode(payload);
 
 						// Handle the case Base64.decode gives out a subarray of some sort
 						if (bytes.length !== bytes.buffer.byteLength) {
@@ -113,41 +116,41 @@ namespace ZincDB {
 						}
 					}
 
-					switch (encodingType) {
+					switch (typeSignifier) {
 						// Plain string
-						case "00": // Text
-							return str;
+						case "T": // Text
+							return payload;
 
 						// Typed Arrays:
-						case "01": // Uint8Array as Base64
-							return Base64.decode(str);
-						case "02": // Int8Array as Base64
+						case "1": // Int8Array as Base64
 							return new Int8Array(decodeAsBase64ToArrayBuffer());
-						case "03": // Uint16Array as Base64
-							return new Uint16Array(decodeAsBase64ToArrayBuffer());
-						case "04": // Int16Array as Base64
+						case "2": // Uint8Array as Base64
+							return Base64.decode(payload);
+						case "3": // Uint8ClampedArray as Base64
+							return new Uint8ClampedArray(decodeAsBase64ToArrayBuffer());							
+						case "4": // Int16Array as Base64
 							return new Int16Array(decodeAsBase64ToArrayBuffer());
-						case "05": // Uint32Array as Base64
-							return new Uint32Array(decodeAsBase64ToArrayBuffer());
-						case "06": // Int32Array as Base64
+						case "5": // Uint16Array as Base64
+							return new Uint16Array(decodeAsBase64ToArrayBuffer());
+						case "6": // Int32Array as Base64
 							return new Int32Array(decodeAsBase64ToArrayBuffer());
-						case "07": // Float32Array as Base64
+						case "7": // Uint32Array as Base64
+							return new Uint32Array(decodeAsBase64ToArrayBuffer());
+						case "8": // Float32Array as Base64
 							return new Float32Array(decodeAsBase64ToArrayBuffer());
-						case "08": // Float64Array as Base64
+						case "9": // Float64Array as Base64
 							return new Float64Array(decodeAsBase64ToArrayBuffer());
-						case "09": // Uint8ClampedArray as Base64
-							return new Uint8ClampedArray(decodeAsBase64ToArrayBuffer());
-						case "10": // ArrayBuffer as Base64
+						case "A": // ArrayBuffer as Base64
 							return decodeAsBase64ToArrayBuffer();
 
 						// Misc objects:
-						case "11": // Date
-							return new Date(JSON.parse(str));
-						case "12": // RegExp
-							return RegExpString.decode(str);
+						case "D": // Date
+							return new Date(JSON.parse(payload));
+						case "R": // RegExp
+							return RegExpString.decode(payload);
 
 						default:
-							throw new TypeError(`An unsupported encoding identifier '${encodingType}' was encountered in the string '${input}'.`);
+							throw new TypeError(`An unsupported encoding identifier '${typeSignifier}' was encountered in the string '${input}'.`);
 					}
 				});
 			}
