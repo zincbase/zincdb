@@ -9,13 +9,13 @@ namespace ZincDB {
 
 			if (WebSQLAdapter.isAvailable)
 				runDBTests("WebSQL", false);
-/*
-			if (NodeSQLiteAdapter.isAvailable)
-				runDBTests("SQLite", false);
-
-			if (LevelUpAdapter.isAvailable)
-				runDBTests("LevelDB", false);
-*/
+			/*
+						if (NodeSQLiteAdapter.isAvailable)
+							runDBTests("SQLite", false);
+			
+						if (LevelUpAdapter.isAvailable)
+							runDBTests("LevelDB", false);
+			*/
 			if (webWorkersAvailable()) {
 				runDBTests("InMemory", true);
 
@@ -30,7 +30,7 @@ namespace ZincDB {
 					runDBTests("SQLite", true);
 
 				if (LevelUpAdapter.isAvailable)
-					runDBTests("LevelDB", true);				
+					runDBTests("LevelDB", true);
 			}
 
 			function runDBTests(storageMedium: LocalDBOptions['storageMedium'], useWorker: boolean) {
@@ -39,8 +39,8 @@ namespace ZincDB {
 						let db: LocalDB;
 
 						beforeEach(async () => {
-							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, { 
-								storageMedium, 
+							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, {
+								storageMedium,
 								useWorker,
 								storagePath: "tests/temp"
 							});
@@ -51,7 +51,7 @@ namespace ZincDB {
 							db = <any>undefined;
 						});
 
-						it("Stores several entries using a transaction", async () => {
+						it("Stores several entries within a batch", async () => {
 							const dataObject = {
 								"a": {
 									"b": {
@@ -68,13 +68,13 @@ namespace ZincDB {
 								}
 							}
 
-							const t = db.transaction();
-							t.put(["a", "b", "c"], "Hello World!");
-							t.put(["a", "b", "d"], 1234);
-							t.put(["a", "b", "e", "f"], true);
-							t.put(["a", "g"], { a: 123, b: "hi" });
-							t.put(["b", "h"], ["hey", { "x y z": "yo", "1 2 3": "bro" }]);
-							await t.commit();
+							await db.batch()
+								.put(["a", "b", "c"], "Hello World!")
+								.put(["a", "b", "d"], 1234)
+								.put(["a", "b", "e", "f"], true)
+								.put(["a", "g"], { a: 123, b: "hi" })
+								.put(["b", "h"], ["hey", { "x y z": "yo", "1 2 3": "bro" }])
+								.write();
 
 							expect(await db.get(["a", "b", "c"])).toEqual("Hello World!");
 
@@ -91,26 +91,26 @@ namespace ZincDB {
 								.toEqual(["Hello World!", ["hey", { "x y z": "yo", "1 2 3": "bro" }], "bro", dataObject, dataObject["a"], dataObject["b"]]);
 						});
 
-						it("Stores and deletes several nodes using a transaction", async () => {
-							const t = db.transaction();
-							t.put(["a", "b"], "yo");
-							t.put(["a", "c"], 25);
-							t.put(["a", "c"], "go");
-							t.delete(["a", "b"]);
-							t.put(["a", "b"], true);
-							t.delete(["a", "b"]);
-							t.put(["d", "b", "e f"], [1, 2, 3]);
-							await t.commit();
+						it("Stores and deletes several nodes using a batch", async () => {
+							await db.batch()
+								.put(["a", "b"], "yo")
+								.put(["a", "c"], 25)
+								.put(["a", "c"], "go")
+								.delete(["a", "b"])
+								.put(["a", "b"], true)
+								.delete(["a", "b"])
+								.put(["d", "b", "e f"], [1, 2, 3])
+								.write();
 
 							expect(await db.get([["a", "b"], ["a", "c"], ["d", "b", "e f"]]))
 								.toEqual([undefined, "go", [1, 2, 3]]);
 						});
 
 						it("Stores several nodes and then updates them", async () => {
-							const t = db.transaction();
-							t.put(["a", "b"], "yo");
-							t.put(["a", "c"], { hey: 45 });
-							await t.commit();
+							await db.batch()
+								.put(["a", "b"], "yo")
+								.put(["a", "c"], { hey: 45 })
+								.write();
 
 							await db.update(["a", "b"], "mo");
 							expect(await db.get(["a", "b"])).toEqual("mo");
@@ -146,11 +146,11 @@ namespace ZincDB {
 							});
 						});
 
-						it("Stores and reads a transaction including Uint8Array objects", async () => {
-							const transaction = db.transaction();
-							transaction.put(["hey ya", "yo"], new Uint8Array([1, 2, 3, 4]));
-							transaction.put(["hey ya", "do"], { x: 25, y: [4, 3, 2, 1] });
-							await transaction.commit();
+						it("Stores and reads a batch including Uint8Array objects", async () => {
+							await db.batch()
+								.put(["hey ya", "yo"], new Uint8Array([1, 2, 3, 4]))
+								.put(["hey ya", "do"], { x: 25, y: [4, 3, 2, 1] })
+								.write();
 
 							expect(await db.get([["hey ya", "yo"], ["hey ya", "do"], ["hey ya"], []]))
 								.toEqual([
@@ -163,12 +163,12 @@ namespace ZincDB {
 							expect((await db.get(["hey ya"])).yo instanceof Uint8Array);
 						});
 
-						it("Correctly processes a series of transactions", async () => {
-							const transaction1 = db.transaction();
-							transaction1.put(["a", "b"], "yo");
-							transaction1.put(["a", "c"], 1234);
-							transaction1.delete(["a", "c"]);
-							await transaction1.commit();
+						it("Correctly processes a series of batches", async () => {
+							await db.batch()
+								.put(["a", "b"], "yo")
+								.put(["a", "c"], 1234)
+								.delete(["a", "c"])
+								.write();
 
 							expect(await (db.get([]))).toEqual({
 								a: {
@@ -176,12 +176,12 @@ namespace ZincDB {
 								}
 							});
 
-							const transaction2 = db.transaction();
-							transaction2.delete(["a", "c"]);
-							transaction2.put(["a", "c"], [4, 3, 2, 1]);
-							transaction2.put(["a", "c"], new Uint8Array([6, 5, 4, 3, 2, 1]));
-							transaction2.put(["a", "d"], { x: "hello", y: [1, 2, 3, 4] });
-							await transaction2.commit();
+							await db.batch()
+								.delete(["a", "c"])
+								.put(["a", "c"], [4, 3, 2, 1])
+								.put(["a", "c"], new Uint8Array([6, 5, 4, 3, 2, 1]))
+								.put(["a", "d"], { x: "hello", y: [1, 2, 3, 4] })
+								.write();
 
 							expect(await (db.get([]))).toEqual({
 								a: {
@@ -195,7 +195,7 @@ namespace ZincDB {
 							});
 						});
 
-						it("Errors on invalid transaction paths", async () => {
+						it("Errors on invalid paths", async () => {
 							await db.put(["a", "b"], 123);
 							await expectPromiseToReject(db.put(["a", "b", "c"], "hi"));
 							await expectPromiseToReject(db.put(["a"], true));
@@ -203,67 +203,67 @@ namespace ZincDB {
 							await expectPromiseToReject(db.put([], { "a": { "b": [1, 2, 3] } }));
 						});
 
-						it("Errors when trying to assign a node that is an ancestor or descendant to a node created earlier within the same transaction", async () => {
-							const t1 = db.transaction();
-							t1.put(["a", "b"], "yo");
-							t1.put(["a"], 123);
-							await expectPromiseToReject(t1.commit());
+						it("Errors when trying to assign a node that is an ancestor or descendant to a node created earlier within the same batch", async () => {
+							const b1 = db.batch();
+							b1.put(["a", "b"], "yo");
+							b1.put(["a"], 123);
+							await expectPromiseToReject(b1.write());
 
-							const t2 = db.transaction();
-							t2.put(["a", "b"], "yo");
-							t2.put(["a", "b", "c"], 123);
-							await expectPromiseToReject(t2.commit());
+							const b2 = db.batch();
+							b2.put(["a", "b"], "yo");
+							b2.put(["a", "b", "c"], 123);
+							await expectPromiseToReject(b2.write());
 
 							// Should this one resolve or reject?
-							const t3 = db.transaction();
-							t3.put(["a", "b"], "yo");
-							t3.delete(["a", "b"]);
-							t3.put(["a", "b", "c"], 123);
-							await expectPromiseToReject(t3.commit());
+							const b3 = db.batch();
+							b3.put(["a", "b"], "yo");
+							b3.delete(["a", "b"]);
+							b3.put(["a", "b", "c"], 123);
+							await expectPromiseToReject(b3.write());
 						});
 
 						it("Errors when trying to update non-existing nodes", async () => {
-							const t = db.transaction();
-							t.put(["a", "b"], "yo");
-							t.put(["a", "c"], { hey: 45 });
-							await t.commit();
+							const b = db.batch();
+							b.put(["a", "b"], "yo");
+							b.put(["a", "c"], { hey: 45 });
+							await b.write();
 
 							await expectPromiseToReject(db.update(["b"], 24));
 							await expectPromiseToReject(db.update(["a", "d"], "hi"));
 						});
 
-						it("Allows updating nodes that were created earlier within the same transaction", async () => {
+						it("Allows updating nodes that were created earlier within the same batch", async () => {
 							// Update leaf:
-							const t1 = db.transaction();
-							t1.put(["a", "b"], "yo");
-							t1.update(["a", "b"], { hey: 45 });
-							await t1.commit();
+							await db.batch()
+								.put(["a", "b"], "yo")
+								.update(["a", "b"], { hey: 45 })
+								.write();
 
 							expect(await db.get(["a", "b"])).toEqual({ hey: 45 });
 
 							// Update a value's descendant property
-							const t2 = db.transaction();
-							t2.put(["c", "d"], { hi: "hello" });
-							t2.update(["c", "d", "hi"], { x: 987 });
-							await t2.commit();
+							await db.batch()
+								.put(["c", "d"], { hi: "hello" })
+								.update(["c", "d", "hi"], { x: 987 })
+								.write();
 
 							expect(await db.get(["c", "d"])).toEqual({ hi: { x: 987 } });
 
 							// Update a branch
-							const t3 = db.transaction();
-							t3.put(["e", "f"], 45);
-							t3.put(["e", "g"], "yo man");
-							t3.update(["e"], { f: 34, g: "hhhh" });
-							await t3.commit();
+							await db.batch()
+								.put(["e", "f"], 45)
+								.put(["e", "g"], "yo man")
+								.update(["e"], { f: 34, g: "hhhh" })
+								.write();
 
 							expect(await db.get(["e", "f"])).toEqual(34);
 							expect(await db.get(["e", "g"])).toEqual("hhhh");
 
-							// Update a branch containing two previous nodes and one node that was created within the transaction
-							const t4 = db.transaction();
-							t4.put(["e", "h"], 12);
-							t4.update(["e"], { f: 34, g: "hhhh", h: "kkk" });
-							await t4.commit();
+							// Update a branch containing two previous nodes and one node that was created within the batch
+							await db.batch()
+								.put(["e", "h"], 12)
+								.update(["e"], { f: 34, g: "hhhh", h: "kkk" })
+								.write();
 
 							expect(await db.get(["e", "f"])).toEqual(34);
 							expect(await db.get(["e", "g"])).toEqual("hhhh");
@@ -275,18 +275,18 @@ namespace ZincDB {
 							await db.put(["a", "c"], "asdf");
 
 							// Update leaf:
-							const t1 = db.transaction();
-							t1.update(["a", "b"], { hey: 45 });
-							t1.update(["a", "b"], { yo: 12 });
-							await t1.commit();
+							await db.batch()
+								.update(["a", "b"], { hey: 45 })
+								.update(["a", "b"], { yo: 12 })
+								.write();
 
 							expect(await db.get(["a", "b"])).toEqual({ yo: 12 });
 
 							// Update a value's descendant property
-							const t2 = db.transaction();
-							t2.update(["a", "b"], { x: "baba" });
-							t2.update(["a", "b", "y"], 999);
-							await t2.commit();
+							await db.batch()
+								.update(["a", "b"], { x: "baba" })
+								.update(["a", "b", "y"], 999)
+								.write();
 
 							expect(await db.get(["a", "b"])).toEqual({ x: "baba", y: 999 });
 						});
@@ -295,20 +295,37 @@ namespace ZincDB {
 							await db.put(["a", "b"], 1234);
 
 							// Update branch
-							const t1 = db.transaction();
-							t1.put(["a", "c"], "asdf");
-							t1.update(["a"], { b: 1234, c: "gggg", d: "mmmm" });
-							expectPromiseToReject(t1.commit());
+							const b = db.batch();
+							b.put(["a", "c"], "asdf");
+							b.update(["a"], { b: 1234, c: "gggg", d: "mmmm" });
+							expectPromiseToReject(b.write());
 						});
 
-						it("Appends to a safe list", async () => {
+						it("Adds to a safe list", async () => {
 							const key1 = await db.addListItem(["a", "b"], "Hi");
 							const key2 = await db.addListItem(["a", "b"], 45);
 
+							expect(typeof key1).toEqual("string");
+							expect(typeof key2).toEqual("string");
 							expect(key1.length).toEqual(16);
 							expect(key2.length).toEqual(16);
 							expect(await db.get(["a", "b", key1])).toEqual("Hi");
 							expect(await db.get(["a", "b", key2])).toEqual(45);
+						});
+
+						it("Appends to a safe list within a batch operation", async () => {
+							await db.batch()
+								.appendListItem(["a", "b"], "Hi")
+								.appendListItem(["a", "b"], 45)
+								.write();
+
+							const list = await db.get(["a", "b"]);
+							expect(ObjectTools.countDefinedPropertiesInObject(list)).toEqual(2);
+
+							for (const itemKey in list) {
+								const item = list[itemKey]
+								expect(item === "Hi" || item === 45).toBe(true);
+							}
 						});						
 
 						it("Observes and notifies on changes", () => {
@@ -347,10 +364,10 @@ namespace ZincDB {
 								});
 
 
-								const t = db.transaction();
-								t.put(["a", "b"], { yo: "go", do: 123 });
-								t.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }]);
-								t.commit();
+								db.batch()
+									.put(["a", "b"], { yo: "go", do: 123 })
+									.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }])
+									.write();
 							});
 						});
 
@@ -377,7 +394,7 @@ namespace ZincDB {
 							return;
 						}
 
-						if (ZincDBTestConfig.host == null ||  ZincDBTestConfig.accessKey == null) {
+						if (ZincDBTestConfig.host == null || ZincDBTestConfig.accessKey == null) {
 							log("Skipped tests requiring a remote server as a g as a global ZincDB test configuration object was found but did not contain a 'host' or 'accessKey' properties.");
 							return;
 						}
@@ -406,11 +423,11 @@ namespace ZincDB {
 						});
 
 						it("Pushes to a remote server", async () => {
-							const transaction = db.transaction();
-							transaction.put(["a", "b"], { yo: "go", do: 123 });
-							transaction.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }]);
-							transaction.put(["a", "c", "e"], new Uint8Array([1, 2, 3, 4]));
-							await transaction.commit();
+							await db.batch()
+								.put(["a", "b"], { yo: "go", do: 123 })
+								.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }])
+								.put(["a", "c", "e"], new Uint8Array([1, 2, 3, 4]))
+								.write();
 
 							await db.pushLocalChanges();
 							expect(await db.getLocalChanges()).toEqual([]);

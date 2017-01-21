@@ -2,7 +2,7 @@ namespace ZincDB {
 	if (runningInNodeJS()) {
 		global["WebSocket"] = require("ws");
 	}
-	
+
 	export namespace DB {
 		export class LocalDB {
 			readonly options: LocalDBOptions;
@@ -79,36 +79,36 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			async put(path: NodePath | string, value: any): Promise<void>
 			async put(...args: any[]): Promise<void> {
-				const t = this.transaction();
+				const t = this.batch();
 				t.put.apply(t, args);
-				return await t.commit();
+				return await t.write();
 			}
 
 			async delete(path: NodePath | string): Promise<void> {
-				const t = this.transaction();
+				const t = this.batch();
 				t.delete(path);
-				return await t.commit();
+				return await t.write();
 			}
 
 			async update(path: EntityPath | string, newValue: any): Promise<void>
 			async update(...args: any[]): Promise<void> {
-				const t = this.transaction();
+				const t = this.batch();
 				t.update.apply(t, args);
-				return await t.commit();
+				return await t.write();
 			}
 
 			async addListItem(listPath: NodePath | string, value: any): Promise<string> {
-				const t = this.transaction();
+				const t = this.batch();
 				const key = t.addListItem(listPath, value);
-				await t.commit();
+				await t.write();
 				return key;
 			}
 
-			transaction() {
-				return new LocalDBTransaction(this);
+			batch() {
+				return new LocalDBBatch(this);
 			}
 
-			async commitLocalTransaction(transaction: Transaction): Promise<void> {
+			async commitLocalTransaction(transaction: Batch): Promise<void> {
 				const diff = await this.exec("commitLocalTransaction", [transaction]);
 				await this.announceChanges("local", diff);
 			}

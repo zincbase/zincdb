@@ -13,7 +13,7 @@ db.put(path, value)
 db.delete(path)
 db.update(path, value)
 db.addListItem(path, value)
-db.transaction()
+db.batch()
 
 // Read operations
 db.get(path)
@@ -247,14 +247,14 @@ The database now looks like:
 }
 ```
 
-## `transaction`
+## `batch`
 
-Open a new transaction, allowing multiple write operations to be performed and committed atomically as a single unit.
+Create a batch, which allows multiple write operations to be performed and committed atomically as a single transaction.
 
 **Usage**:
 
 ```ts
-db.transaction()
+db.batch()
 ```
 
 **Return value**
@@ -265,26 +265,29 @@ An object containing the following methods:
 * `delete`: similar to `db.delete`. Returns immediately.
 * `update`: similar to `db.update`. Returns immediately.
 * `addListItem`: similar to `db.addListItem`. Returns immediately with the new item's identifier as return value.
-* `commit`: commits the transaction. Returns a promise that resolves when the data has been successfully commited.
+* `appendListItem`: exactly identical to `addListItem` except it returns the containing object instead of the new item's key, thus it can be used in a chain.
+* `write`: commits the transaction. Returns a promise that resolves when the data has been successfully commited.
+
+These operations can be chained together, see the following example.
 
 **Examples**:
 
 ```ts
-const t = db.transaction();
-t.put(["people", "James Smith"], { age: 43, height: 185, medals: ["Naval Reserve Medal"] });
-t.delete(["dogs", "Scruffy"]);
-t.put(["people", "Maria Martinez"], { age: 37, height: 172, medals: ["Purple Heart Medal"] });
-t.update(["people", "Maria Martinez", "height"], 174);
-t.addListItem(["Guest List"], { name: "Angela" });
-t.addListItem(["Guest List"], { name: "Natalie" });
-await t.commit();
+await db.batch()
+	.put(["people", "James Smith"], { age: 43, height: 185, medals: ["Naval Reserve Medal"] })
+	.delete(["dogs", "Scruffy"])
+	.put(["people", "Maria Martinez"], { age: 37, height: 172, medals: ["Purple Heart Medal"] })
+	.appendListItem(["Guest List"], { name: "Angela" })
+	.appendListItem(["Guest List"], { name: "Natalie" })
+	.update(["people", "Maria Martinez", "height"], 174)
+	.write();
 ```
 
 **Notes**:
 
-* If at least one operation errors, the whole transaction would fail and no data would be written.
-* Once `commit()` has been called, calling any other method would result in an error.
-* Accumulating multiple operations into large, complex transactions can significantly increase write performance if a large quantity of write operations are expected.
+* If at least one operation fails, the whole batch would fail and no data would be written.
+* Once `write()` has been called, calling any other method would result in an error.
+* Accumulating multiple operations into large, complex batches can significantly increase write performance if a large quantity of write operations are expected.
 
 ## `get`
 

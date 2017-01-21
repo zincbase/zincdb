@@ -251,14 +251,14 @@ To create an unordered list that is safe for editing by multiple clients, use `a
 
 ...
 
-## Transactions
+## Batches
 
-A transaction is a set of write operations executed as a single unit, such that the failure of a single operation causes the entire transaction to fail, and no data to be written.
+A batch (or more formally a _transaction_) is a set of write operations executed as a single unit, such that the failure of a single operation causes the entire set of operations to fail, and no data to be written.
 
 To create a new transaction use `transaction()`:
 
 ```ts
-const t = db.transaction();
+const t = db.batch();
 ```
 
 A transaction can include an arbitrary amount of `put`, `update`, `delete` and `addListItem` operations, for example:
@@ -272,14 +272,30 @@ t.delete(["a", "b"]);
 t.addListItem(["My list"], "Danny");
 t.addListItem(["My list"], "Sara");
 ```
-(Note these methods return immediately. There's no need to use `await` here)
+(Note these methods return immediately. There's no need to use `await` for each one here)
 
 
-To write, or "commit" the transaction, use `commit()`:
+To write the transaction, use `write()`:
 
 ```ts
-await t.commit();
+await t.write();
 ```
+
+Batch methods can also be chained, so that the above can be expressed in a single expression:
+
+```ts
+await db.batch(
+	.put(["a", "b"], "hi")
+	.update(["a", "b"], "ho")
+	.update(["a", "b"], "yo")
+	.put(["a", "c"], 55)
+	.delete(["a", "b"])
+	.appendListItem(["My list"], "Danny")
+	.appendListItem(["My list"], "Sara")
+	.write();
+```
+
+(Note that `appendListItem` is used here, rather than `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing batch object instead of a string, so it can be used within a chain).
 
 ## Setting up a server.
 
