@@ -17,7 +17,7 @@ namespace ZincDB {
 			isEditable = false;
 			element: HTMLSpanElement;
 
-			shouldComponentUpdate(nextProps: EntryValueCellProps, nextState: {}) {
+			shouldComponentUpdate(nextProps: EntryValueCellProps) {
 				const nextValueJSON = nextProps.row.formattedValue;
 				const currentElementText = this.element.innerText;
 				//log(`nextValue: ${nextValueJSON}, currentElementText: ${currentElementText}` );
@@ -25,7 +25,7 @@ namespace ZincDB {
 				return nextValueJSON !== currentElementText;
 			}
 
-			componentDidUpdate(prevProps: EntryValueCellProps, prevState: this["state"]) {
+			componentDidUpdate(prevProps: EntryValueCellProps) {
 				const currentValueJSON = this.props.row.formattedValue;
 				const currentElementText = this.element.innerText;
 
