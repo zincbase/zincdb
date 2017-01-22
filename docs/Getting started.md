@@ -39,13 +39,13 @@ A ZincDB database is structured as a single object tree, starting with the root 
 
 ## `put()`
 
-The `put()` operation creates new leaf nodes or replaces the value of an existing one. For example, the following would store the value `54` at the path `["a", "b", "c"]`:
+The `put()` operation creates a new leaf node or replaces the value of an existing one. For example, the following would store the value `54` at the path `["a", "b", "c"]`:
 
 ```ts
 await db.put(["a", "b", "c"], 54);
 ```
 
-Only nodes without children (also called "leaf" nodes) can be assigned values. A path can be used as a leaf node as long as it has never been used as a prefix to another path, and does not extend an existing path already used as a leaf node. For example:
+Only nodes without children (also called "leaf" nodes) can be assigned values. A path can be used as a leaf node as long as it has never been used as a prefix to another path, and doesn't extend an existing path already used as a leaf node. For example:
 
 Attempting to assign any value to the path `["a", "b"]` would now fail:
 
@@ -155,14 +155,20 @@ returning:
 
 ## `subscribe()` and `observe()`
 
-Every path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`:
+Every path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`. The two methods are identical except `observe` also includes the updated value within its change event:
 
 ```ts
-await db.observe(["a", "b", "c", "Hello World", 1], (changes) => {
-	console.log("The value has changed to " + changes.newValue + "!");
+await db.subscribe(["a", "b"], (changeEvent) => {
+	console.log("Some changes occurred:", changeEvent.changes);
 });
 ```
-(see the [API Reference]() to learn more about the difference between the two)
+
+```ts
+await db.observe(["a", "b", "c", "Hello World", 1], (changeEvent) => {
+	console.log("The value has changed to " + changeEvent.newValue + "!");
+});
+```
+
 
 ## `update()`
 
@@ -172,7 +178,7 @@ The `update` operation updates the value of an existing path:
 await db.update(["a", "b", "c"], 55);
 ```
 
-Like `get()`, `update()` is similarly permissive as in addition to leaf nodes, it also allows modifying existing branches:
+Like `get()`, `update()` is similarly permissive as in addition to leaf nodes, it also allows updating entire branches:
 
 ```ts
 await db.update(["a", "b"], {
@@ -225,60 +231,62 @@ await db.update(["a", "b"], {
 
 ## `delete()`
 
-The `delete()` operation deletes leaf nodes, and like `put()`, cannot be applied to anything else:
+The `delete()` operation is identical to `update(path, undefined)` except it doesn't error when the given path isn't found.
 
-```ts
-await db.delete(["a", "b"]); // OK
-```
-
-```ts
-await db.delete(["a"]); // Error
-```
-
-(In fact, `delete(["a", "b"])` is internally just an alias for `put(["a", "b"], undefined)`).
-
-To erase entire branches, properties, or array elements, use `update()` with an `undefined` value:
-
-```ts
-await db.update(["a"], undefined); // OK
-```
-
-(Note another difference between the two approaches is that `delete` doesn't error if the path doesn't exist, while `update` does)
+_Note: the described functionality is currently in development.._
 
 ## `addListItem()`
 
-To create an unordered list that is safe for editing by multiple clients, use `addListItem()`
-
-...
-
-## Batches
-
-A batch (or more formally a _transaction_) is a set of write operations executed as a single unit, such that the failure of a single operation causes the entire set of operations to fail, and no data to be written.
-
-To create a new transaction use `transaction()`:
+To create a list that is safe for editing by multiple clients, use `addListItem()`.
 
 ```ts
-const t = db.batch();
+const db = await ZincDB.open("MyBirthday");
+
+const key1 = await db.addListItem("Guest List", { name: "John" }); // returns "YJ5xGKqrCckRKqlZ"
+const key2 = await db.addListItem("Guest List", { name: "Dana" }); // returns "lNK7CbxfNxFAc1hj"
+const key3 = await db.addListItem("Guest List", { name: "John" }); // returns "tb0Ve0S3JTVURswh"
 ```
 
-A transaction can include an arbitrary amount of `put`, `update`, `delete` and `addListItem` operations, for example:
+The database now looks like:
 
 ```ts
-t.put(["a", "b"], "hi");
-t.update(["a", "b"], "ho");
-t.update(["a", "b"], "yo");
-t.put(["a", "c"], 55);
-t.delete(["a", "b"]);
-t.addListItem(["My list"], "Danny");
-t.addListItem(["My list"], "Sara");
+{
+	"Guest List": {
+		"YJ5xGKqrCckRKqlZ": { name: "John" },
+		"lNK7CbxfNxFAc1hj": { name: "Dana" },
+		"tb0Ve0S3JTVURswh": { name: "John" }
+	}
+}
+```
+
+## Batch operations
+
+A batch (or more formally, a _transaction_) is a set of write operations executed as a single unit, such that the failure of a single operation causes the entire set of operations to fail, and no data to be written.
+
+To create a new batch use `batch()`:
+
+```ts
+const b = db.batch();
+```
+
+A batch can include an arbitrary amount of `put`, `update`, `delete` and `addListItem` operations, in any order, for example:
+
+```ts
+b.put(["a", "b"], "hi");
+b.update(["a", "b"], "ho");
+b.update(["a", "b"], "yo");
+b.put(["a", "c"], 55);
+b.delete(["a", "b"]);
+b.addListItem(["My list"], "Danny");
+b.addListItem(["My list"], "Sara");
 ```
 (Note these methods return immediately. There's no need to use `await` for each one here)
 
 
-To write the transaction, use `write()`:
+To finalize (or _commit_) the batch, use `write()`:
 
 ```ts
-await t.write();
+await b.write();
 ```
 
 Batch methods can also be chained, so that the above can be expressed in a single expression:
