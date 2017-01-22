@@ -80,39 +80,6 @@ namespace ZincDB {
 			return clonedObj;
 		}
 
-		export const deepCloneJSONValue = function<T>(value: T): T {
-			// TODO: add cycle detection
-			if (value != null && typeof value === "object") {
-				if (Array.isArray(value)) {
-					const arrayLength = (<any>value).length;
-					const clonedArray = new Array(arrayLength);
-
-					for (let i = 0; i < arrayLength; i++)
-						clonedArray[i] = deepCloneJSONValue(value[i]);
-
-					return <any>clonedArray;
-				}
-				else if (value instanceof Uint8Array) {
-					const clonedArray = new Uint8Array(value.length);
-					clonedArray.set(value);
-					return <any>clonedArray;
-				}
-				else {
-					if (value["prototype"] != null)
-						throw new TypeError(`deepCloneJSONValue: object with unsupported prototype found.`);
-
-					const clonedObj: any = {};
-
-					for (const property in value)
-						clonedObj[property] = deepCloneJSONValue(value[property]);
-
-					return clonedObj;
-				}
-			}
-
-			return value;
-		}
-
 		export const objectHasAtLeastOneDefinedProperty = function(obj: any): boolean {
 			if (typeof obj !== "object")
 				return false;

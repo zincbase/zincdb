@@ -2,8 +2,6 @@ namespace ZincDB {
 	export class ObjectToolsBenchmarks {
 		simpleObject = { good: <any>null, ab: 1, cd: { do: { a: ["goo", [57, { boo: "Hi!" }]] } }, bc: "woekfoekw", nice: { a: 543 } };
 		simpleObjectClone = { good: <any>null, ab: 1, cd: { do: { a: ["goo", [57, { boo: "Hi!" }]] } }, bc: "woekfoekw", nice: { a: 543 } };
-		//simpleObject = { good: null, fsdfsd: [{ ab: 1123.234 }], dfgdfg: [{ cd: 'asfsadfasdfgsdf' }], gfbfgb: [{ dfg: 'dgsdfgdfg' }] };
-		//simpleObjectClone = { good: null, fsdfsd: [{ ab: 1123.234 }], dfgdfg: [{ cd: 'asfsadfasdfgsdf' }], gfbfgb: [{ dfg: 'dgsdfgdfg' }] };
 
 		simpleObject_x1000: any[] = [];
 
@@ -22,18 +20,14 @@ namespace ZincDB {
 			this.simpleObjectJSON_x1000 = JSON.stringify(this.simpleObject_x1000);
 		}
 
-		deepCloneSimpleObject_x1000() {
-			for (let i = 0; i < 1000; i++)
-				ObjectTools.deepCloneJSONValue(this.simpleObject);
-		}
-
-		deepCloneConcatenatedSimpleObject() {
-			ObjectTools.deepCloneJSONValue(this.simpleObject_x1000);
-		}
-
 		jsonCloneSimpleObject_x1000() {
 			for (let i = 0; i < 1000; i++)
 				JSON.parse(JSON.stringify(this.simpleObject));
+		}
+
+		deepCloneObject_x1000() {
+			for (let i = 0; i < 1000; i++)
+				ObjectTools.deepClone(this.simpleObject);
 		}
 
 		parseJSON_x1000() {

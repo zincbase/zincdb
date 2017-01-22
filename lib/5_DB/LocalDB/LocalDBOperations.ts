@@ -847,7 +847,7 @@ namespace ZincDB {
 			}
 
 			static cloneEntry(value: any): any {
-				return ObjectTools.deepCloneJSONValue(value);
+				return ObjectTools.deepClone(value);
 			}
 
 			static valuesAreEqual(value1: any, value2: any): boolean {
