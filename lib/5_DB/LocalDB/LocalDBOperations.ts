@@ -16,7 +16,7 @@ namespace ZincDB {
 			//////////////////////////////////////////////////////////////////////////////////////			
 			async open(name: string, options: LocalDBOptions) {
 				if (this.db !== undefined) {
-					if (ObjectTools.compareJSONObjects(options, this.currentOpenOptions) === true)
+					if (ObjectTools.deepCompare(options, this.currentOpenOptions) === true)
 						return;
 					else
 						throw new Error(`Database '${name}' is already open with conflicting initialization options`);
@@ -339,7 +339,7 @@ namespace ZincDB {
 								appendToResult(descendantPath, descendantLeafEntry.key, newLeafValue);
 							}
 
-							if (newValue !== undefined && !ObjectTools.compareJSONObjects(newValue, newBranchObject))
+							if (newValue !== undefined && !ObjectTools.deepCompare(newValue, newBranchObject))
 								throw new Error(`Failed updating branch ${Keypath.formatPath(path)}. The supplied object contained a descendant object whose path could not be matched in the database. To create new leaf nodes please use 'put' instead.`);
 
 							break;
@@ -851,14 +851,7 @@ namespace ZincDB {
 			}
 
 			static valuesAreEqual(value1: any, value2: any): boolean {
-				if (value1 instanceof Uint8Array) {
-					if (!(value2 instanceof Uint8Array))
-						return false;
-
-					return ArrayTools.arraysAreEqual(value1, value2);
-				}
-
-				return ObjectTools.compareJSONObjects(value1, value2, 0, 1000)
+				return ObjectTools.deepCompare(value1, value2)
 			}
 
 			static entryArrayToValueObject<V>(entryArray: EntryArray<V>, cloneValues = true): ValueObject<V> {

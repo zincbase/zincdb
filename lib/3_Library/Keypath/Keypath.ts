@@ -237,7 +237,7 @@ namespace ZincDB {
 			for (const destLeaf of flattenedDestObj) {
 				const sourceValue = flattenedSourceObjMap.get(destLeaf.key);
 
-				if (sourceValue === undefined || !ObjectTools.compareJSONObjects(sourceValue, destLeaf.value))
+				if (sourceValue === undefined || !ObjectTools.deepCompare(sourceValue, destLeaf.value))
 					changes.push(destLeaf);
 			}
 

@@ -55,9 +55,9 @@ namespace ZincDB {
 				ObjectTools.deepFreezeSimpleObject(this.simpleObject);
 		}
 
-		compareJSONObjects_x1000() {
+		deepCompareObjects_x1000() {
 			for (let i = 0; i < 1000; i++)
-				ObjectTools.compareJSONObjects(this.simpleObject, this.simpleObjectClone);
+				ObjectTools.deepCompare(this.simpleObject, this.simpleObjectClone);
 		}
 
 		static start() {

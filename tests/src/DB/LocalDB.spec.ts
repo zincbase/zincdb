@@ -349,7 +349,7 @@ namespace ZincDB {
 								.write();
 
 							const list = await db.get(["a", "b"]);
-							expect(ObjectTools.countDefinedPropertiesInObject(list)).toEqual(2);
+							expect(ObjectTools.countDefinedOwnPropertiesInObject(list)).toEqual(2);
 
 							for (const itemKey in list) {
 								const item = list[itemKey]

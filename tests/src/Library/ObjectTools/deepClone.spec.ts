@@ -1,6 +1,6 @@
 namespace ZincDB {
 	export namespace ObjectTools {
-		describe("deepCloneObject:", () => {
+		describe("deepClone:", () => {
 			it("Clones simple objects", () => {
 				const testCases = [
 					12,
@@ -47,14 +47,14 @@ namespace ZincDB {
 			});
 
 			it("Detects a simple cycle an errors on it", () => {
-				var x: any = { a: null };
+				const x: any = { a: null };
 				x.a = x;
 				expect(() => deepClone(x)).toThrow();
 			});
 			
 			it("Detects a complex cycle and errors on it", () => {
-				var x: any = { a: [1, 2, 3, { c: null }] };
-				var y: any = { b: { z: { k: "hi", b: [55, 66, 77] }, v: [{}, { u: ["hey", "yo", null] } ] } };
+				const x: any = { a: [1, 2, 3, { c: null }] };
+				const y: any = { b: { z: { k: "hi", b: [55, 66, 77] }, v: [{}, { u: ["hey", "yo", null] } ] } };
 
 				x.a[3].c = y;
 				y.b.v[1].u[2] = x;

@@ -147,7 +147,7 @@ namespace ZincDB {
 			delete obj[propertyName];
 		}
 
-		export const countPropertiesInObject = function(obj: any): number {
+		export const countOwnDefinedPropertiesInObject = function(obj: any): number {
 			let count = 0;
 
 			for (const property in obj)
@@ -157,7 +157,7 @@ namespace ZincDB {
 			return count;
 		}
 
-		export const countDefinedPropertiesInObject = function(obj: any): number {
+		export const countDefinedOwnPropertiesInObject = function(obj: any): number {
 			let count = 0;
 
 			for (const property in obj)
@@ -165,63 +165,6 @@ namespace ZincDB {
 					count++;
 
 			return count;
-		}
-
-		export const compareJSONObjects = function(obj1: any, obj2: any, depth = 0, maxDepth?: number): boolean {
-			// TODO: use cycle detection instead of maxdepth
-
-			if (depth === maxDepth)
-				throw new Error(`compareJSONObjects: object was iterated up to the maximum depth of ${maxDepth}, it might be cyclic.`);
-
-			if (obj1 === obj2)
-				return true;
-
-			if (obj1 == null || obj2 == null)
-				return false;
-
-			if (typeof obj1 === 'object' && typeof obj2 === 'object') {
-				let isArrayCount = 0;
-
-				if (Array.isArray(obj1))
-					isArrayCount++;
-
-				if (Array.isArray(obj2))
-					isArrayCount++;
-
-				if (isArrayCount === 0) {
-					let obj1DefinedPropertyCount = 0;
-					for (const key in obj1) {
-						if (obj1[key] !== undefined) {
-							if (!compareJSONObjects(obj1[key], obj2[key], depth + 1))
-								return false;
-
-							obj1DefinedPropertyCount++;
-						}
-					}
-
-					let obj2DefinedPropertyCount = 0;
-					for (const key in obj2) {
-						if (obj2[key] !== undefined)
-							obj2DefinedPropertyCount++;
-					}
-
-					if (obj1DefinedPropertyCount === obj2DefinedPropertyCount)
-						return true;
-				}
-				else if (isArrayCount === 2) {
-					if (obj1.length !== obj2.length)
-						return false;
-
-					for (let i = 0; i < obj1.length; i++) {
-						if (!compareJSONObjects(obj1[i], obj2[i], depth + 1))
-							return false;
-					}
-
-					return true;
-				}
-			}
-
-			return false;
 		}
 
 		let propertyNameCache: Map<any, string[]>;

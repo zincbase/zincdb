@@ -1,5 +1,6 @@
 namespace ZincDB {
 	export namespace ObjectTools {
+
 		export const deepClone = function <T>(val: T, seenObjects: any[] = []): T {
 			if (val == null || typeof val !== "object")
 				return val;
@@ -11,7 +12,7 @@ namespace ZincDB {
 			switch (prototypeIdentifier) {
 				case "[object Array]":
 					if (seenObjects.indexOf(obj) >= 0)
-						throw new Error("deepCloneObject: encountered a cyclic object");
+						throw new Error("deepClone: encountered a cyclic object");
 					
 					seenObjects.push(obj);
 
@@ -69,7 +70,7 @@ namespace ZincDB {
 
 				default:
 					if (seenObjects.indexOf(obj) >= 0)
-						throw new Error("deepCloneObject: encountered a cyclic object");
+						throw new Error("deepClone: encountered a cyclic object");
 
 					seenObjects.push(obj);
 				
