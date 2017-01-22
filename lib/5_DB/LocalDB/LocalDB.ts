@@ -84,7 +84,7 @@ namespace ZincDB {
 				return await t.write();
 			}
 
-			async delete(path: NodePath | string): Promise<void> {
+			async delete(path: EntityPath | string): Promise<void> {
 				const t = this.batch();
 				t.delete(path);
 				return await t.write();

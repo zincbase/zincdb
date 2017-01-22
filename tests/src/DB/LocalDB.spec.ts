@@ -146,6 +146,30 @@ namespace ZincDB {
 							});
 						});
 
+						it("Allows to delete branches", async () => {
+							await db.batch()
+								.put(["a", "b"], "yo")
+								.put(["a", "c"], 25)
+								.put(["b", "a"], [1, 2, 3])
+								.write();
+
+							await db.delete(["a"]);
+
+							expect(await db.get([["a", "b"], ["a", "c"], ["b", "a"]]))
+								.toEqual([undefined, undefined, [1, 2, 3]]);
+						});
+
+						it("Allows to delete value descendants", async () => {
+							await db.batch()
+								.put(["a", "b"], [11, 22, { hey: "yo", ba: 555 }])
+								.write();
+
+							await db.delete(["a", "b", 2, "hey"]);
+
+							expect(await db.get(["a", "b"]))
+								.toEqual([11, 22, { ba: 555 }]);
+						});
+
 						it("Stores and reads a batch including Uint8Array objects", async () => {
 							await db.batch()
 								.put(["hey ya", "yo"], new Uint8Array([1, 2, 3, 4]))
@@ -223,14 +247,19 @@ namespace ZincDB {
 						});
 
 						it("Errors when trying to update non-existing nodes", async () => {
-							const b = db.batch();
-							b.put(["a", "b"], "yo");
-							b.put(["a", "c"], { hey: 45 });
-							await b.write();
+							await db.batch()
+								.put(["a", "b"], "yo")
+								.put(["a", "c"], { hey: 45 })
+								.write();
 
 							await expectPromiseToReject(db.update(["b"], 24));
 							await expectPromiseToReject(db.update(["a", "d"], "hi"));
 						});
+
+						it("Doesn't error when trying to delete non-existing nodes", async () => {
+							await db.put(["a", "b"], "yo");
+							await expectPromiseToResolve(db.delete(["aaa","bbb","ccc"]));
+						});						
 
 						it("Allows updating nodes that were created earlier within the same batch", async () => {
 							// Update leaf:
@@ -326,7 +355,7 @@ namespace ZincDB {
 								const item = list[itemKey]
 								expect(item === "Hi" || item === 45).toBe(true);
 							}
-						});						
+						});
 
 						it("Observes and notifies on changes", () => {
 							return new Promise((resolve) => {
@@ -660,5 +689,12 @@ namespace ZincDB {
 				() => expect(true).toBe(false, "Expected promise to reject"),
 				() => expect(true).toBe(true))
 		}
+
+		function expectPromiseToResolve(promise: Promise<any>) {
+			return promise
+				.then(
+				() => expect(true).toBe(true),
+				() => expect(true).toBe(false, "Expected promise to reject"))
+		}		
 	}
 }

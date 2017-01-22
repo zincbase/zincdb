@@ -138,31 +138,9 @@ await db.put(["people", "John Doe"], {
 * Descendants of leaf node values cannot be created or assigned using `put`. E.g `db.put(["people", "John Doe", "age"], 27)` would error. However, existing ones can be modified by using `update` instead.
 * Only string specifiers can be used within paths given to `put()`. To create dynamic lists that are safe for concurrent editing, use `addListItem()` instead.
 
-## `delete`
-
-Deletes a leaf node.
-
-**Usage**:
-
-```ts
-db.delete(path)
-```
-
-**Arguments**:
-
-* `path` (array of strings or string, required): the path of the leaf node to delete.
-
-**Return value**:
-
-A promise resolving when the data has been successfully deleted from the database.
-
-**Notes**:
-
-If the given path is not found, the operation would be ignored and no error would be thrown.
-
 ## `update`
 
-Update an existing entity in the database.
+Updates an existing entity in the database.
 
 **Usage**:
 
@@ -208,9 +186,31 @@ await db.update([], { // Update the root branch
 
 * If the given path is an ancestor to one or multiple existing leaf nodes, the given value must be an object, and would internally be matched to each corresponding leaf node within the given path. If an existing node cannot be matched, it will be taken to be deleted. If the object contains properties or descendant properties that cannot be matched in the database, an error will be thrown and the operation would be aborted.
 
+## `delete`
+
+Deletes an entity from the database.
+
+**Usage**:
+
+```ts
+db.delete(path)
+```
+
+**Arguments**:
+
+* `path` (array of strings or string, required): the entity to delete. This can be any leaf nodes, branch, property or array element path.
+
+**Return value**:
+
+A promise resolving when the data has been successfully deleted from the database.
+
+**Notes**:
+
+This operation is identical to `update(path, undefined)` except that if the given path is not found, no error would be thrown.
+
 ## `addListItem`
 
-Creates a new leaf node with a random identifier as a child to the given container path. This can be use to maintain a list structure that is safe for concurrent editing.
+Creates a new leaf node with a random identifier as a child to the given container path. This can be used to maintain a list structure that is safe for concurrent editing.
 
 **Usage**:
 
@@ -246,6 +246,10 @@ The database now looks like:
 	}
 }
 ```
+
+**Notes**:
+
+The random identifier can be generated using the `ZincDB.randKey()` utility method, described near the end of this document.
 
 ## `batch`
 

@@ -26,21 +26,21 @@ namespace ZincDB {
 				return this;
 			}
 
-			delete(path: NodePath | string): this {
+			delete(path: EntityPath | string): this {
 				if (this.batchCommited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containingDB.isClosed)
 					throw new Error("Database has been closed.");
 
-				path = LocalDBOperations.verifyAndNormalizeNodePath(path, true);
+				path = LocalDBOperations.verifyAndNormalizeEntityPath(path);
 
 				this.batch.push({ type: OperationType.Delete, path });
 
 				return this;
 			}
 
-			update(path: NodePath | string, newValue: any): this
+			update(path: EntityPath | string, newValue: any): this
 			update(...args: any[]): this {
 				if (args.length !== 2)
 					throw new Error("Expected exactly two arguments.");
@@ -51,7 +51,7 @@ namespace ZincDB {
 				if (this.containingDB.isClosed)
 					throw new Error("Database has been closed.");
 
-				const path = LocalDBOperations.verifyAndNormalizeNodePath(args[0], false);
+				const path = LocalDBOperations.verifyAndNormalizeEntityPath(args[0]);
 				const value = args[1];
 
 				this.batch.push({ type: OperationType.Update, path, value });

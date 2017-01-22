@@ -80,7 +80,7 @@ namespace ZincDB {
 					throw err;
 				}
 
- 				this.currentOpenOptions = options;
+				this.currentOpenOptions = options;
 			}
 
 			async getEntity(path: EntityPath): Promise<any> {
@@ -226,7 +226,7 @@ namespace ZincDB {
 					transactionNodeLookup.add(path);
 				}
 
-				const processPutOrDeleteOperation = (path: NodePath, value: any) => {
+				const processPutOperation = (path: NodePath, value: any) => {
 					LocalDBOperations.verifyAndNormalizeNodePath(path, true);
 
 					let matchObject = transactionNodeLookup.findMatchingNodes(path);
@@ -242,7 +242,7 @@ namespace ZincDB {
 					appendToResult(path, Keypath.stringify(path), value);
 				}
 
-				const processUpdateOperation = async (path: EntityPath, newValue: any) => {
+				const processUpdateOrDeleteOperation = async (path: EntityPath, newValue: any, operationType: OperationType) => {
 					let matchObject: NodeLookupMatches;
 					let matchingEntries: EntryArray<any>;
 
@@ -272,8 +272,12 @@ namespace ZincDB {
 						}
 					}
 
-					if (matchObject.matchType === MatchType.None || matchingEntries.length === 0)
-						throw new Error(`The path ${Keypath.formatPath(path)} did not match any existing entity in the database. To create new leaf nodes, please use 'put' instead.`);
+					if (matchObject.matchType === MatchType.None || matchingEntries.length === 0) {
+						if (operationType === OperationType.Update)
+							throw new Error(`The path ${Keypath.formatPath(path)} did not match any existing entity in the database. To create new leaf nodes, please use 'put' instead.`);
+						else
+							return;
+					}
 
 					switch (matchObject.matchType) {
 						case MatchType.Leaf:
@@ -325,8 +329,8 @@ namespace ZincDB {
 								appendToResult(descendantPath, descendantLeafEntry.key, newLeafValue);
 							}
 
-							if (!ObjectTools.compareJSONObjects(newValue, newBranchObject))
-								throw new Error(`Failed updating branch ${Keypath.formatPath(path)}. The supplied branch object contained a descendant object whose path could not be matched in the database. To create new leaf nodes please use 'put' instead.`);
+							if (newValue !== undefined && !ObjectTools.compareJSONObjects(newValue, newBranchObject))
+								throw new Error(`Failed updating branch ${Keypath.formatPath(path)}. The supplied object contained a descendant object whose path could not be matched in the database. To create new leaf nodes please use 'put' instead.`);
 
 							break;
 					}
@@ -335,15 +339,15 @@ namespace ZincDB {
 				for (const operation of transaction) {
 					switch (operation.type) {
 						case OperationType.Put:
-							processPutOrDeleteOperation(operation.path, operation.value);
-							break;
-
-						case OperationType.Delete:
-							processPutOrDeleteOperation(operation.path, undefined);
+							processPutOperation(operation.path, operation.value);
 							break;
 
 						case OperationType.Update:
-							await processUpdateOperation(operation.path, operation.value);
+							await processUpdateOrDeleteOperation(operation.path, operation.value, OperationType.Update);
+							break;
+
+						case OperationType.Delete:
+							await processUpdateOrDeleteOperation(operation.path, undefined, OperationType.Delete);
 							break;
 
 						default:
