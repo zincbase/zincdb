@@ -231,9 +231,7 @@ await db.update(["a", "b"], {
 
 ## `delete()`
 
-The `delete()` operation is identical to `update(path, undefined)` except it doesn't error when the given path isn't found.
-
-_Note: the described functionality is currently in development.._
+The `delete()` operation is exactly identical to `update(path, undefined)` except it doesn't error when the given path isn't found.
 
 ## `addListItem()`
 
