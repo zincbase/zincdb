@@ -11,6 +11,9 @@ namespace ZincDB {
 
 			protected readonly nodeLookup: NodeLookup = new NodeLookup();
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Initialization operations
+			//////////////////////////////////////////////////////////////////////////////////////			
 			async open(name: string, options: LocalDBOptions) {
 				if (this.db !== undefined) {
 					if (ObjectTools.compareJSONObjects(options, this.currentOpenOptions) === true)
@@ -83,6 +86,9 @@ namespace ZincDB {
 				this.currentOpenOptions = options;
 			}
 
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Read operations
+			//////////////////////////////////////////////////////////////////////////////////////
 			async getEntity(path: EntityPath): Promise<any> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
@@ -206,6 +212,10 @@ namespace ZincDB {
 			async getAll(): Promise<PathEntries> {
 				const allEntries = await this.getAllEntries();
 				return allEntries.map((entry) => { return { path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata } });
+			}
+
+			async hasEntity(path: EntityPath): Promise<boolean> {
+				return (await this.getEntity(path)) !== undefined;
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -912,6 +922,9 @@ namespace ZincDB {
 			}
 		}
 
+		////////////////////////////////////////////////////////////////////////////////////////////////
+		// Type schema
+		////////////////////////////////////////////////////////////////////////////////////////////////
 		export type LocalDBOperationsSchema = {
 			open: { Args: [string, LocalDBOptions]; ReturnValue: void };
 			commitLocalTransaction: { Args: [Batch]; ReturnValue: EntryArray<any> };
@@ -922,6 +935,7 @@ namespace ZincDB {
 			getAllEntries: { Args: undefined[]; ReturnValue: EntryArray<any> };
 			getAllKeys: { Args: undefined[]; ReturnValue: string[] };
 			getAll: { Args: undefined[]; ReturnValue: PathEntries };
+			hasEntity: { Args: [EntityPath]; ReturnValue: boolean };
 			getLatestServerMetadata: { Args: undefined[]; ReturnValue: ServerMetadata };
 			discardLocalEntryKeys: { Args: [string[]]; ReturnValue: EntryArray<any> };
 			getConflictingEntries: { Args: undefined[]; ReturnValue: ConflictInfo[] };

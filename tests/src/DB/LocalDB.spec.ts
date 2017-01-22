@@ -258,8 +258,8 @@ namespace ZincDB {
 
 						it("Doesn't error when trying to delete non-existing nodes", async () => {
 							await db.put(["a", "b"], "yo");
-							await expectPromiseToResolve(db.delete(["aaa","bbb","ccc"]));
-						});						
+							await expectPromiseToResolve(db.delete(["aaa", "bbb", "ccc"]));
+						});
 
 						it("Allows updating nodes that were created earlier within the same batch", async () => {
 							// Update leaf:
@@ -299,7 +299,7 @@ namespace ZincDB {
 							expect(await db.get(["e", "h"])).toEqual("kkk");
 						});
 
-						it("Allows updating nodes that were updated earlier within the same transaction", async () => {
+						it("Allows updating nodes that were updated earlier within the same batch", async () => {
 							await db.put(["a", "b"], 1234);
 							await db.put(["a", "c"], "asdf");
 
@@ -355,6 +355,31 @@ namespace ZincDB {
 								const item = list[itemKey]
 								expect(item === "Hi" || item === 45).toBe(true);
 							}
+						});
+
+						it("Checks for existence of nodes and value descendants", async () => {
+							await db.batch()
+								.put(["a", "b"], { x: "baba" })
+								.put(["a", "c"], [44, 55, 66])
+								.write();
+
+							expect(await db.has(["a", "b"])).toEqual(true);
+							expect(await db.has(["a", "b", "x"])).toEqual(true);
+							expect(await db.has(["a", "b", "y"])).toEqual(false);
+							expect(await db.has(["a"])).toEqual(true);
+							expect(await db.has([])).toEqual(true);
+							expect(await db.has(["a", "c", 2])).toEqual(true);
+							expect(await db.has(["a", "c", 3])).toEqual(false);
+						});
+
+						it("Checks for existence of multiple nodes and value descendants", async () => {
+							await db.batch()
+								.put(["a", "b"], { x: "baba" })
+								.put(["a", "c"], [44, 55, 66])
+								.write();
+
+							expect(await db.has([["a", "b"], ["a", "b", "x"], ["a", "b", "y"], ["a", "c", 2], ["a", "c", 3]]))
+								.toEqual([true, true, false, true, false]);
 						});
 
 						it("Observes and notifies on changes", () => {
@@ -695,6 +720,6 @@ namespace ZincDB {
 				.then(
 				() => expect(true).toBe(true),
 				() => expect(true).toBe(false, "Expected promise to reject"))
-		}		
+		}
 	}
 }

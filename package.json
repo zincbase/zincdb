@@ -1,11 +1,13 @@
 {
   "name": "zincdb",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "A database and synchronization library for Javascript applications.",
   "keywords": [
     "database",
     "synchronization",
-    "storage"
+    "storage",
+    "leveldb",
+    "sqlite"
   ],
   "author": "Rotem Dan <rotemdan@gmail.com>",
   "license": "MIT",

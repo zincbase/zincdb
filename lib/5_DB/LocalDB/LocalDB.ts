@@ -141,7 +141,7 @@ namespace ZincDB {
 					pathOrPaths = [pathOrPaths];
 
 				if (!Array.isArray(pathOrPaths))
-					throw new TypeError("Invalid first argument provided: must be an  array, array of arrays or string.");
+					throw new TypeError("Invalid first argument provided: must be an array, array of arrays or string.");
 
 				if (Array.isArray(pathOrPaths[0])) {
 					const paths = <EntityPath[]>pathOrPaths;
@@ -151,9 +151,34 @@ namespace ZincDB {
 				}
 			}
 
+			async has(path: string): Promise<boolean>;
+			async has(path: EntityPath): Promise<boolean>;
+			async has(paths: EntityPath[]): Promise<boolean[]>;
+			async has(pathOrPaths: EntityPath | EntityPath[] | string): Promise<boolean | boolean[]> {
+				if (this.isClosed)
+					throw new Error("Database has been closed.");
+
+				if (typeof pathOrPaths === "string")
+					pathOrPaths = [pathOrPaths];
+
+				if (!Array.isArray(pathOrPaths))
+					throw new TypeError("Invalid first argument provided: must be an array, array of arrays or string.");
+
+				if (Array.isArray(pathOrPaths[0])) {
+					const paths = <EntityPath[]>pathOrPaths;
+					return Promise.all(paths.map((path) => this.hasEntity(path)));
+				} else {
+					return this.hasEntity(<EntityPath>pathOrPaths);
+				}
+			}			
+
 			protected async getEntity(path: EntityPath): Promise<any> {
 				return this.exec("getEntity", [path]);
 			}
+
+			protected async hasEntity(path: EntityPath): Promise<boolean> {
+				return this.exec("hasEntity", [path]);
+			}			
 
 			async getAllEntries(): Promise<EntryArray<any>> {
 				return this.exec("getAllEntries", []);
@@ -579,7 +604,7 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Utilities
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async exec(operationName: keyof LocalDBOperationsSchema, args: any[]): Promise<any> {
+			async exec<K extends keyof LocalDBOperationsSchema>(operationName: K, args: LocalDBOperationsSchema[K]['Args']) {
 				return this.operations.exec(this.name, operationName, args);
 			}
 

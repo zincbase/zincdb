@@ -391,6 +391,41 @@ Returns:
 ]
 ```
 
+**Notes**:
+
+If retrieving multiple paths, single node path in the array of paths must be expressed their full form. They cannot be shortened to a string. E.g. the following would not be accepted:
+
+```ts
+db.get([["people", "John Doe", "medals"], "dogs", "cats"]
+```
+Instead write:
+
+```ts
+db.get([["people", "John Doe", "medals"], ["dogs"], ["cats"]]
+```
+
+## `has`
+
+Check for the existence of entity(s) on the given path(s).
+
+**Usage**:
+
+```ts
+db.has(path)
+```
+
+**Arguments**:
+
+* `path` (array of strings, array of arrays of strings, or string, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
+
+**Return value**:
+
+A promise resolving to `true` or `false`. If multiple paths are specified, the results would be contained in an array corresponding to the order of the specified paths.
+
+**Notes**:
+
+Like in `get`, when passing multiple paths, single node paths must be written in their array form. See the notes above for `get` for an example.
+
 ## `subscribe` and `observe`
 
 Tracks changes to a given path and its descendants. This includes both local and remote changes. Both `subscribe` and `observe` are essentially identical except that `observe` also includes the updated value each time the handler is called.
