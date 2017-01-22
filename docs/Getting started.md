@@ -305,7 +305,7 @@ await db.batch(
 
 (Note that `appendListItem` is used here, rather than `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing batch object instead of a string, so it can be used within a chain).
 
-## Setting up a server.
+## Setting up a server
 
 See the [ZincServer getting started guide](https://github.com/zincbase/zincserver/blob/master/docs/Getting%20started%20guide.md).
 
