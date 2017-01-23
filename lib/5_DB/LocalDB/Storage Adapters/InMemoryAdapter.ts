@@ -60,12 +60,12 @@ namespace ZincDB {
 					const operationsForObjectstore = transactionObject[objectStoreName];
 
 					for (const key in operationsForObjectstore) {
-						const value = operationsForObjectstore[key];
+						const entry = operationsForObjectstore[key];
 
-						if (value == null)
+						if (entry == null)
 							objectStore.delete(key);
 						else
-							objectStore.set(key, LocalDBOperations.cloneEntry(value))
+							objectStore.set(key, LocalDBOperations.cloneEntry(entry))
 					}
 				}
 			}
@@ -73,9 +73,9 @@ namespace ZincDB {
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Read operations
 			//////////////////////////////////////////////////////////////////////////////////////
-			async get<V>(key: string, objectStoreName: string, indexName?: string): Promise<Entry<V>>
-			async get<V>(keys: string[], objectStoreName: string, indexName?: string): Promise<Entry<V>[]>
-			async get<V>(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<Entry<V> | Entry<V>[]> {
+			async get<V>(key: string, objectStoreName: string): Promise<Entry<V>>
+			async get<V>(keys: string[], objectStoreName: string): Promise<Entry<V>[]>
+			async get<V>(keyOrKeys: string | string[], objectStoreName: string): Promise<Entry<V> | Entry<V>[]> {
 				const objectStore = this.objectStores[objectStoreName];
 
 				if (objectStore === undefined)
@@ -94,9 +94,9 @@ namespace ZincDB {
 				}
 			}
 
-			async has(key: string, objectStoreName: string, indexName?: string): Promise<boolean>;
-			async has(keys: string[], objectStoreName: string, indexName?: string): Promise<boolean[]>;
-			async has(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<boolean | boolean[]> {
+			async has(key: string, objectStoreName: string): Promise<boolean>;
+			async has(keys: string[], objectStoreName: string): Promise<boolean[]>;
+			async has(keyOrKeys: string | string[], objectStoreName: string): Promise<boolean | boolean[]> {
 				const objectStore = this.objectStores[objectStoreName];
 
 				if (objectStore === undefined)

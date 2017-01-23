@@ -4,18 +4,26 @@ namespace ZincDB {
 	export namespace DB {
 		describe(`LocalDB`, () => {
 			runDBTests("InMemory", false);
+
+			if (WebStorageAdapter.isAvailable)
+				runDBTests("LocalStorage", false);
+
+			if (WebStorageAdapter.isAvailable)
+				runDBTests("SessionStorage", false);
+
 			if (IndexedDBAdapter.isAvailable)
 				runDBTests("IndexedDB", false);
 
 			if (WebSQLAdapter.isAvailable)
 				runDBTests("WebSQL", false);
 			/*
-						if (NodeSQLiteAdapter.isAvailable)
-							runDBTests("SQLite", false);
-			
-						if (LevelUpAdapter.isAvailable)
-							runDBTests("LevelDB", false);
+			if (NodeSQLiteAdapter.isAvailable)
+				runDBTests("SQLite", false);
+
+			if (LevelUpAdapter.isAvailable)
+				runDBTests("LevelDB", false);
 			*/
+
 			if (webWorkersAvailable()) {
 				runDBTests("InMemory", true);
 
