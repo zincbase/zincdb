@@ -1,6 +1,6 @@
 namespace ZincDB {
 	export namespace ObjectTools {
-		export const deepCompare = function (obj1: any, obj2: any, seenObjects1: any[] = [], seenObjects2: any[] = []): boolean {
+		export const deepCompare = function (obj1: any, obj2: any, seenObjects: any[] = []): boolean {
 			if (obj1 === obj2)
 				return true;
 
@@ -21,19 +21,18 @@ namespace ZincDB {
 
 			switch (prototypeIdentifier) {
 				case "[object Array]":
-					if (seenObjects1.indexOf(obj1) >= 0 || seenObjects2.indexOf(obj2) >= 0)
+					if (seenObjects.indexOf(obj1) >= 0)
 						throw new Error("deepCompare: encountered a cyclic object");
 
-					seenObjects1.push(obj1);
-					seenObjects2.push(obj2);
-
+					seenObjects.push(obj1);
 					if (obj1.length !== obj2.length)
 						return false;
 
 					for (let i = 0; i < obj1.length; i++) {
-						if (deepCompare(obj1[i], obj2[i], seenObjects1, seenObjects2) === false)
+						if (deepCompare(obj1[i], obj2[i], seenObjects) === false)
 							return false;
 					}
+					seenObjects.pop();
 
 					return true;
 
@@ -77,24 +76,23 @@ namespace ZincDB {
 					return Encoding.RegExpString.encode(obj1) === Encoding.RegExpString.encode(obj2);
 
 				default: // Compare any other object
-					if (seenObjects1.indexOf(obj1) >= 0 || seenObjects2.indexOf(obj2) >= 0)
+					if (seenObjects.indexOf(obj1) >= 0 )
 						throw new Error("deepCompare: encountered a cyclic object");
 
-					seenObjects1.push(obj1);
-					seenObjects2.push(obj2);
-
+					seenObjects.push(obj1);
 					let obj1DefinedOwnPropertyCount = 0;
 					for (const propName in obj1) {
 						if (obj1.hasOwnProperty(propName) && obj1[propName] !== undefined) {
 							if (!obj2.hasOwnProperty(propName))
 								return false;
 								
-							if (!deepCompare(obj1[propName], obj2[propName]))
+							if (deepCompare(obj1[propName], obj2[propName], seenObjects) === false)
 								return false;
 
 							obj1DefinedOwnPropertyCount++;
 						}
 					}
+					seenObjects.pop();
 
 					let obj2DefinedOwnPropertyCount = 0;
 					for (const propName in obj2) {

@@ -20,6 +20,8 @@ namespace ZincDB {
 
 					for (let i = 0; i < obj.length; i++)
 						clonedArray[i] = deepClone(obj[i], seenObjects);
+					
+					seenObjects.pop();
 
 					return <any> clonedArray;
 				case "[object ArrayBuffer]":
@@ -79,6 +81,8 @@ namespace ZincDB {
 					for (const propName in obj)
 						if (obj.hasOwnProperty(propName))
 							clonedObj[propName] = deepClone(obj[propName], seenObjects);
+					
+					seenObjects.pop();
 
 					return clonedObj;
 			}
