@@ -10,7 +10,7 @@ Features:
 
 * Hierarchal data model. Compatible with plain JavaScript objects.
 * Fully asynchronous (promise based).
-* Selectable IndexedDB/WebSQL/SQLite/LevelDB/In-memory storage adapters with automatic fallbacks based on availability.
+* Selectable IndexedDB/WebSQL/SQLite/LevelDB/LocalStorage/SessionStorage/In-memory storage adapters with automatic fallbacks based on availability.
 * Optionally runs in a web worker, or a child process in Node.js. Designed for short loading times and minimal impact over the responsiveness of the main application, web-page or server.
 * Supports storing raw binary data in all storage adapters.
 * Fine-grained customization of background synchronization types (manual, automatic, unidirectional, bidirectional, WebSocket, COMET etc.).
