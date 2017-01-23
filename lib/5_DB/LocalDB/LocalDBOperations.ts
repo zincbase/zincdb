@@ -80,6 +80,8 @@ namespace ZincDB {
 							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
 						else if (WebSQLAdapter.isAvailable)
 							this.db = new WebSQLAdapter(localDBIdentifier);
+						else if (WebStorageAdapter.isAvailable)
+							this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");			
 						else
 							this.db = new InMemoryAdapter(localDBIdentifier);
 						break;
