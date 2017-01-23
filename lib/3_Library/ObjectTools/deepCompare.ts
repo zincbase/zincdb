@@ -1,7 +1,5 @@
 namespace ZincDB {
 	export namespace ObjectTools {
-		const toString = Object.prototype.toString;
-
 		export const deepCompare = function (obj1: any, obj2: any, seenObjects1: any[] = [], seenObjects2: any[] = []): boolean {
 			if (obj1 === obj2)
 				return true;

@@ -6,7 +6,7 @@ namespace ZincDB {
 				return val;
 
 			const obj = <any> val;
-			const prototypeIdentifier = Object.prototype.toString.call(obj);
+			const prototypeIdentifier = toString.call(obj);
 			let clonedArray: any;
 
 			switch (prototypeIdentifier) {
@@ -76,8 +76,9 @@ namespace ZincDB {
 				
 					const clonedObj: any = {};
 
-					for (const property in obj)
-						clonedObj[property] = deepClone(obj[property], seenObjects);
+					for (const propName in obj)
+						if (obj.hasOwnProperty(propName))
+							clonedObj[propName] = deepClone(obj[propName], seenObjects);
 
 					return clonedObj;
 			}

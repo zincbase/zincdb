@@ -94,6 +94,8 @@ namespace ZincDB {
 		else
 			return undefined;
 	}
+	
+	export const toString = Object.prototype.toString;	
 
 	if (commonJSAvailable()) {
 		module.exports = ZincDB;
