@@ -12,12 +12,11 @@ namespace ZincDB {
 			}
 		}
 
-		type EntryValueCellProps = { row: ViewState["rows"][0] };
-		export class EntryValueCell extends React.Component<EntryValueCellProps, {}> {
+		export class EntryValueCell extends React.Component<{ row: ViewState["rows"][0] }, {}> {
 			isEditable = false;
 			element: HTMLSpanElement;
 
-			shouldComponentUpdate(nextProps: EntryValueCellProps) {
+			shouldComponentUpdate(nextProps: this["props"]) {
 				const nextValueJSON = nextProps.row.formattedValue;
 				const currentElementText = this.element.innerText;
 				//log(`nextValue: ${nextValueJSON}, currentElementText: ${currentElementText}` );
@@ -25,7 +24,7 @@ namespace ZincDB {
 				return nextValueJSON !== currentElementText;
 			}
 
-			componentDidUpdate(prevProps: EntryValueCellProps) {
+			componentDidUpdate(prevProps: this["props"]) {
 				const currentValueJSON = this.props.row.formattedValue;
 				const currentElementText = this.element.innerText;
 
