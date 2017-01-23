@@ -1,6 +1,6 @@
 namespace ZincDB {
 	export namespace ObjectTools {
-		export const deepSearchAllTypedArrays = function (obj: any): any[] {
+		export const deepSearchTransferableObjects = function (obj: any): ArrayBuffer[] {
 			const reducer = (val: any, currentResult: number[]): any[] => {
 				if (val == null || typeof val !== "object")
 					return currentResult;
@@ -9,6 +9,10 @@ namespace ZincDB {
 
 				switch (prototypeIdentifier) {
 					case "[object ArrayBuffer]":
+						if (currentResult.indexOf(val) === -1) {
+							return currentResult.concat(val);
+						}
+						break;
 					case "[object Int8Array]":
 					case "[object Uint8Array]":
 					case "[object Uint8ClampedArray]":
@@ -18,10 +22,14 @@ namespace ZincDB {
 					case "[object Uint32Array]":
 					case "[object Float32Array]":
 					case "[object Float64Array]":
-						return currentResult.concat(val);
-					default:
-						return currentResult;
+						if (currentResult.indexOf(val.buffer) === -1) {
+							return currentResult.concat(val.buffer);
+						}
+						
+						break;
 				}
+
+				return currentResult;
 			}
 
 			return deepReduce(obj, reducer, []);

@@ -38,7 +38,7 @@ namespace ZincDB {
 			if (!runningInWebWorker())
 				return;
 
-			const targets: { [databaseName: string]: MethodDispatcher } = {};				
+			const targets: { [databaseName: string]: MethodDispatcher } = {};
 
 			self.addEventListener("message", async (event: MessageEvent) => {
 				const message: TokenizedRequest = event.data;
@@ -56,7 +56,10 @@ namespace ZincDB {
 				try {
 					const returnValue = await operations.exec(message.target, <any>message.operation, message.args);
 					const responseMessage: TokenizedResponse = { target: message.target, operation: message.operation, result: returnValue, token: message.token }
-					self.postMessage(responseMessage , <any>[]);
+
+					//log(ObjectTools.deepSearchTransferableObjects(responseMessage));
+					self.postMessage(responseMessage, <any>ObjectTools.deepSearchTransferableObjects(responseMessage));
+					//self.postMessage(responseMessage , <any>[]);
 				}
 				catch (err) {
 					let errObject;
