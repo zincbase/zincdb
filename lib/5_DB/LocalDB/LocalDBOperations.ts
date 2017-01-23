@@ -57,6 +57,20 @@ namespace ZincDB {
 						this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
 						break;
 
+					case "LocalStorage":
+						if (!WebStorageAdapter.isAvailable)
+							throw new Error("LocalStorage is not available at the current context.");
+
+						this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");
+						break;
+
+					case "SessionStorage":
+						if (!WebStorageAdapter.isAvailable)
+							throw new Error("SessionStorage is not available at the current context.");
+
+						this.db = new WebStorageAdapter(localDBIdentifier, "SessionStorage");
+						break;
+
 					case "OnDisk":
 						if (LevelUpAdapter.isAvailable)
 							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");

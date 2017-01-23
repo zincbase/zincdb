@@ -4,6 +4,12 @@ namespace ZincDB {
 
 		testStorageAdapter("InMemory", new InMemoryAdapter(dbName));
 
+		if (WebStorageAdapter.isAvailable)
+			testStorageAdapter("LocalStorage", new WebStorageAdapter(dbName, "LocalStorage"));
+
+		if (WebStorageAdapter.isAvailable)
+			testStorageAdapter("SessionStorage", new WebStorageAdapter(dbName, "SessionStorage"));
+
 		if (IndexedDBAdapter.isAvailable)
 			testStorageAdapter("IndexedDB", new IndexedDBAdapter(dbName));
 
