@@ -2,7 +2,7 @@ namespace ZincDB {
 	export interface DispatcherSchema { [name: string]: { Args: any[]; ReturnValue: any } };
 
 	export interface Dispatcher<Schema extends DispatcherSchema> {
-		exec<K extends keyof Schema>(target: string, name: K, args: Schema[K]['Args']): Promise<Schema[K]['ReturnValue']>;
+		exec<K extends keyof Schema>(target: string, name: K, args: Schema[K]['Args'], options?: object): Promise<Schema[K]['ReturnValue']>;
 	}
 
 	export class MethodDispatcher implements Dispatcher<any> {
@@ -49,7 +49,7 @@ namespace ZincDB {
 		token: string;		
 	}
 	
-	export type TokenizedRequestHandler = (request: TokenizedRequest) => void
+	export type TokenizedRequestHandler = (request: TokenizedRequest, options?: object) => void
 	export type TokenizedResponseHandler = (response: TokenizedResponse) => void
 
 	export class TokenizedDispatcher implements Dispatcher<any> {
@@ -64,7 +64,7 @@ namespace ZincDB {
 			this.responseHandlers = new StringMap<TokenizedResponseHandler>();
 		}
 
-		exec(target: string, operation: string, args: any[]): Promise<any> {
+		exec(target: string, operation: string, args: any[], options?: object): Promise<any> {
 			return new Promise((resolve, reject) => {
 				const requestMessage: TokenizedRequest = {
 					target,
@@ -82,7 +82,7 @@ namespace ZincDB {
 						reject(response.error);
 				});
 
-				this.requestHandler(requestMessage);
+				this.requestHandler(requestMessage, options);
 			})
 		}
 

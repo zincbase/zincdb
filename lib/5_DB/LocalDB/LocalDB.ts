@@ -119,7 +119,7 @@ namespace ZincDB {
 			}
 
 			protected async commitSerializedRemoteEntries(serializedEntries: Uint8Array) {
-				const diff = await this.exec("commitSerializedRemoteEntries", [serializedEntries, this.options.encryptionKey]);
+				const diff = await this.exec("commitSerializedRemoteEntries", [serializedEntries, this.options.encryptionKey], { transferList: [serializedEntries.buffer] });
 				await this.announceChanges("remote", diff);
 			}
 
@@ -604,8 +604,8 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Utilities
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async exec<K extends keyof LocalDBOperationsSchema>(operationName: K, args: LocalDBOperationsSchema[K]['Args']) {
-				return this.operations.exec(this.name, operationName, args);
+			async exec<K extends keyof LocalDBOperationsSchema>(operationName: K, args: LocalDBOperationsSchema[K]['Args'], options?: object) {
+				return this.operations.exec(this.name, operationName, args, options);
 			}
 
 			////////////////////////////////////////////////////////////////////////////////////////////////

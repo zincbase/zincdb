@@ -122,7 +122,7 @@ namespace ZincDB {
 				let iterationNumber = 1;
 
 				const onIteration = async (result: DB.Entry<any>, transaction: IDBTransaction) => {
-					log(iterationNumber)
+					//log(iterationNumber)
 					if (iterationNumber === 1)
 						expect(result).toEqual(testEntry1);
 					else if (iterationNumber === 2)

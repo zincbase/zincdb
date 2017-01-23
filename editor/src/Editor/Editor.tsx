@@ -94,6 +94,7 @@ namespace ZincDB {
 				remoteSyncURL: datastoreURL || undefined,
 				remoteAccessKey: accessKey,
 				storageMedium: "OnDisk",
+				//storageMedium: "InMemory",
 				useWorker: true,
 			});
 

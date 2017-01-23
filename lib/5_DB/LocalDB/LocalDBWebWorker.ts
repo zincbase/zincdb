@@ -8,7 +8,15 @@ namespace ZincDB {
 
 			constructor(workerScriptPath: string) {
 				this.worker = new Worker(workerScriptPath);
-				this.dispatcher = new TokenizedDispatcher((request) => this.worker.postMessage(request));
+				this.dispatcher = new TokenizedDispatcher((request, options) => {
+					if (options && options["transferList"] && navigator.appVersion.indexOf("MSIE 10") === -1) {
+						//log(options["transferList"][0]["byteLength"]);
+						this.worker.postMessage(request, options["transferList"])
+					}
+					else {
+						this.worker.postMessage(request)
+					}
+				});
 
 				this.worker.addEventListener("message", (event) => {
 					const message: TokenizedResponse = event.data;
@@ -29,8 +37,8 @@ namespace ZincDB {
 				});
 			}
 
-			async exec(target: string, operation: string, args: any[]) {
-				return this.dispatcher.exec(target, operation, args);
+			async exec(target: string, operation: string, args: any[], options?: { transferList: ArrayBuffer[] }) {
+				return this.dispatcher.exec(target, operation, args, options);
 			}
 		}
 
@@ -58,8 +66,10 @@ namespace ZincDB {
 					const responseMessage: TokenizedResponse = { target: message.target, operation: message.operation, result: returnValue, token: message.token }
 
 					//log(ObjectTools.deepSearchTransferableObjects(responseMessage));
-					self.postMessage(responseMessage, <any>ObjectTools.deepSearchTransferableObjects(responseMessage));
-					//self.postMessage(responseMessage , <any>[]);
+					if (navigator.appVersion.indexOf("MSIE 10") >= 0)
+						self.postMessage(responseMessage, <any>[]);
+					else
+						self.postMessage(responseMessage, <any>ObjectTools.deepSearchTransferableObjects(responseMessage));
 				}
 				catch (err) {
 					let errObject;
