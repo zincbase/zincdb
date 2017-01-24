@@ -18,6 +18,18 @@ namespace ZincDB {
 				if (typeof name !== "string")
 					throw new Error("Missing or invalid DB name.");
 
+				if (!/^[A-Za-z0-9_]+$/.test(name)) {
+					throw new Error(`Invalid database name '${name}'. A database name must only contain the characters A-Z, a-z, 0-9 or _`)
+				}
+
+				if (name.length === 0) {
+					throw new Error("Database name cannot be empty.")
+				}
+
+				if (name.length > 127) {
+					throw new Error("Database name length must not be greater than 127 characters.")
+				}
+
 				this.options = <LocalDBOptions>ObjectTools.override({
 					remoteSyncURL: "",
 					remoteAccessKey: "",
@@ -170,7 +182,7 @@ namespace ZincDB {
 				} else {
 					return this.hasEntity(<EntityPath>pathOrPaths);
 				}
-			}			
+			}
 
 			protected async getEntity(path: EntityPath): Promise<any> {
 				return this.exec("getEntity", [path]);
@@ -178,7 +190,7 @@ namespace ZincDB {
 
 			protected async hasEntity(path: EntityPath): Promise<boolean> {
 				return this.exec("hasEntity", [path]);
-			}			
+			}
 
 			async getAllEntries(): Promise<EntryArray<any>> {
 				return this.exec("getAllEntries", []);

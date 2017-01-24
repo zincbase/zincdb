@@ -88,10 +88,21 @@ namespace ZincDB {
 				db.close();
 
 			const datastoreURL = viewState.topBar.datastoreURL;
+			
+			let localDatabaseName: string;
+			
+			if (Tools.stringStartsWith(datastoreURL, "http://")) {
+				localDatabaseName = Encoding.Underscore.encode(datastoreURL.substring(7));
+			} else if (Tools.stringStartsWith(datastoreURL, "https://")) {
+				localDatabaseName = Encoding.Underscore.encode(datastoreURL.substring(8));
+			} else {
+				throw new Error(`Invalid protocol in datastore URL '${datastoreURL}'`);
+			}
+
 			const accessKey = viewState.topBar.accessKey;
 
-			db = await open(datastoreURL, {
-				remoteSyncURL: datastoreURL || undefined,
+			db = await open(localDatabaseName, {
+				remoteSyncURL: datastoreURL,
 				remoteAccessKey: accessKey,
 				storageMedium: "OnDisk",
 				//storageMedium: "InMemory",

@@ -48,27 +48,23 @@ namespace ZincDB {
 				for (let readIndex = 0; readIndex < str.length; readIndex++) {
 					const charCode = getUnicodeCodePoint(str, readIndex);
 
-					if (charCode <= 0x7F)
-					{
+					if (charCode <= 0x7F) {
 						outputArray[writeIndex++] = charCode;
 					}
-					else if (charCode <= 0x7FF)
-					{
-						outputArray[writeIndex++] = 192 | (charCode >>> 6);
-						outputArray[writeIndex++] = 128 | (charCode & 63);
+					else if (charCode <= 0x7FF) {
+						outputArray[writeIndex++] = 0xC0 | (charCode >>> 6);
+						outputArray[writeIndex++] = 0x80 | (charCode & 63);
 					}
-					else if (charCode <= 0xFFFF)
-					{
-						outputArray[writeIndex++] = 224 | (charCode >>> 12);
-						outputArray[writeIndex++] = 128 | ((charCode >>> 6) & 63);
-						outputArray[writeIndex++] = 128 | (charCode & 63);
+					else if (charCode <= 0xFFFF) {
+						outputArray[writeIndex++] = 0xE0 | (charCode >>> 12);
+						outputArray[writeIndex++] = 0x80 | ((charCode >>> 6) & 63);
+						outputArray[writeIndex++] = 0x80 | (charCode & 63);
 					}
-					else if (charCode <= 0x10FFFF)
-					{
-						outputArray[writeIndex++] = 240 | (charCode >>> 18);
-						outputArray[writeIndex++] = 128 | ((charCode >>> 12) & 63);
-						outputArray[writeIndex++] = 128 | ((charCode >>> 6) & 63);
-						outputArray[writeIndex++] = 128 | (charCode & 63);
+					else if (charCode <= 0x10FFFF) {
+						outputArray[writeIndex++] = 0xF0 | (charCode >>> 18);
+						outputArray[writeIndex++] = 0x80 | ((charCode >>> 12) & 63);
+						outputArray[writeIndex++] = 0x80 | ((charCode >>> 6) & 63);
+						outputArray[writeIndex++] = 0x80 | (charCode & 63);
 
 						readIndex++; // A character outside the BMP had to be made from two surrogate characters
 					}
