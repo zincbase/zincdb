@@ -111,14 +111,14 @@ namespace ZincDB {
 
 				LocalDBOperations.verifyAndNormalizeEntityPath(path);
 
-				const matchObject = this.nodeLookup.findMatchingNodes(path);
+				const matchObject = this.nodeLookup.findMatchingLeafNodes(path);
 
 				const stringifiedMatchPaths = Keypath.stringifyPaths(matchObject.paths);
 
 				switch (matchObject.matchType) {
 					case MatchType.None:
 						return undefined;
-					case MatchType.Leaf:
+					case MatchType.Exact:
 						const [matchingLeafEntry] = await this.getEntries(stringifiedMatchPaths)
 						if (matchingLeafEntry === undefined)
 							return undefined;
@@ -255,10 +255,10 @@ namespace ZincDB {
 				const processPutOperation = (path: NodePath, value: any) => {
 					LocalDBOperations.verifyAndNormalizeNodePath(path, true);
 
-					let matchObject = transactionNodeLookup.findMatchingNodes(path);
+					let matchObject = transactionNodeLookup.findMatchingLeafNodes(path);
 
 					if (matchObject.matchType === MatchType.None)
-						matchObject = this.nodeLookup.findMatchingNodes(path);
+						matchObject = this.nodeLookup.findMatchingLeafNodes(path);
 
 					if (matchObject.matchType === MatchType.Ancestor ||
 						matchObject.matchType === MatchType.Descendants) {
@@ -272,15 +272,15 @@ namespace ZincDB {
 					let matchObject: NodeLookupMatches;
 					let matchingEntries: EntryArray<any>;
 
-					const transactionMatchObject = transactionNodeLookup.findMatchingNodes(path);
+					const transactionMatchObject = transactionNodeLookup.findMatchingLeafNodes(path);
 
 					// If there is a leaf or ancestor to a node that was created or updated previously within the
 					// transaction, then use it. There's no need to look up any existing values in the database.
-					if (transactionMatchObject.matchType === MatchType.Leaf || transactionMatchObject.matchType === MatchType.Ancestor) {
+					if (transactionMatchObject.matchType === MatchType.Exact || transactionMatchObject.matchType === MatchType.Ancestor) {
 						matchObject = transactionMatchObject;
 						matchingEntries = [<Entry<any>>transactionEntriesLookup.get(Keypath.stringify(matchObject.paths[0]))];
 					} else {
-						matchObject = this.nodeLookup.findMatchingNodes(path);
+						matchObject = this.nodeLookup.findMatchingLeafNodes(path);
 						matchingEntries = await this.getEntries(Keypath.stringifyPaths(matchObject.paths));
 
 						// If the transaction previously created or reassigned descendants as well,
@@ -306,7 +306,7 @@ namespace ZincDB {
 					}
 
 					switch (matchObject.matchType) {
-						case MatchType.Leaf:
+						case MatchType.Exact:
 							const matchingLeafEntry = matchingEntries[0];
 
 							if (matchingLeafEntry === undefined || LocalDBOperations.valuesAreEqual(matchingLeafEntry, newValue))
@@ -527,8 +527,8 @@ namespace ZincDB {
 					}
 
 					// Check if the path conflicts with an existing leaf path
-					const matchingDatabaseNodes = this.nodeLookup.findMatchingNodes(entryPath);
-					const matchingTransactionNodes = transactionNodeLookup.findMatchingNodes(entryPath);
+					const matchingDatabaseNodes = this.nodeLookup.findMatchingLeafNodes(entryPath);
+					const matchingTransactionNodes = transactionNodeLookup.findMatchingLeafNodes(entryPath);
 					if (matchingDatabaseNodes.matchType === MatchType.Ancestor ||
 						matchingDatabaseNodes.matchType === MatchType.Descendants ||
 						matchingTransactionNodes.matchType === MatchType.Ancestor ||

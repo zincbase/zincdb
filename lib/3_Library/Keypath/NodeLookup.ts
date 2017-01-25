@@ -1,5 +1,5 @@
 namespace ZincDB {
-	export const enum MatchType { None, Leaf, Ancestor, Descendants };
+	export const enum MatchType { None, Exact, Ancestor, Descendants };
 	type NodePath = Keypath.NodePath;
 	type EntityPath = Keypath.EntityPath;
 
@@ -18,7 +18,7 @@ namespace ZincDB {
 				this.add(<NodePath>path);
 		}
 
-		add(path: NodePath) {
+		add(path: NodePath): void {
 			let parentNode = this.root;
 
 			for (let i = 0; i < path.length; i++) {
@@ -38,7 +38,7 @@ namespace ZincDB {
 			}
 		}
 
-		findMatchingNodes(path: EntityPath): NodeLookupMatches {
+		findMatchingLeafNodes(path: EntityPath): NodeLookupMatches {
 			let parentNode = this.root;
 
 			for (let i = 0; i < path.length; i++) {
@@ -52,8 +52,8 @@ namespace ZincDB {
 				if (currentNode === undefined) { // if the current node does not exist 
 					return { matchType: MatchType.None, paths: [] }
 				} else if (currentNode === null) { // if the current node is a leaf
-					if (i === path.length - 1) // if the whole path has been traversed, it is a leaf match
-						return { matchType: MatchType.Leaf, paths: [<NodePath>path] }
+					if (i === path.length - 1) // if the whole path has been traversed, it is an exact match
+						return { matchType: MatchType.Exact, paths: [<NodePath>path] }
 					else // otherwise it is an ancestor match
 						return { matchType: MatchType.Ancestor, paths: [<NodePath>path.slice(0, i + 1)] }
 				}
@@ -64,16 +64,23 @@ namespace ZincDB {
 			return { matchType: MatchType.Descendants, paths: NodeLookup.getDescendantPaths(parentNode, <NodePath>path) }
 		}
 
-		delete(path: EntityPath, baseNode = this.root) {
+		delete(path: EntityPath) {
+			return this.deleteNode(path, this.root);
+		}
+
+		private deleteNode(path: EntityPath, baseNode: any) {
 			if (!Array.isArray(path) || path.length === 0)
 				throw new Error("Invalid path given");
+
+			if (baseNode == null)
+				return;
 
 			const childNodeName = path[0];
 
 			if (path.length === 1) {
 				baseNode[childNodeName] = undefined
 			} else {
-				this.delete(path.slice(1), baseNode[childNodeName]);
+				this.deleteNode(path.slice(1), baseNode[childNodeName]);
 
 				if (!ObjectTools.objectHasAtLeastOneDefinedProperty(baseNode[childNodeName])) {
 					baseNode[childNodeName] = undefined;
@@ -98,7 +105,7 @@ namespace ZincDB {
 				if (childObj === null)
 					descendantPaths.push([...currentPath, key]);
 				else if (childObj === undefined)
-					return [];
+					continue;
 				else
 					Array.prototype.push.apply(descendantPaths, this.getDescendantPaths(childObj, [...currentPath, key]));
 			}
