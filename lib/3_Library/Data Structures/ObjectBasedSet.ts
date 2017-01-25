@@ -1,7 +1,6 @@
 namespace ZincDB {
-	export class ObjectBasedSet implements Set<string>, Set<number>
-	{
-		private obj: { [key: string]: boolean } = {};
+	export class ObjectBasedSet implements Set<string>, Set<number> {
+		private obj: { [key: string]: boolean | undefined } = {};
 		size = 0;
 
 		has(key: string | number): boolean {
@@ -19,7 +18,7 @@ namespace ZincDB {
 
 		delete(key: string | number): boolean {
 			if (this.has(key)) {
-				this.obj[key] = <any> undefined;
+				this.obj[key] = undefined;
 				this.size--;
 
 				return true;
@@ -30,7 +29,7 @@ namespace ZincDB {
 
 		clear() {
 			for (const key in this.obj)
-				this.obj[key] = <any> undefined;
+				this.obj[key] = undefined;
 
 			this.size = 0;
 		}

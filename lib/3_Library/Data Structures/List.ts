@@ -1,6 +1,5 @@
 namespace ZincDB {
-	export class List<T>
-	{
+	export class List<T> {
 		constructor(public elements: T[] = []) {
 		}
 
