@@ -1,5 +1,6 @@
 namespace ZincDB {
 	export namespace DB {
+		type DatabaseMetadataEntry = { objectStoreNames?: string[] };
 		type MetadataAndValue = { metadata: EntryMetadata, value: any };
 
 		export class WebStorageAdapter implements StorageAdapter {
@@ -28,28 +29,30 @@ namespace ZincDB {
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Object store operations
 			//////////////////////////////////////////////////////////////////////////////////////
-			async createObjectStoresIfNeeded(objectStoreNames: string[]): Promise<void> {
-				const newObjectStoreNames = await this.getObjectStoreNames();
+			async createObjectStoresIfNeeded(objectStoresToCreate: string[]): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
 
-				for (const objectStoreName of objectStoreNames) {
-					if (newObjectStoreNames.indexOf(objectStoreName) === -1) {
-						newObjectStoreNames.push(objectStoreName);
-					}
-				}
-
-				this.setRawValue("@objectStoreNames", Encoding.JsonX.encode(newObjectStoreNames), undefined);
+				const currentObjectStores = await this.getObjectStoreNames();
+				const newObjectStores = objectStoresToCreate.filter((name) => currentObjectStores.indexOf(name) === -1);
+				await this.putObjectStoreNames([...currentObjectStores, ...newObjectStores]);
 			}
 
-			async deleteObjectStores(objectStoreNames: string[]): Promise<void> {
-				await this.clearObjectStores(objectStoreNames);
+			async deleteObjectStores(objectStoresToDelete: string[]): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
 
+				await this.clearObjectStores(objectStoresToDelete);
 				const currentObjectStoreNames = await this.getObjectStoreNames();
-				const newObjectStoreNames = currentObjectStoreNames.filter((name) => objectStoreNames.indexOf(name) === -1);
 
-				this.setRawValue("@objectStoreNames", Encoding.JsonX.encode(newObjectStoreNames), undefined);
+				const newObjectStoreNames = currentObjectStoreNames.filter((name) => objectStoresToDelete.indexOf(name) === -1);
+				await this.putObjectStoreNames(newObjectStoreNames);
 			}
 
 			async clearObjectStores(objectStoreNames: string[]): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				const objectStorePrefixes = objectStoreNames.map((objectStoreName) => this.getObjectStorePrefix(objectStoreName));
 
 				this.getAllWebStorageKeys().forEach((key) => {
@@ -59,7 +62,18 @@ namespace ZincDB {
 			}
 
 			async getObjectStoreNames(): Promise<string[]> {
-				return Encoding.JsonX.decode(<string> this.getRawValue("@objectStoreNames", undefined)) || [];
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				return this.getDatabaseMetadata().objectStoreNames || [];
+			}
+
+			private putObjectStoreNames(newObjectStoreNames: string[]): void {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				const currentDatabaseMetadata = this.getDatabaseMetadata();
+				this.putDatabaseMetadata({ ...currentDatabaseMetadata, objectStoreNames: newObjectStoreNames });
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +95,7 @@ namespace ZincDB {
 						if (entry == null)
 							this.deleteKey(key, objectStoreName);
 						else
-							this.setRawValue(key, this.encodeEntryMetadataAndValue(entry), objectStoreName);
+							this.putRawValue(key, this.encodeEntryMetadataAndValue(entry), objectStoreName);
 					}
 				}
 			}
@@ -169,7 +183,7 @@ namespace ZincDB {
 
 			async destroy(): Promise<void> {
 				await this.deleteObjectStores(await this.getObjectStoreNames());
-				await this.webStorage.removeItem(this.encodeToRawKey("@objectStoreNames", undefined));
+				this.deleteKey("@metadata", undefined);
 				await this.close();
 			}
 
@@ -215,7 +229,7 @@ namespace ZincDB {
 				return this.webStorage.getItem(this.encodeToRawKey(key, objectStoreName));
 			}
 
-			private setRawValue(key: string, value: string, objectStoreName: string | undefined): void {
+			private putRawValue(key: string, value: string, objectStoreName: string | undefined): void {
 				this.webStorage.setItem(this.encodeToRawKey(key, objectStoreName), value);
 			}
 
@@ -232,6 +246,26 @@ namespace ZincDB {
 				}
 
 				return allKeys;
+			}
+
+			private getDatabaseMetadata(): DatabaseMetadataEntry {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				const encodedMetadata = this.getRawValue("@metadata", undefined);
+
+				if (encodedMetadata) {
+					return Encoding.OmniJson.decode(encodedMetadata);
+				} else {
+					return {};
+				}
+			}
+
+			private putDatabaseMetadata(newMetadata: DatabaseMetadataEntry): void {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				this.putRawValue("@metadata", Encoding.OmniJson.encode(newMetadata), undefined);
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
