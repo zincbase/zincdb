@@ -1,12 +1,23 @@
 namespace ZincDB {
 	export namespace DB {
 		if (WebStorageAdapter.isAvailable) {
-			const dbName = "webStorageAdapterTestSuite-" + JSRandom.getWordCharacterString(10);
 
-			describe(`WebStorage adapter rollback test`, () => {
-				it("Automatically rolls back all changes if a transaction fails because it causes session storage to exceed the quota", async () => {
-					const storage = new WebStorageAdapter(dbName, "SessionStorage");
-					storage.open();
+			describe(`WebStorage adapter:`, () => {
+				let dbName: string;
+				let storage: WebStorageAdapter;
+
+				beforeEach(() => {
+					dbName = "webStorageAdapterTestSuite-" + JSRandom.getWordCharacterString(10);
+					storage = new WebStorageAdapter(dbName, "LocalStorage");
+				});
+
+				afterEach(() => {
+					storage.destroy();
+				});
+
+				it("Automatically rolls back all changes if a transaction fails because it causes local storage to exceed its quota", async () => {
+					const storage = new WebStorageAdapter(dbName, "LocalStorage");
+					await storage.open();
 
 					await storage.createObjectStoresIfNeeded(["store1", "store2"]);
 					await storage.set({
@@ -54,7 +65,7 @@ namespace ZincDB {
 						return;
 					}
 
-					expect(true).toBe(false, "Expected transaction to fail with a QuotaExceededError");
+					expect(true).toBe(false, "Expected transaction to fail.");
 				});
 			});
 		}
