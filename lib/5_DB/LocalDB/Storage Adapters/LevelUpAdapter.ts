@@ -92,29 +92,6 @@ namespace ZincDB {
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
-			// Metadata operations
-			//////////////////////////////////////////////////////////////////////////////////////	
-			async getDatabaseMetadata(): Promise<MetadataEntry> {
-				if (!this.isOpen)
-					throw new Error("Database is not open");
-
-				const encodedMetadata = await this.getRawValue("@metadata");
-
-				if (encodedMetadata) {
-					return Encoding.OmniBinary.decode(encodedMetadata);
-				} else {
-					return {};
-				}
-			}
-
-			async putDatabaseMetadata(newMetadata: MetadataEntry): Promise<void> {
-				if (!this.isOpen)
-					throw new Error("Database is not open");
-
-				await this.putRawValue("@metadata", Encoding.OmniBinary.encode(newMetadata));
-			}
-
-			//////////////////////////////////////////////////////////////////////////////////////
 			// Write operations
 			//////////////////////////////////////////////////////////////////////////////////////			
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> } }): Promise<void> {
@@ -392,6 +369,26 @@ namespace ZincDB {
 
 				await operationPromise;
 			}
+
+			private async getDatabaseMetadata(): Promise<MetadataEntry> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				const encodedMetadata = await this.getRawValue("@metadata");
+
+				if (encodedMetadata) {
+					return Encoding.OmniBinary.decode(encodedMetadata);
+				} else {
+					return {};
+				}
+			}
+
+			private async putDatabaseMetadata(newMetadata: MetadataEntry): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				await this.putRawValue("@metadata", Encoding.OmniBinary.encode(newMetadata));
+			}			
 
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Static methods
