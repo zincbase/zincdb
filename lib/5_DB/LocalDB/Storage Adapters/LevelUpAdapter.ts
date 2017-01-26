@@ -1,5 +1,7 @@
 namespace ZincDB {
 	export namespace DB {
+		type MetadataEntry = { objectStoreNames?: string[] };
+
 		export class LevelUpAdapter implements StorageAdapter {
 			db: LevelUp.Database;
 			readonly databaseFilePath: string;
@@ -37,29 +39,24 @@ namespace ZincDB {
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Object store operations
 			//////////////////////////////////////////////////////////////////////////////////////
-			async createObjectStoresIfNeeded(objectStoreNames: string[]): Promise<void> {
+			async createObjectStoresIfNeeded(objectStoresToCreate: string[]): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
 
-				const currentObjectStoreNames = await this.getObjectStoreNames();
-
-				for (const objectStoreName of objectStoreNames) {
-					if (currentObjectStoreNames.indexOf(objectStoreName) === -1)
-						currentObjectStoreNames.push(objectStoreName);
-				}
-
-				await this.putRawValue("@objectStoreNames", Encoding.OmniBinary.encode(currentObjectStoreNames));
+				const currentObjectStores = await this.getObjectStoreNames();
+				const newObjectStores = objectStoresToCreate.filter((name) => currentObjectStores.indexOf(name) === -1);
+				await this.putObjectStoreNames([...currentObjectStores, ...newObjectStores]);
 			}
 
-			async deleteObjectStores(objectStoreNames: string[]): Promise<void> {
+			async deleteObjectStores(objectStoresToDelete: string[]): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
 
-				await this.clearObjectStores(objectStoreNames);
+				await this.clearObjectStores(objectStoresToDelete);
 				const currentObjectStoreNames = await this.getObjectStoreNames();
 
-				const newObjectStoreNames = currentObjectStoreNames.filter((name) => objectStoreNames.indexOf(name) === -1);
-				await this.putRawValue("@objectStoreNames", Encoding.OmniBinary.encode(newObjectStoreNames));
+				const newObjectStoreNames = currentObjectStoreNames.filter((name) => objectStoresToDelete.indexOf(name) === -1);
+				await this.putObjectStoreNames(newObjectStoreNames);
 			}
 
 			async clearObjectStores(objectStoreNames: string[]): Promise<void> {
@@ -83,13 +80,38 @@ namespace ZincDB {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
 
-				const encodedObjectStoreNames = await this.getRawValue("@objectStoreNames");
+				return (await this.getDatabaseMetadata()).objectStoreNames || [];
+			}
 
-				if (encodedObjectStoreNames) {
-					return Encoding.OmniBinary.decode(encodedObjectStoreNames);
+			async putObjectStoreNames(newObjectStoreNames: string[]): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				const currentDatabaseMetadata = await this.getDatabaseMetadata();
+				await this.putDatabaseMetadata({ ...currentDatabaseMetadata, objectStoreNames: newObjectStoreNames });
+			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Metadata operations
+			//////////////////////////////////////////////////////////////////////////////////////	
+			async getDatabaseMetadata(): Promise<MetadataEntry> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				const encodedMetadata = await this.getRawValue("@metadata");
+
+				if (encodedMetadata) {
+					return Encoding.OmniBinary.decode(encodedMetadata);
 				} else {
-					return [];
+					return {};
 				}
+			}
+
+			async putDatabaseMetadata(newMetadata: MetadataEntry): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
+				await this.putRawValue("@metadata", Encoding.OmniBinary.encode(newMetadata));
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
@@ -391,10 +413,10 @@ namespace ZincDB {
 				// Add 16 bit little endian encoded size of serialized metadata
 				result[0] = metadataBytes.length & 255;
 				result[1] = metadataBytes.length >>> 8;
-				
+
 				// Add serialized metadata
 				result.set(metadataBytes, 2);
-				
+
 				// Add serialized value
 				result.set(valueBytes, 2 + metadataBytes.length);
 
@@ -405,7 +427,7 @@ namespace ZincDB {
 				const metadataSize = serializedValueAndMetadata[0] | (serializedValueAndMetadata[1] << 8);
 				const metadataBytes = serializedValueAndMetadata.subarray(2, 2 + metadataSize);
 				const valueBytes = serializedValueAndMetadata.subarray(2 + metadataSize)
-				
+
 				const metadata = Encoding.OmniBinary.decode(metadataBytes);
 				const value = Encoding.OmniBinary.decode(valueBytes);
 
