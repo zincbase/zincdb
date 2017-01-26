@@ -1,10 +1,14 @@
 namespace ZincDB {
 	export namespace ObjectTools {
-		export const getKeys = function(obj: any): string[] {
+		export const keysOf = function(obj: any): string[] {
+			if (obj == null || typeof obj !== "object")
+				return [];
+
 			const keys: string[] = [];
 
 			for (const key in obj)
-				keys.push(key);
+				if (obj.hasOwnProperty(key))
+					keys.push(key);
 
 			return keys;
 		}
