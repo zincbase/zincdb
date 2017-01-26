@@ -66,10 +66,9 @@ namespace ZincDB {
 
 				const objectStorePrefixes = objectStoreNames.map((objectStoreName) => this.getObjectStorePrefix(objectStoreName));
 
-				this.getAllWebStorageKeys().forEach((key) => {
-					if (objectStorePrefixes.some((objectStorePrefix) => Tools.stringStartsWith(key, objectStorePrefix)))
-						this.webStorage.removeItem(key);
-				});
+				this.getAllWebStorageKeys()
+					.filter((key) => objectStorePrefixes.some((objectStorePrefix) => Tools.stringStartsWith(key, objectStorePrefix)))
+					.forEach((key) => this.webStorage.removeItem(key));
 			}
 
 			async getObjectStoreNames(): Promise<string[]> {
@@ -83,8 +82,7 @@ namespace ZincDB {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
 
-				const currentDatabaseMetadata = this.getDatabaseMetadata();
-				this.putDatabaseMetadata({ ...currentDatabaseMetadata, objectStoreNames: newObjectStoreNames });
+				this.putDatabaseMetadata({ ...this.getDatabaseMetadata(), objectStoreNames: newObjectStoreNames });
 			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
@@ -104,32 +102,31 @@ namespace ZincDB {
 				// containing the existing raw values for the keys that would be modified.
 				// At the same time, store the corresponding new values in a separate array.
 				const newValues: (Entry<any> | null)[] = [];
-				const rollbackRecord: RollbackRecord = [];
+				const transactionRecord: RollbackRecord = [];
 
 				for (const objectStoreName in transactionObject) {
 					const operationsForObjectStore = transactionObject[objectStoreName];
 
 					for (const key in operationsForObjectStore) {
-						rollbackRecord.push([objectStoreName, key, this.getRawValue(key, objectStoreName)]);
+						transactionRecord.push([objectStoreName, key, this.getRawValue(key, objectStoreName)]);
 						newValues.push(operationsForObjectStore[key]);
 					}
 				}
 
 				// Store the roll-back record
-				this.putRollbackRecord(rollbackRecord);
+				this.putRollbackRecord(transactionRecord);
 
 				// Update the database with the new values, shortcut to use the roll-back record
 				// And the previously stored value list instead of re-scanning the transaction object
 				try {
-					for (let i = 0; i < rollbackRecord.length; i++) {
-						const [objectStoreName, key] = rollbackRecord[i];
-						const newValue = newValues[i];
+					transactionRecord.forEach(([objectStoreName, key], index) => {
+						const newValue = newValues[index];
 
 						if (newValue == null)
 							this.deleteKey(key, objectStoreName);
 						else
 							this.putRawValue(key, this.encodeEntryMetadataAndValue(newValue), objectStoreName);
-					}
+					});
 				}
 				catch (e) {
 					// If an error occured while writing the transaction, roll-back all changes,
