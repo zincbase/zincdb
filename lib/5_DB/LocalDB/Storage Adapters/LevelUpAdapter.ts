@@ -1,6 +1,6 @@
 namespace ZincDB {
 	export namespace DB {
-		type GlobalMetadataEntry = { objectStoreNames?: string[] };
+		type DatabaseMetadataEntry = { objectStoreNames?: string[] };
 
 		export class LevelUpAdapter implements StorageAdapter {
 			db: LevelUp.Database;
@@ -370,7 +370,7 @@ namespace ZincDB {
 				await operationPromise;
 			}
 
-			private async getDatabaseMetadata(): Promise<GlobalMetadataEntry> {
+			private async getDatabaseMetadata(): Promise<DatabaseMetadataEntry> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
 
@@ -383,12 +383,12 @@ namespace ZincDB {
 				}
 			}
 
-			private async putDatabaseMetadata(newMetadata: GlobalMetadataEntry): Promise<void> {
+			private async putDatabaseMetadata(newMetadata: DatabaseMetadataEntry): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
 
 				await this.putRawValue("@metadata", Encoding.OmniBinary.encode(newMetadata));
-			}			
+			}
 
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Static methods
