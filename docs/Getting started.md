@@ -257,17 +257,17 @@ The database now looks like:
 }
 ```
 
-## Batch operations
+## Transactions
 
-A batch (or more formally, a _transaction_) is a set of write operations executed as a single unit, such that the failure of a single operation causes the entire set of operations to fail, and no data to be written.
+A transaction is a set of write operations executed as a single unit, such that the failure of a single operation causes the entire set of operations to fail, and no data to be written.
 
-To create a new batch use `batch()`:
+To create a new transaction use `transaction()`:
 
 ```ts
-const b = db.batch();
+const b = db.transaction();
 ```
 
-A batch can include an arbitrary amount of `put`, `update`, `delete` and `addListItem` operations, in any order, for example:
+A transaction can include an arbitrary amount of `put`, `update`, `delete` and `addListItem` operations, in any order, for example:
 
 ```ts
 b.put(["a", "b"], "hi");
@@ -281,16 +281,16 @@ b.addListItem(["My list"], "Sara");
 (Note these methods return immediately. There's no need to use `await` for each one here)
 
 
-To finalize (or _commit_) the batch, use `write()`:
+To finalize (or _commit_) the transaction, use `write()`:
 
 ```ts
 await b.write();
 ```
 
-Batch methods can also be chained, so that the above can be expressed in a single expression:
+The transaction's methods can also be chained, so that the above can be expressed in a single expression:
 
 ```ts
-await db.batch(
+await db.transaction(
 	.put(["a", "b"], "hi")
 	.update(["a", "b"], "ho")
 	.update(["a", "b"], "yo")
@@ -301,7 +301,7 @@ await db.batch(
 	.write();
 ```
 
-(Note that `appendListItem` is used here, rather than `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing batch object instead of a string, so it can be used within a chain).
+(Note that `appendListItem` is used here, rather than `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing transaction object instead of a string, so it can be used within a chain).
 
 ## Setting up a server
 

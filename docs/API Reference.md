@@ -13,7 +13,7 @@ db.put(path, value)
 db.delete(path)
 db.update(path, value)
 db.addListItem(path, value)
-db.batch()
+db.transaction()
 
 // Read operations
 db.get(path)
@@ -251,14 +251,14 @@ The database now looks like:
 
 The random identifier can be generated using the `ZincDB.randKey()` utility method, described near the end of this document.
 
-## `batch`
+## `transaction`
 
-Create a batch, which allows multiple write operations to be performed and committed atomically as a single transaction.
+Create a transaction, which allows multiple write operations to be performed and committed atomically as a single unit.
 
 **Usage**:
 
 ```ts
-db.batch()
+db.transaction()
 ```
 
 **Return value**
@@ -277,7 +277,7 @@ These operations can be chained together, see the following example.
 **Examples**:
 
 ```ts
-await db.batch()
+await db.transaction()
 	.put(["people", "James Smith"], { age: 43, height: 185, medals: ["Naval Reserve Medal"] })
 	.delete(["dogs", "Scruffy"])
 	.put(["people", "Maria Martinez"], { age: 37, height: 172, medals: ["Purple Heart Medal"] })
@@ -289,9 +289,9 @@ await db.batch()
 
 **Notes**:
 
-* If at least one operation fails, the whole batch would fail and no data would be written.
+* If at least one operation fails, all other operations would fail as well and no data would be written.
 * Once `write()` has been called, calling any other method would result in an error.
-* Accumulating multiple operations into large, complex batches can significantly increase write performance if a large quantity of write operations are expected.
+* Accumulating multiple operations into large, complex transaction can significantly increase write performance if a large quantity of write operations are expected.
 
 ## `get`
 

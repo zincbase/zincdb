@@ -1,8 +1,8 @@
 namespace ZincDB {
 	export namespace DB {
-		export class LocalDBBatch {
-			batch: Batch = [];
-			batchCommited: boolean = false;
+		export class LocalDBTransaction {
+			transaction: Transaction = [];
+			commited: boolean = false;
 
 			constructor(private readonly containingDB: LocalDB) {
 			}
@@ -12,7 +12,7 @@ namespace ZincDB {
 				if (args.length !== 2)
 					throw new Error("Expected exactly two arguments.");
 
-				if (this.batchCommited)
+				if (this.commited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containingDB.isClosed)
@@ -21,13 +21,13 @@ namespace ZincDB {
 				const path = LocalDBOperations.verifyAndNormalizeNodePath(args[0], true);
 				const value = args[1];
 
-				this.batch.push({ type: OperationType.Put, path, value });
+				this.transaction.push({ type: OperationType.Put, path, value });
 
 				return this;
 			}
 
 			delete(path: EntityPath | string): this {
-				if (this.batchCommited)
+				if (this.commited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containingDB.isClosed)
@@ -35,7 +35,7 @@ namespace ZincDB {
 
 				path = LocalDBOperations.verifyAndNormalizeEntityPath(path);
 
-				this.batch.push({ type: OperationType.Delete, path });
+				this.transaction.push({ type: OperationType.Delete, path });
 
 				return this;
 			}
@@ -45,7 +45,7 @@ namespace ZincDB {
 				if (args.length !== 2)
 					throw new Error("Expected exactly two arguments.");
 
-				if (this.batchCommited)
+				if (this.commited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containingDB.isClosed)
@@ -54,7 +54,7 @@ namespace ZincDB {
 				const path = LocalDBOperations.verifyAndNormalizeEntityPath(args[0]);
 				const value = args[1];
 
-				this.batch.push({ type: OperationType.Update, path, value });
+				this.transaction.push({ type: OperationType.Update, path, value });
 
 				return this;
 			}
@@ -66,7 +66,7 @@ namespace ZincDB {
 			addListItem(listPath: NodePath | string, value: any, options?: { chain?: false }): string;
 			addListItem(listPath: NodePath | string, value: any, options: { chain: true }): this;
 			addListItem(listPath: NodePath | string, value: any, options?: { chain?: boolean }): string | this {
-				if (this.batchCommited)
+				if (this.commited)
 					throw new Error("Transaction has already been commited.");
 
 				if (this.containingDB.isClosed)
@@ -75,7 +75,7 @@ namespace ZincDB {
 				listPath = LocalDBOperations.verifyAndNormalizeNodePath(listPath, false);
 
 				const itemKey = randKey();
-				this.batch.push({ type: OperationType.Put, path: [...listPath, itemKey], value });
+				this.transaction.push({ type: OperationType.Put, path: [...listPath, itemKey], value });
 
 				if (options && options.chain === true)
 					return this;
@@ -84,8 +84,8 @@ namespace ZincDB {
 			}
 
 			async write(): Promise<void> {
-				this.batchCommited = true;
-				return this.containingDB.commitLocalTransaction(this.batch);
+				this.commited = true;
+				return this.containingDB.commitLocalTransaction(this.transaction);
 			}
 		}
 	}

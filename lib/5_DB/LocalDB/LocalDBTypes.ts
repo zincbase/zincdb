@@ -55,7 +55,7 @@ namespace ZincDB {
 		export type PutOperation = { type: OperationType.Put, path: NodePath, value: any };
 		export type DeleteOperation = { type: OperationType.Delete, path: EntityPath };
 		export type UpdateOperation = { type: OperationType.Update, path: EntityPath, value: any };
-		export type BatchOperation = PutOperation | DeleteOperation | UpdateOperation;
-		export type Batch = BatchOperation[];
+		export type TransactionOperation = PutOperation | DeleteOperation | UpdateOperation;
+		export type Transaction = TransactionOperation[];
 	}
 }

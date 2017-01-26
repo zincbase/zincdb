@@ -237,7 +237,7 @@ namespace ZincDB {
 			/////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Write operations
 			/////////////////////////////////////////////////////////////////////////////////////////////////
-			async commitLocalTransaction(transaction: Batch): Promise<EntryArray<any>> {
+			async commitLocalTransaction(transaction: Transaction): Promise<EntryArray<any>> {
 				if (this.isClosed)
 					throw new Error("Database is closed.");
 
@@ -936,7 +936,7 @@ namespace ZincDB {
 		////////////////////////////////////////////////////////////////////////////////////////////////
 		export type LocalDBOperationsSchema = {
 			open: { Args: [string, LocalDBOptions]; ReturnValue: void };
-			commitLocalTransaction: { Args: [Batch]; ReturnValue: EntryArray<any> };
+			commitLocalTransaction: { Args: [Transaction]; ReturnValue: EntryArray<any> };
 			commitLocalEntries: { Args: [EntryArray<any>]; ReturnValue: EntryArray<any> };
 			commitSerializedRemoteEntries: { Args: [Uint8Array, string | undefined]; ReturnValue: EntryArray<any> };
 			setAsRemotelyCommited: { Args: [string[], number]; ReturnValue: void };

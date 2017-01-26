@@ -91,36 +91,36 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			async put(path: NodePath | string, value: any): Promise<void>
 			async put(...args: any[]): Promise<void> {
-				const t = this.batch();
+				const t = this.transaction();
 				t.put.apply(t, args);
 				return await t.write();
 			}
 
 			async delete(path: EntityPath | string): Promise<void> {
-				const t = this.batch();
+				const t = this.transaction();
 				t.delete(path);
 				return await t.write();
 			}
 
 			async update(path: EntityPath | string, newValue: any): Promise<void>
 			async update(...args: any[]): Promise<void> {
-				const t = this.batch();
+				const t = this.transaction();
 				t.update.apply(t, args);
 				return await t.write();
 			}
 
 			async addListItem(listPath: NodePath | string, value: any): Promise<string> {
-				const t = this.batch();
+				const t = this.transaction();
 				const key = t.addListItem(listPath, value);
 				await t.write();
 				return key;
 			}
 
-			batch() {
-				return new LocalDBBatch(this);
+			transaction() {
+				return new LocalDBTransaction(this);
 			}
 
-			async commitLocalTransaction(transaction: Batch): Promise<void> {
+			async commitLocalTransaction(transaction: Transaction): Promise<void> {
 				const diff = await this.exec("commitLocalTransaction", [transaction]);
 				await this.announceChanges("local", diff);
 			}
