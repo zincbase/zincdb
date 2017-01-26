@@ -91,6 +91,9 @@ namespace ZincDB {
 			// Write operations
 			//////////////////////////////////////////////////////////////////////////////////////
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> | null } }): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");				
+				
 				const objectStoreNames = await this.getObjectStoreNames();
 
 				for (const objectStoreName in transactionObject)
@@ -157,6 +160,9 @@ namespace ZincDB {
 			async get<V>(key: string, objectStoreName: string): Promise<Entry<V>>
 			async get<V>(keys: string[], objectStoreName: string): Promise<Entry<V>[]>
 			async get<V>(keyOrKeys: string | string[], objectStoreName: string): Promise<Entry<V> | Entry<V>[]> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				const objectStoreNames = await this.getObjectStoreNames();
 				if (objectStoreNames.indexOf(objectStoreName) === -1)
 					throw new Error(`Object store '${objectStoreName}' does not exist.`);
@@ -175,6 +181,9 @@ namespace ZincDB {
 			async has(key: string, objectStoreName: string, indexName?: string): Promise<boolean>;
 			async has(keys: string[], objectStoreName: string, indexName?: string): Promise<boolean[]>;
 			async has(keyOrKeys: string | string[], objectStoreName: string, indexName?: string): Promise<boolean | boolean[]> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				const objectStoreNames = await this.getObjectStoreNames();
 
 				if (objectStoreNames.indexOf(objectStoreName) === -1)
@@ -192,11 +201,17 @@ namespace ZincDB {
 			}
 
 			async getAll<V>(objectStoreName: string): Promise<Entry<V>[]> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				const allKeys = await this.getAllKeys(objectStoreName);
 				return allKeys.map((key) => this.getEntry(key, objectStoreName));
 			}
 
 			async getAllKeys(objectStoreName: string): Promise<string[]> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				const objectStorePrefix = this.getObjectStorePrefix(objectStoreName);
 				const results: string[] = [];
 
@@ -210,6 +225,9 @@ namespace ZincDB {
 			}
 
 			async count(filter: any, objectStoreName: string): Promise<number> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				return (await this.getAllKeys(objectStoreName)).length;
 			}
 
@@ -218,6 +236,9 @@ namespace ZincDB {
 				options: {},
 				onIteration: (result: Entry<any>) => Promise<void>
 			): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+
 				const allKeys = await this.getAllKeys(objectStoreName);
 
 				for (const key of allKeys) {
@@ -233,6 +254,9 @@ namespace ZincDB {
 			}
 
 			async destroy(): Promise<void> {
+				if (!this.isOpen)
+					throw new Error("Database is not open");
+									
 				await this.deleteObjectStores(await this.getObjectStoreNames());
 				this.deleteKey("@metadata", undefined);
 				await this.close();

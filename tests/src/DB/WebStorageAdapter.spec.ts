@@ -16,7 +16,6 @@ namespace ZincDB {
 				});
 
 				it("Automatically rolls back all changes if a transaction fails because it causes local storage to exceed its quota", async () => {
-					const storage = new WebStorageAdapter(dbName, "LocalStorage");
 					await storage.open();
 
 					await storage.createObjectStoresIfNeeded(["store1", "store2"]);
