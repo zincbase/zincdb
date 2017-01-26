@@ -174,7 +174,7 @@ namespace ZincDB {
 				const propertyNames: string[] = [];
 
 				while (obj != null) {
-					Array.prototype.push.apply(propertyNames, Object.getOwnPropertyNames(obj));
+					propertyNames.push(...Object.getOwnPropertyNames(obj));
 					obj = Object.getPrototypeOf(obj);
 				}
 

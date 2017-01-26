@@ -107,7 +107,7 @@ namespace ZincDB {
 				else if (childObj === undefined)
 					continue;
 				else
-					Array.prototype.push.apply(descendantPaths, this.getDescendantPaths(childObj, [...currentPath, key]));
+					descendantPaths.push(...this.getDescendantPaths(childObj, [...currentPath, key]));
 			}
 
 			return descendantPaths;
