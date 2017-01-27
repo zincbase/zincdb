@@ -29,12 +29,12 @@
 		"pretty": false
 	},
 	"include": [
-		"lib/1_Types/**/*.ts",
-		"lib/2_Globals/**/*.js",
-		"lib/2_Globals/**/*.ts",
-		"lib/3_Library/**/*.ts",
-		"lib/4_NodeLibrary/**/*.ts",
-		"lib/5_DB/**/*.ts",
+		"lib/Types/**/*.ts",
+		"lib/Globals/**/*.js",
+		"lib/Globals/**/*.ts",
+		"lib/Library/**/*.ts",
+		"lib/NodeLibrary/**/*.ts",
+		"lib/DB/**/*.ts",
 		"testconfig.js",
 		"tests/src/**/*.ts",
 		"benchmarks/src/**/*.ts",
