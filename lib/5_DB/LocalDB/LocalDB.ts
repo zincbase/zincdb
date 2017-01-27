@@ -93,26 +93,26 @@ namespace ZincDB {
 			async put(...args: any[]): Promise<void> {
 				const t = this.transaction();
 				t.put.apply(t, args);
-				return await t.write();
+				return await t.commit();
 			}
 
 			async delete(path: EntityPath | string): Promise<void> {
 				const t = this.transaction();
 				t.delete(path);
-				return await t.write();
+				return await t.commit();
 			}
 
 			async update(path: EntityPath | string, newValue: any): Promise<void>
 			async update(...args: any[]): Promise<void> {
 				const t = this.transaction();
 				t.update.apply(t, args);
-				return await t.write();
+				return await t.commit();
 			}
 
 			async addListItem(listPath: NodePath | string, value: any): Promise<string> {
 				const t = this.transaction();
 				const key = t.addListItem(listPath, value);
-				await t.write();
+				await t.commit();
 				return key;
 			}
 

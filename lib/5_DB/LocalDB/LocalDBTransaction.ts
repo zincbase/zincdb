@@ -83,7 +83,7 @@ namespace ZincDB {
 					return itemKey;
 			}
 
-			async write(): Promise<void> {
+			async commit(): Promise<void> {
 				this.commited = true;
 				return this.containingDB.commitLocalTransaction(this.transaction);
 			}

@@ -82,7 +82,7 @@ namespace ZincDB {
 								.put(["a", "b", "e", "f"], true)
 								.put(["a", "g"], { a: 123, b: "hi" })
 								.put(["b", "h"], ["hey", { "x y z": "yo", "1 2 3": "bro" }])
-								.write();
+								.commit();
 
 							expect(await db.get(["a", "b", "c"])).toEqual("Hello World!");
 
@@ -108,7 +108,7 @@ namespace ZincDB {
 								.put(["a", "b"], true)
 								.delete(["a", "b"])
 								.put(["d", "b", "e f"], [1, 2, 3])
-								.write();
+								.commit();
 
 							expect(await db.get([["a", "b"], ["a", "c"], ["d", "b", "e f"]]))
 								.toEqual([undefined, "go", [1, 2, 3]]);
@@ -118,7 +118,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["a", "b"], "yo")
 								.put(["a", "c"], { hey: 45 })
-								.write();
+								.commit();
 
 							await db.update(["a", "b"], "mo");
 							expect(await db.get(["a", "b"])).toEqual("mo");
@@ -159,7 +159,7 @@ namespace ZincDB {
 								.put(["a", "b"], "yo")
 								.put(["a", "c"], 25)
 								.put(["b", "a"], [1, 2, 3])
-								.write();
+								.commit();
 
 							await db.delete(["a"]);
 
@@ -170,7 +170,7 @@ namespace ZincDB {
 						it("Allows to delete value descendants", async () => {
 							await db.transaction()
 								.put(["a", "b"], [11, 22, { hey: "yo", ba: 555 }])
-								.write();
+								.commit();
 
 							await db.delete(["a", "b", 2, "hey"]);
 
@@ -182,7 +182,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["hey ya", "yo"], new Uint8Array([1, 2, 3, 4]))
 								.put(["hey ya", "do"], { x: 25, y: [4, 3, 2, 1] })
-								.write();
+								.commit();
 
 							expect(await db.get([["hey ya", "yo"], ["hey ya", "do"], ["hey ya"], []]))
 								.toEqual([
@@ -200,7 +200,7 @@ namespace ZincDB {
 								.put(["a", "b"], "yo")
 								.put(["a", "c"], 1234)
 								.delete(["a", "c"])
-								.write();
+								.commit();
 
 							expect(await (db.get([]))).toEqual({
 								a: {
@@ -213,7 +213,7 @@ namespace ZincDB {
 								.put(["a", "c"], [4, 3, 2, 1])
 								.put(["a", "c"], new Uint8Array([6, 5, 4, 3, 2, 1]))
 								.put(["a", "d"], { x: "hello", y: [1, 2, 3, 4] })
-								.write();
+								.commit();
 
 							expect(await (db.get([]))).toEqual({
 								a: {
@@ -239,26 +239,26 @@ namespace ZincDB {
 							const b1 = db.transaction();
 							b1.put(["a", "b"], "yo");
 							b1.put(["a"], 123);
-							await expectPromiseToReject(b1.write());
+							await expectPromiseToReject(b1.commit());
 
 							const b2 = db.transaction();
 							b2.put(["a", "b"], "yo");
 							b2.put(["a", "b", "c"], 123);
-							await expectPromiseToReject(b2.write());
+							await expectPromiseToReject(b2.commit());
 
 							// Should this one resolve or reject?
 							const b3 = db.transaction();
 							b3.put(["a", "b"], "yo");
 							b3.delete(["a", "b"]);
 							b3.put(["a", "b", "c"], 123);
-							await expectPromiseToReject(b3.write());
+							await expectPromiseToReject(b3.commit());
 						});
 
 						it("Errors when trying to update non-existing nodes", async () => {
 							await db.transaction()
 								.put(["a", "b"], "yo")
 								.put(["a", "c"], { hey: 45 })
-								.write();
+								.commit();
 
 							await expectPromiseToReject(db.update(["b"], 24));
 							await expectPromiseToReject(db.update(["a", "d"], "hi"));
@@ -274,7 +274,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["a", "b"], "yo")
 								.update(["a", "b"], { hey: 45 })
-								.write();
+								.commit();
 
 							expect(await db.get(["a", "b"])).toEqual({ hey: 45 });
 
@@ -282,7 +282,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["c", "d"], { hi: "hello" })
 								.update(["c", "d", "hi"], { x: 987 })
-								.write();
+								.commit();
 
 							expect(await db.get(["c", "d"])).toEqual({ hi: { x: 987 } });
 
@@ -291,7 +291,7 @@ namespace ZincDB {
 								.put(["e", "f"], 45)
 								.put(["e", "g"], "yo man")
 								.update(["e"], { f: 34, g: "hhhh" })
-								.write();
+								.commit();
 
 							expect(await db.get(["e", "f"])).toEqual(34);
 							expect(await db.get(["e", "g"])).toEqual("hhhh");
@@ -300,7 +300,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["e", "h"], 12)
 								.update(["e"], { f: 34, g: "hhhh", h: "kkk" })
-								.write();
+								.commit();
 
 							expect(await db.get(["e", "f"])).toEqual(34);
 							expect(await db.get(["e", "g"])).toEqual("hhhh");
@@ -315,7 +315,7 @@ namespace ZincDB {
 							await db.transaction()
 								.update(["a", "b"], { hey: 45 })
 								.update(["a", "b"], { yo: 12 })
-								.write();
+								.commit();
 
 							expect(await db.get(["a", "b"])).toEqual({ yo: 12 });
 
@@ -323,7 +323,7 @@ namespace ZincDB {
 							await db.transaction()
 								.update(["a", "b"], { x: "baba" })
 								.update(["a", "b", "y"], 999)
-								.write();
+								.commit();
 
 							expect(await db.get(["a", "b"])).toEqual({ x: "baba", y: 999 });
 						});
@@ -335,7 +335,7 @@ namespace ZincDB {
 							const b = db.transaction();
 							b.put(["a", "c"], "asdf");
 							b.update(["a"], { b: 1234, c: "gggg", d: "mmmm" });
-							expectPromiseToReject(b.write());
+							expectPromiseToReject(b.commit());
 						});
 
 						it("Adds to a safe list", async () => {
@@ -354,7 +354,7 @@ namespace ZincDB {
 							await db.transaction()
 								.appendListItem(["a", "b"], "Hi")
 								.appendListItem(["a", "b"], 45)
-								.write();
+								.commit();
 
 							const list = await db.get(["a", "b"]);
 							expect(ObjectTools.countDefinedOwnPropertiesInObject(list)).toEqual(2);
@@ -369,7 +369,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["a", "b"], { x: "baba" })
 								.put(["a", "c"], [44, 55, 66])
-								.write();
+								.commit();
 
 							expect(await db.has(["a", "b"])).toEqual(true);
 							expect(await db.has(["a", "b", "x"])).toEqual(true);
@@ -384,7 +384,7 @@ namespace ZincDB {
 							await db.transaction()
 								.put(["a", "b"], { x: "baba" })
 								.put(["a", "c"], [44, 55, 66])
-								.write();
+								.commit();
 
 							expect(await db.has([["a", "b"], ["a", "b", "x"], ["a", "b", "y"], ["a", "c", 2], ["a", "c", 3]]))
 								.toEqual([true, true, false, true, false]);
@@ -429,7 +429,7 @@ namespace ZincDB {
 								db.transaction()
 									.put(["a", "b"], { yo: "go", do: 123 })
 									.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }])
-									.write();
+									.commit();
 							});
 						});
 
@@ -489,7 +489,7 @@ namespace ZincDB {
 								.put(["a", "b"], { yo: "go", do: 123 })
 								.put(["a", "c", "d"], ["ba", 21, { molo: "kkkk" }])
 								.put(["a", "c", "e"], new Uint8Array([1, 2, 3, 4]))
-								.write();
+								.commit();
 
 							await db.pushLocalChanges();
 							expect(await db.getLocalChanges()).toEqual([]);

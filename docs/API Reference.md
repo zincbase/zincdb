@@ -270,7 +270,7 @@ An object containing the following methods:
 * `update`: similar to `db.update`. Returns immediately.
 * `addListItem`: similar to `db.addListItem`. Returns immediately with the new item's identifier as return value.
 * `appendListItem`: exactly identical to `addListItem` except it returns the containing object instead of the new item's key, thus it can be used in a chain.
-* `write`: commits the transaction. Returns a promise that resolves when the data has been successfully commited.
+* `commit`: commits the transaction. Returns a promise that resolves when the data has been successfully commited.
 
 These operations can be chained together, see the following example.
 
@@ -284,13 +284,13 @@ await db.transaction()
 	.appendListItem(["Guest List"], { name: "Angela" })
 	.appendListItem(["Guest List"], { name: "Natalie" })
 	.update(["people", "Maria Martinez", "height"], 174)
-	.write();
+	.commit();
 ```
 
 **Notes**:
 
 * If at least one operation fails, all other operations would fail as well and no data would be written.
-* Once `write()` has been called, calling any other method would result in an error.
+* Once `commit()` has been called, calling any other method would result in an error.
 * Accumulating multiple operations into large, complex transaction can significantly increase write performance if a large quantity of write operations are expected.
 
 ## `get`
@@ -398,7 +398,7 @@ If retrieving multiple paths, single node path in the array of paths must be exp
 ```ts
 db.get([["people", "John Doe", "medals"], "dogs", "cats"]
 ```
-Instead write:
+Instead use:
 
 ```ts
 db.get([["people", "John Doe", "medals"], ["dogs"], ["cats"]]

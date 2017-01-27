@@ -281,10 +281,10 @@ b.addListItem(["My list"], "Sara");
 (Note these methods return immediately. There's no need to use `await` for each one here)
 
 
-To finalize (or _commit_) the transaction, use `write()`:
+To finalize (or _commit_) the transaction, use `commit()`:
 
 ```ts
-await b.write();
+await b.commit();
 ```
 
 The transaction's methods can also be chained, so that the above can be expressed in a single expression:
@@ -298,7 +298,7 @@ await db.transaction(
 	.delete(["a", "b"])
 	.appendListItem(["My list"], "Danny")
 	.appendListItem(["My list"], "Sara")
-	.write();
+	.commit();
 ```
 
 (Note that `appendListItem` is used here, rather than `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing transaction object instead of a string, so it can be used within a chain).
