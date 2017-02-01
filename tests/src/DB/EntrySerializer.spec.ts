@@ -14,7 +14,9 @@ namespace ZincDB {
 								valueEncoding: 113,
 								encryptionMethod: 75,
 								flags: 68,
-								secondaryHeaderSize: 34958
+								secondaryHeaderSize: 34958,
+								primaryHeaderChecksum: 289645328,
+								payloadChecksum: 1833682315,
 							}
 
 						const serializedHeader = EntrySerializer.serializeHeader(testHeader);
@@ -35,7 +37,9 @@ namespace ZincDB {
 									valueEncoding: JSRandom.getIntegerInRange(0, 2 ** 8),
 									encryptionMethod: JSRandom.getIntegerInRange(0, 2 ** 8),
 									flags: JSRandom.getIntegerInRange(0, 2 ** 8),
-									secondaryHeaderSize: JSRandom.getIntegerInRange(0, 2 ** 16)
+									secondaryHeaderSize: JSRandom.getIntegerInRange(0, 2 ** 16),
+									primaryHeaderChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),
+									payloadChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),									
 								}
 
 							const serializedHeader = EntrySerializer.serializeHeader(randomHeader);
@@ -58,7 +62,7 @@ namespace ZincDB {
 									updateTime: 5456168961684,
 								}
 							}
-							
+
 							const serializedEntry = EntrySerializer.serializeEntry(entry, encryptionKey);
 							const deserializedEntry = EntrySerializer.deserializeFirstEntry(serializedEntry, encryptionKey);
 

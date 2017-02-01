@@ -1,5 +1,48 @@
 namespace ZincDB {
 	export namespace DB {
+		export type EntryHeader = {
+			// All fields are little-endian
+			totalSize: number; // 64 bit unsigned integer
+			updateTime: number; // 64 bit unsigned integer
+			commitTime: number; // 64 bit unsigned integer
+			keySize: number; // 16 bit unsigned integer
+			keyEncoding: DataEncoding; // 8 bit unsigned int
+			valueEncoding: DataEncoding; // 8 bit unsigned int
+			encryptionMethod: EncryptionMethod; // 4 bit unsigned integer
+			flags: EntryFlags; // 8 bit unsigned int
+			secondaryHeaderSize: number // 16 bit unsigned int
+			primaryHeaderChecksum: number // 32 bit unsigned int
+			payloadChecksum: number // 32 bit unsigned int
+		}
+
+		export type ParsedEntry = {
+			header: EntryHeader,
+			entryBytes: Uint8Array
+		}
+
+		export const enum DataEncoding {
+			Binary = 0,
+			UTF8 = 1,
+			Json = 2,
+			OmniJson = 3,
+		}
+
+		export const enum EntryFlags {
+			None = 0,
+			TransactionEnd = 1,
+			CreationEvent = 2
+		}
+
+		export const enum EncryptionMethod {
+			None = 0,
+			AES_CBC_128 = 1,
+			AES_GCM_128 = 2
+		}
+
+		export const EntryHeaderByteSize = 40;
+		export class NoDecryptionKeyError extends Error { };
+		export class UnsupportedCipherError extends Error { };
+
 		export namespace EntrySerializer {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Entry serialization
@@ -49,7 +92,7 @@ namespace ZincDB {
 				const metadata = entry.metadata || {};
 
 				const header: EntryHeader = {
-					totalSize: EntryHeaderSize + keyBytes.length + valueBytes.length,
+					totalSize: EntryHeaderByteSize + keyBytes.length + valueBytes.length,
 					updateTime: metadata.updateTime || 0,
 					commitTime: metadata.commitTime || 0,
 					keySize: keyBytes.length,
@@ -58,14 +101,16 @@ namespace ZincDB {
 					encryptionMethod: encryptionMethod,
 					flags: EntryFlags.None,
 					secondaryHeaderSize: 0,
+					primaryHeaderChecksum: 0,
+					payloadChecksum: 0,
 				}
 
 				const serializedHeader = serializeHeader(header);
 				const serializedEntry = new Uint8Array(header.totalSize);
 
 				serializedEntry.set(serializedHeader);
-				serializedEntry.set(keyBytes, EntryHeaderSize);
-				serializedEntry.set(valueBytes, EntryHeaderSize + keyBytes.length);
+				serializedEntry.set(keyBytes, EntryHeaderByteSize);
+				serializedEntry.set(valueBytes, EntryHeaderByteSize + keyBytes.length);
 
 				return serializedEntry;
 			}
@@ -115,7 +160,7 @@ namespace ZincDB {
 
 				while (bytes.length > 0) {
 					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes);
-					const payloadStartOffset = EntryHeaderSize + header.secondaryHeaderSize;
+					const payloadStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
 
 					const keyBytes = entryBytes.subarray(payloadStartOffset, payloadStartOffset + header.keySize);
 					compactionMap.set(Encoding.Hex.encode(keyBytes), { offset: offset, header: header, entryBytes: entryBytes });
@@ -139,7 +184,7 @@ namespace ZincDB {
 			}
 
 			export const deserializeEntryBody = function (entryBytes: Uint8Array, header: EntryHeader, decryptionKeyHex?: string): Entry<any> {
-				const payloadStartOffset = EntryHeaderSize + header.secondaryHeaderSize;
+				const payloadStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
 				let keyBytes = entryBytes.subarray(payloadStartOffset, payloadStartOffset + header.keySize);
 				let valueBytes = entryBytes.subarray(payloadStartOffset + header.keySize);
 
@@ -199,12 +244,12 @@ namespace ZincDB {
 			}
 
 			export const deserializeHeaderAndValidateEntryBytes = function (bytes: Uint8Array): [EntryHeader, Uint8Array] {
-				if (bytes.length < EntryHeaderSize)
+				if (bytes.length < EntryHeaderByteSize)
 					throw new EntryCorruptionError("Bytes has length shorter than primary header size, this may be due to corruption");
 
 				const header = deserializeHeader(bytes);
 
-				if (header.totalSize < EntryHeaderSize)
+				if (header.totalSize < EntryHeaderByteSize)
 					throw new EntryCorruptionError("Entry has length shorter than primary header size, this may be due to corruption");
 
 				if (header.totalSize > bytes.length)
@@ -252,7 +297,7 @@ namespace ZincDB {
 			/// Header serialization and deserialization
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			export const serializeHeader = function (header: EntryHeader): Uint8Array {
-				const headerBytes = new Uint8Array(EntryHeaderSize);
+				const headerBytes = new Uint8Array(EntryHeaderByteSize);
 				const dataView = new DataView(headerBytes.buffer);
 
 				// Total size field
@@ -283,6 +328,9 @@ namespace ZincDB {
 				dataView.setUint8(29, header.flags);
 				dataView.setUint16(30, header.secondaryHeaderSize, true);
 
+				dataView.setUint32(32, header.primaryHeaderChecksum, true);
+				dataView.setUint32(36, header.payloadChecksum, true);
+
 				return headerBytes;
 			}
 
@@ -301,6 +349,9 @@ namespace ZincDB {
 				header.encryptionMethod = dataView.getUint8(28);
 				header.flags = dataView.getUint8(29);
 				header.secondaryHeaderSize = dataView.getUint16(30, true);
+				
+				header.primaryHeaderChecksum = dataView.getUint32(32, true);
+				header.payloadChecksum = dataView.getUint32(36, true);
 
 				return header;
 			}
@@ -339,47 +390,6 @@ namespace ZincDB {
 
 				return results;
 			}
-
 		}
-
-		export type EntryHeader = {
-			// All fields are little-endian
-			totalSize: number; // 64 bit unsigned integer
-			updateTime: number; // 64 bit unsigned integer
-			commitTime: number; // 64 bit unsigned integer
-			keySize: number; // 16 bit unsigned integer
-			keyEncoding: DataEncoding; // 8 bit unsigned int
-			valueEncoding: DataEncoding; // 8 bit unsigned int
-			encryptionMethod: EncryptionMethod; // 4 bit unsigned integer
-			flags: EntryFlags; // 8 bit unsigned int
-			secondaryHeaderSize: number // 16 bit unsigned int
-		}
-
-		export type ParsedEntry = {
-			header: EntryHeader,
-			entryBytes: Uint8Array
-		}
-
-		export const enum DataEncoding {
-			Binary = 0,
-			UTF8 = 1,
-			Json = 2,
-		}
-
-		export const enum EntryFlags {
-			None = 0,
-			TransactionEnd = 1,
-			CreationEvent = 2
-		}
-
-		export const enum EncryptionMethod {
-			None = 0,
-			AES_CBC_128 = 1,
-			AES_GCM_128 = 2
-		}
-
-		export const EntryHeaderSize = 32;
-		export class NoDecryptionKeyError extends Error { };
-		export class UnsupportedCipherError extends Error { };
 	}
 }

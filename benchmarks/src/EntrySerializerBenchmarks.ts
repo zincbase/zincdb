@@ -16,7 +16,9 @@ namespace ZincDB {
 				valueEncoding: 113,
 				encryptionMethod: 75,
 				flags: 68,
-				secondaryHeaderSize: 34534
+				secondaryHeaderSize: 34534,
+				primaryHeaderChecksum: 289645328,
+				payloadChecksum: 1833682315,
 			}
 
 			this.serializedHeader = DB.EntrySerializer.serializeHeader(this.testHeader);
