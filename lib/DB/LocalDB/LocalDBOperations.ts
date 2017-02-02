@@ -476,10 +476,10 @@ namespace ZincDB {
 					if (!newEntry.metadata.commitTime)
 						throw new Error("Encountered a remote entry with no commit timestamp");
 
-					// If a creation event event entry is encountered and the datastore has already been synced before, 
+					// If a head entry is encountered and the datastore has already been synced before, 
 					// clear all entries in the datastore, and discard all previous updates that were timed before 
-					// the creation event entry. Otherwise skip.
-					if (newEntry.metadata.isCreationEvent) {
+					// the head entry. Otherwise skip.
+					if (newEntry.metadata.isHeadEntry) {
 						if (serverMetadata.lastModified > 0) {
 							// Clear all new entries that were added to the update objects 
 							commitObject = {};
@@ -874,7 +874,7 @@ namespace ZincDB {
 				const result: ValueObject<V> = {};
 
 				for (const entry of entryArray) {
-					if (entry.metadata && entry.metadata.isCreationEvent) {
+					if (entry.metadata && entry.metadata.isHeadEntry) {
 						continue;
 					}
 

@@ -10,7 +10,7 @@ namespace ZincDB {
 			updateTime?: number;
 			commitTime?: number;
 			syncReferenceTime?: number;
-			isCreationEvent?: boolean;
+			isHeadEntry?: boolean;
 		}
 	}
 
