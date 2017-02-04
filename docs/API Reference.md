@@ -49,7 +49,7 @@ ZincDB.open(name, options?);
 * `options` (object, optional):
 	* `remoteSyncURL` (string, optional): A full URL of a remote datastore to synchronize with.
 	* `remoteAccessKey` (string, optional): An access key to use when communicating with the remote datastore host. If provided, must be 32 lowercase hexadecimal characters.
-	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries that are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.	
+	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries that are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.
 	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"LevelDB"`, `"IndexedDB"`, `"SQLite"`, `"WebSQL", "LocalStorage", "SessionStorage"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
 	* `useWorker`(boolean, optional): Execute operations in a web worker, if available (browser) or inside a child-process (Node.js). Note that only one worker is spawned globally and is shared between all databases. Defaults to `false`.
 	* `webWorkerURI` (string, optional): A URI or relative script path to load the worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used. Only relevant when running in a browser, ignored in Node.js.
@@ -102,7 +102,7 @@ db.put(path, val)
 **Arguments**:
 
 * `path` (array of strings or string, required): A path specifying the leaf to assign.
-* `val` (any, required): The primitive value, object, or array to assign.  
+* `val` (any, required): The primitive value, object, or array to assign.
 
 **Return value**
 
@@ -171,7 +171,7 @@ await db.update([], { // Update the root branch
 		"John Doe": {
 			age: 21,
 			height: 186,
-			medals: ["Airman's Medal"]		
+			medals: ["Airman's Medal"]
 		},
 		"Jane Doe": {
 			age: 19,
@@ -179,7 +179,7 @@ await db.update([], { // Update the root branch
 			medals: []
 		}
 	}
-}); 
+});
 ```
 
 **Notes**:
@@ -295,7 +295,7 @@ await db.transaction()
 
 ## `get`
 
-Retrieves the content of the entity(s) at the given path(s).
+Retrieves the content of the entity at the given path.
 
 **Usage**:
 
@@ -305,11 +305,11 @@ db.get(path)
 
 **Arguments**:
 
-* `path` (array of strings, array of arrays of strings, or string, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
+* `path` (string or array of strings, required): the path of the entity to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants. If a path provided is a `string`, e.g. `"dogs"`, it would be converted to a single node path `["dogs"]`.
 
 **Return value**:
 
-A promise resolving to the requested data, or `undefined` if it is not found. If multiple paths are specified, they would be contained in an array at the order they were specified.
+A promise resolving to the requested data, or `undefined` if it wan not found.
 
 **Examples**:
 
@@ -336,7 +336,7 @@ let root = await db.get([]);
 Returns:
 
 ```ts
-{ 
+{
 	people: {
 		"John Doe": {
 			age: 25,
@@ -347,7 +347,7 @@ Returns:
 			age: 27,
 			height: 165,
 			medals: ["Coast Guard Medal"]
-		}		
+		}
 	}
 }
 ```
@@ -357,7 +357,7 @@ Retrieve a property of a leaf node's value:
 ```ts
 let person = await db.get(["people", "Jane Doe", "age"]);
 ```
-Returns: 
+Returns:
 
 ```ts
 27
@@ -368,13 +368,31 @@ Retrieve an array element descendant to the leaf node's value:
 ```ts
 let person = await db.get(["people", "John Doe", "medals", 1]);
 ```
-Returns: 
+Returns:
 
 ```ts
 "Airman's Medal"
 ```
 
-Retrieve multiple paths:
+## `getMulti`
+
+Retrieves multiple paths.
+
+**Usage**:
+
+```ts
+db.getMulti(paths)
+```
+
+**Arguments**:
+
+* `paths` (array): An array of paths retrieve.
+
+**Return value**:
+
+A promise resolving to an array containing the matching values, if no match was found for a path, the corresponding element would contain `undefined`.
+
+**Examples**:
 
 ```ts
 let results = await db.get([
@@ -382,7 +400,7 @@ let results = await db.get([
 	["people", "Jane Doe", "age"],
 ]);
 ```
-Returns: 
+Returns:
 
 ```ts
 [
@@ -391,22 +409,15 @@ Returns:
 ]
 ```
 
-**Notes**:
-
-If retrieving multiple paths, single node path in the array of paths must be expressed their full form. They cannot be shortened to a string. E.g. the following would not be accepted:
+The path list can combine both string and array style paths:
 
 ```ts
-db.get([["people", "John Doe", "medals"], "dogs", "cats"]
-```
-Instead use:
-
-```ts
-db.get([["people", "John Doe", "medals"], ["dogs"], ["cats"]]
+db.getMulti(["Dogs", "Cats", ["people", "John Doe", "medals"]]
 ```
 
 ## `has`
 
-Check for the existence of entity(s) on the given path(s).
+Checks the existence of an entity on the given path.
 
 **Usage**:
 
@@ -416,15 +427,45 @@ db.has(path)
 
 **Arguments**:
 
-* `path` (array of strings, array of arrays of strings, or string, required): the path(s) of the entity(s) to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
+* `path` (string or array of strings, required): the path of the entity to check the existence of. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
 
 **Return value**:
 
-A promise resolving to `true` or `false`. If multiple paths are specified, the results would be contained in an array corresponding to the order of the specified paths.
+A promise resolving to `true` or `false`.
 
-**Notes**:
 
-Like in `get`, when passing multiple paths, single node paths must be written in their array form. See the notes above for `get` for an example.
+## `hasMulti`
+
+Checks the existence of multiple paths.
+
+**Usage**:
+
+```ts
+db.hasMulti(paths)
+```
+
+**Arguments**:
+
+* `paths` (array, required): the paths of the entities to check the existence of. Each path in the given array is checked similarly to `has`.
+
+**Return value**:
+
+A promise resolving to an array of booleans, representing the existence of each corresponding element.
+
+**Example**:
+
+```ts
+let results = await db.hasMulti([
+	["People", "John Doe", "medals"],
+	["People", "Jane Doe", "age"],
+	["Birds", "Tiki"],
+]);
+```
+Returns:
+
+```ts
+[true, true, false]
+```
 
 ## `subscribe` and `observe`
 
@@ -470,20 +511,20 @@ A promise resolving when the handler has been successfully subscribed as a watch
 
 **Examples**:
 
-Track all changes to descendants of the path `["reports"]` and re-render a corresponding UI component with the new value each time the handler is called: 
+Track all changes to descendants of the path `["reports"]` and re-render a corresponding UI component with the new value each time the handler is called:
 
 ```ts
-await db.observe(["reports"], (changeEvent) => { 
-	renderReports(changeEvent.newValue); 
+await db.observe(["reports"], (changeEvent) => {
+	renderReports(changeEvent.newValue);
 })
 ```
 
 Subscribe to receive all changes to the database and log the change list on each update:
 
 ```ts
-await db.subscribe([], (changeEvent) => { 
+await db.subscribe([], (changeEvent) => {
 	console.log(changeEvent.origin + " changes announced!");
-	
+
 	changeEvent.changes.map((change) => {
 		console.log("keypath: " + change.keypath + ", value: " + JSON.stringify(change.value));
 	})
@@ -525,9 +566,9 @@ db.pullRemoteChanges(options?)
 
 **Arguments**:
 
-* `options` (object, optional): 
+* `options` (object, optional):
 	* `continuous` (boolean, optional): enable continuous mode, where a websocket or COMET is used to automatically fetch new updates from the server whenever they are available. Defaults to `false`.
-	* `useWebsocket` (boolean, optional): use a websocket, if available, when continuous mode is enabled, otherwise use COMET. Defaults to `true`. 
+	* `useWebsocket` (boolean, optional): use a websocket, if available, when continuous mode is enabled, otherwise use COMET. Defaults to `true`.
 
 **Return value**:
 
@@ -553,7 +594,7 @@ db.pullRemoteChanges({ continuous: true }).catch((err) => {
 **Notes**
 
 * When `pullRemoteChanges` is executing in continuous mode, the only way to abort the operation is to close the database connection by calling `db.close()`.
-* If an update entry containing an invalid node path is received from the server, it will be ignored and a warning message would be logged to the error console. 
+* If an update entry containing an invalid node path is received from the server, it will be ignored and a warning message would be logged to the error console.
 
 ## `pushLocalChanges`
 
@@ -566,7 +607,7 @@ db.pushLocalChanges(options?)
 **Arguments**:
 
 * `options` (object, optional):
-	* `path` (array or string, optional): Only submit local changes to the given path's descendants. 
+	* `path` (array or string, optional): Only submit local changes to the given path's descendants.
 	* `conflictHandler` (function, optional): A custom callback function to handle merge conflicts, described in detail in a separate section below. If no handler is specified, merge conflicts are automatically resolved to the entry with the later update timestamp.
 
 **Return value**:
@@ -636,10 +677,10 @@ The handler's return value must be a promise. Returning a promise allows to defe
 
 * `path` is the path of the node having conflicting updates.
 * `key` is the encoded path that was used with the serialized entry.
-* `localValue` is the value in a local entry that has not yet been submitted to the server. 
+* `localValue` is the value in a local entry that has not yet been submitted to the server.
 * `remoteValue` is the value in a remote entry having the same path, which was updated after the _first_ time an unsubmitted local change was created for that path (note both unsubmitted local changes and the updated remote entry may coexist locally, the mechanism for this is explained in the last remark below).
-* `localUpdateTime` is the time (microsecond unix epoch) the local entry has been last updated. 
-* `remoteUpdateTime` is the time (microsecond unix epoch) the remote entry has been last updated. 
+* `localUpdateTime` is the time (microsecond unix epoch) the local entry has been last updated.
+* `remoteUpdateTime` is the time (microsecond unix epoch) the remote entry has been last updated.
 * `remoteCommitTime` is the time (microsecond unix epoch) the remote entry has been commited to the server.
 
 Notes:
@@ -745,7 +786,7 @@ A promise resolving when the database has been successfully closed.
 
 When _in-memory_ storage medium is used, all locally stored data for the given database would be **permanently deleted**. This has no impact on data stored on a remote server.
 
-Once a database object has been closed, it cannot be used anymore. Any call to one of its functions would result in an error. 
+Once a database object has been closed, it cannot be used anymore. Any call to one of its functions would result in an error.
 
 # Utility methods
 
@@ -761,7 +802,7 @@ ZincDB.parsePath(pathString)
 
 **Arguments**:
 
-* `pathString` (string, required): A string encoded path. 
+* `pathString` (string, required): A string encoded path.
 
 **Return Value**:
 

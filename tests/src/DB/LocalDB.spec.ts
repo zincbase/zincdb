@@ -95,8 +95,8 @@ namespace ZincDB {
 
 							expect(await db.get(["b"])).toEqual(dataObject["b"]);
 
-							expect(await db.get([["a", "b", "c"], ["b", "h"], ["b", "h", 1, "1 2 3"], [], ["a"], ["b"]]))
-								.toEqual(["Hello World!", ["hey", { "x y z": "yo", "1 2 3": "bro" }], "bro", dataObject, dataObject["a"], dataObject["b"]]);
+							expect(await db.getMulti([["a", "b", "c"], ["b", "h"], ["b", "h", 1, "1 2 3"], [], ["a"], ["b"], "a", "b"]))
+								.toEqual(["Hello World!", ["hey", { "x y z": "yo", "1 2 3": "bro" }], "bro", dataObject, dataObject["a"], dataObject["b"], dataObject["a"], dataObject["b"]]);
 						});
 
 						it("Stores and deletes several nodes using a transaction", async () => {
@@ -110,7 +110,7 @@ namespace ZincDB {
 								.put(["d", "b", "e f"], [1, 2, 3])
 								.commit();
 
-							expect(await db.get([["a", "b"], ["a", "c"], ["d", "b", "e f"]]))
+							expect(await db.getMulti([["a", "b"], ["a", "c"], ["d", "b", "e f"]]))
 								.toEqual([undefined, "go", [1, 2, 3]]);
 						});
 
@@ -163,7 +163,7 @@ namespace ZincDB {
 
 							await db.delete(["a"]);
 
-							expect(await db.get([["a", "b"], ["a", "c"], ["b", "a"]]))
+							expect(await db.getMulti([["a", "b"], ["a", "c"], ["b", "a"]]))
 								.toEqual([undefined, undefined, [1, 2, 3]]);
 						});
 
@@ -184,7 +184,7 @@ namespace ZincDB {
 								.put(["hey ya", "do"], { x: 25, y: [4, 3, 2, 1] })
 								.commit();
 
-							expect(await db.get([["hey ya", "yo"], ["hey ya", "do"], ["hey ya"], []]))
+							expect(await db.getMulti([["hey ya", "yo"], ["hey ya", "do"], ["hey ya"], []]))
 								.toEqual([
 									new Uint8Array([1, 2, 3, 4]),
 									{ x: 25, y: [4, 3, 2, 1] },
@@ -386,8 +386,8 @@ namespace ZincDB {
 								.put(["a", "c"], [44, 55, 66])
 								.commit();
 
-							expect(await db.has([["a", "b"], ["a", "b", "x"], ["a", "b", "y"], ["a", "c", 2], ["a", "c", 3]]))
-								.toEqual([true, true, false, true, false]);
+							expect(await db.hasMulti(["a", ["a", "b"], ["a", "b", "x"], ["a", "b", "y"], ["a", "c", 2], ["a", "c", 3]]))
+								.toEqual([true, true, true, false, true, false]);
 						});
 
 						it("Observes and notifies on changes", () => {

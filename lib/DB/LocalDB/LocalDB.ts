@@ -142,46 +142,38 @@ namespace ZincDB {
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Read operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			async get(path: string): Promise<any>;
-			async get(path: EntityPath): Promise<any>;
-			async get(paths: EntityPath[]): Promise<any[]>;
-			async get(pathOrPaths: EntityPath | EntityPath[] | string): Promise<any | any[]> {
+			async get(path: string | EntityPath): Promise<any> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				if (typeof pathOrPaths === "string")
-					pathOrPaths = [pathOrPaths];
+				if (typeof path === "string")
+					path = [path];
 
-				if (!Array.isArray(pathOrPaths))
-					throw new TypeError("Invalid first argument provided: must be an array, array of arrays or string.");
+				if (!Array.isArray(path))
+					throw new TypeError(`Invalid path '${path}': must be a string or arrays of strings.`);
 
-				if (Array.isArray(pathOrPaths[0])) {
-					const paths = <EntityPath[]>pathOrPaths;
-					return Promise.all(paths.map((path) => this.getEntity(path)));
-				} else {
-					return this.getEntity(<EntityPath>pathOrPaths);
-				}
+				return this.getEntity(path);
 			}
 
-			async has(path: string): Promise<boolean>;
-			async has(path: EntityPath): Promise<boolean>;
-			async has(paths: EntityPath[]): Promise<boolean[]>;
-			async has(pathOrPaths: EntityPath | EntityPath[] | string): Promise<boolean | boolean[]> {
+			async getMulti(paths: (string | EntityPath)[]): Promise<any[]> {
+				return Promise.all(paths.map((path) => this.get(path)));
+			}
+
+			async has(path: string | EntityPath): Promise<boolean> {
 				if (this.isClosed)
 					throw new Error("Database has been closed.");
 
-				if (typeof pathOrPaths === "string")
-					pathOrPaths = [pathOrPaths];
+				if (typeof path === "string")
+					path = [path];
 
-				if (!Array.isArray(pathOrPaths))
-					throw new TypeError("Invalid first argument provided: must be an array, array of arrays or string.");
+				if (!Array.isArray(path))
+					throw new TypeError(`Invalid path '${path}': must be a string or arrays of strings.`);
 
-				if (Array.isArray(pathOrPaths[0])) {
-					const paths = <EntityPath[]>pathOrPaths;
-					return Promise.all(paths.map((path) => this.hasEntity(path)));
-				} else {
-					return this.hasEntity(<EntityPath>pathOrPaths);
-				}
+				return this.hasEntity(path);
+			}
+
+			async hasMulti(paths: (string | EntityPath)[]): Promise<any[]> {
+				return Promise.all(paths.map((path) => this.has(path)));
 			}
 
 			protected async getEntity(path: EntityPath): Promise<any> {

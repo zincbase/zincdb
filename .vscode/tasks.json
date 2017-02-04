@@ -4,8 +4,13 @@
 	"version": "0.1.0",
 	"command": "node",
 	"isShellCommand": true,
-	"args": ["node_modules/typescript/lib/tsc.js", "-w", "-p", "."],
-	"showOutput": "silent",
+	"args": [
+		"node_modules/typescript/lib/tsc.js",
+		"-w",
+		"-p",
+		"."
+	],
+	"showOutput": "never",
 	"problemMatcher": "$tsc-watch",
-	"isWatching": true
+	"isBackground": true
 }
