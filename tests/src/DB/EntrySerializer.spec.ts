@@ -39,7 +39,7 @@ namespace ZincDB {
 									flags: JSRandom.getIntegerInRange(0, 2 ** 8),
 									secondaryHeaderSize: JSRandom.getIntegerInRange(0, 2 ** 16),
 									primaryHeaderChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),
-									payloadChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),									
+									payloadChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),
 								}
 
 							const serializedHeader = EntrySerializer.serializeHeader(randomHeader);
@@ -66,6 +66,40 @@ namespace ZincDB {
 							const serializedEntry = EntrySerializer.serializeEntry(entry, encryptionKey);
 							const deserializedEntry = EntrySerializer.deserializeFirstEntry(serializedEntry, encryptionKey);
 
+							expect(deserializedEntry).toEqual(entry);
+						});
+
+						it("Adds a checksum to an entry and verifies it", () => {
+							const entry: Entry<any> = {
+								key: "你好世界",
+								value: { "你好世界!!!": "Hello World! 你好世界!", num: 42 },
+
+								metadata: {
+									updateTime: 5456168961684,
+								}
+							}
+
+							const serializedEntry = EntrySerializer.serializeEntry(entry, encryptionKey);
+							EntrySerializer.addChecksumsToSerializedEntry(serializedEntry);
+							expect(EntrySerializer.verifyChecksumsInSerializedEntry(serializedEntry)).toBe(true);
+
+							serializedEntry[54] += 1;
+							expect(EntrySerializer.verifyChecksumsInSerializedEntry(serializedEntry)).toBe(false);
+						});
+
+						it("Serializes and deserializes an entry correctly, with checksums", () => {
+							const entry: Entry<any> = {
+								key: "你好世界",
+								value: { "你好世界!!!": "Hello World! 你好世界!", num: 42 },
+
+								metadata: {
+									updateTime: 5456168961684,
+								}
+							}
+
+							const serializedEntry = EntrySerializer.serializeEntry(entry, encryptionKey, true);
+							const deserializedEntry = EntrySerializer.deserializeFirstEntry(serializedEntry, encryptionKey, true);
+							expect(EntrySerializer.verifyChecksumsInSerializedEntry(serializedEntry)).toBe(true);
 							expect(deserializedEntry).toEqual(entry);
 						});
 

@@ -46,19 +46,19 @@ namespace ZincDB {
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Entry serialization
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export const serializeEntries = function (entries: EntryArray<any>, encryptionKeyHex?: string): Uint8Array {
+			export const serializeEntries = function (entries: EntryArray<any>, encryptionKeyHex?: string, addChecksums = false): Uint8Array {
 				if (entries == null)
 					throw new TypeError("serializeEntries: entries are null or undefined");
 
 				const serializedEntries: Uint8Array[] = [];
 
 				for (let i = 0; i < entries.length; i++)
-					serializedEntries.push(serializeEntry(entries[i], encryptionKeyHex));
+					serializedEntries.push(serializeEntry(entries[i], encryptionKeyHex, addChecksums));
 
 				return ArrayTools.concatUint8Arrays(serializedEntries);
 			}
 
-			export const serializeEntry = function (entry: Entry<any>, encryptionKeyHex?: string): Uint8Array {
+			export const serializeEntry = function (entry: Entry<any>, encryptionKeyHex?: string, addChecksums = false): Uint8Array {
 				if (entry == null)
 					throw new TypeError("serializeEntry: entry is null or undefined");
 
@@ -111,20 +111,23 @@ namespace ZincDB {
 				serializedEntry.set(keyBytes, EntryHeaderByteSize);
 				serializedEntry.set(valueBytes, EntryHeaderByteSize + keyBytes.length);
 
+				if (addChecksums)
+					EntrySerializer.addChecksumsToSerializedEntry(serializedEntry);
+
 				return serializedEntry;
 			}
 
 			///////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Entry deserialization
 			///////////////////////////////////////////////////////////////////////////////////////////////////
-			export const deserializeFirstEntry = function (bytes: Uint8Array, decryptionKeyHex?: string): Entry<any> {
-				const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes);
+			export const deserializeFirstEntry = function (bytes: Uint8Array, decryptionKeyHex?: string, verifyChecksums = false): Entry<any> {
+				const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes, verifyChecksums);
 				const entry = deserializeEntryBody(entryBytes, header, decryptionKeyHex);
 
 				return entry;
 			}
 
-			export const deserializeEntries = function (bytes: Uint8Array, decryptionKeyHex?: string): EntryArray<any> {
+			export const deserializeEntries = function (bytes: Uint8Array, decryptionKeyHex?: string, verifyChecksums = false): EntryArray<any> {
 				if (bytes == null)
 					throw new TypeError("deserializeEntries: input is null or undefined");
 
@@ -134,7 +137,7 @@ namespace ZincDB {
 				const deserializedEntries: EntryArray<any> = [];
 
 				while (bytes.length > 0) {
-					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes);
+					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes, verifyChecksums);
 					const deserializedEntry = deserializeEntryBody(entryBytes, header, decryptionKeyHex);
 
 					deserializedEntries.push(deserializedEntry);
@@ -145,7 +148,7 @@ namespace ZincDB {
 				return deserializedEntries;
 			}
 
-			export const compactAndDeserializeEntries = function (bytes: Uint8Array, decryptionKeyHex?: string): EntryArray<any> {
+			export const compactAndDeserializeEntries = function (bytes: Uint8Array, decryptionKeyHex?: string, verifyChecksums = false): EntryArray<any> {
 				if (bytes == null)
 					throw new TypeError("deserializeEntries: input is null or undefined");
 
@@ -158,7 +161,7 @@ namespace ZincDB {
 				let offset = 0;
 
 				while (bytes.length > 0) {
-					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes);
+					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes, verifyChecksums);
 					const payloadStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
 
 					const keyBytes = entryBytes.subarray(payloadStartOffset, payloadStartOffset + header.keySize);
@@ -242,7 +245,7 @@ namespace ZincDB {
 				return [key, value];
 			}
 
-			export const deserializeHeaderAndValidateEntryBytes = function (bytes: Uint8Array): [EntryHeader, Uint8Array] {
+			export const deserializeHeaderAndValidateEntryBytes = function (bytes: Uint8Array, verifyChecksums: boolean): [EntryHeader, Uint8Array] {
 				if (bytes.length < EntryHeaderByteSize)
 					throw new EntryCorruptionError("Bytes has length shorter than primary header size, this may be due to corruption");
 
@@ -255,6 +258,9 @@ namespace ZincDB {
 					throw new EntryCorruptionError("Entry has a longer length than bytes given");
 
 				const entryBytes = bytes.subarray(0, header.totalSize);
+
+				if (verifyChecksums)
+					EntrySerializer.verifyChecksumsInSerializedEntry(entryBytes)
 
 				return [header, entryBytes];
 			}
@@ -348,7 +354,7 @@ namespace ZincDB {
 				header.encryptionMethod = dataView.getUint8(28);
 				header.flags = dataView.getUint8(29);
 				header.secondaryHeaderSize = dataView.getUint16(30, true);
-				
+
 				header.primaryHeaderChecksum = dataView.getUint32(32, true);
 				header.payloadChecksum = dataView.getUint32(36, true);
 
@@ -366,6 +372,29 @@ namespace ZincDB {
 					metadata.isHeadEntry = true;
 
 				return metadata;
+			}
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////
+			/// Checksum operations
+			///////////////////////////////////////////////////////////////////////////////////////////////////
+			export const addChecksumsToSerializedEntry = function (entryBytes: Uint8Array) {
+				const dataView = new DataView(entryBytes.buffer, entryBytes.byteOffset, entryBytes.byteLength);
+				const headerChecksum = Hashing.CRC32C.getChecksum(entryBytes.subarray(0, 32));
+				const payloadChecksum = Hashing.CRC32C.getChecksum(entryBytes.subarray(40));
+
+				dataView.setInt32(32, headerChecksum, true);
+				dataView.setInt32(36, payloadChecksum, true);
+			}
+
+			export const verifyChecksumsInSerializedEntry = function (entryBytes: Uint8Array): boolean {
+				const dataView = new DataView(entryBytes.buffer, entryBytes.byteOffset, entryBytes.byteLength);
+				const headerChecksum = Hashing.CRC32C.getChecksum(entryBytes.subarray(0, 32));
+				const payloadChecksum = Hashing.CRC32C.getChecksum(entryBytes.subarray(40));
+
+				const expectedHeaderChecksum = dataView.getInt32(32, true);
+				const expectedPayloadChecksum = dataView.getInt32(36, true);
+
+				return headerChecksum === expectedHeaderChecksum && payloadChecksum === expectedPayloadChecksum;
 			}
 
 			///////////////////////////////////////////////////////////////////////////////////////////////////
