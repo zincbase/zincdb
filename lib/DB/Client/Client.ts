@@ -1,5 +1,23 @@
 namespace ZincDB {
 	export namespace DB {
+		export type ClientOptions = {
+			datastoreURL: string;
+			encryptionKey?: string;
+			accessKey?: string;
+			verifyServerCertificate?: boolean;
+			verifyChecksums?: boolean;
+			addChecksums?: boolean;
+		}
+
+		export type WriteResponseObject = {
+			commitTimestamp: number;
+		}
+
+		export type ServerMetadata = {
+			lastModified: number;
+			lastRewritten: number;
+		}
+
 		export class Client<V> {
 			private abortSignalSource = new SignalSource();
 
@@ -33,7 +51,7 @@ namespace ZincDB {
 				if (!Array.isArray(newRevisions))
 					throw new TypeError("New revisions argument is not an array");
 
-				const serializedEntries = DB.EntrySerializer.serializeEntries(newRevisions, this.options.encryptionKey);
+				const serializedEntries = DB.EntrySerializer.serializeEntries(newRevisions, this.options.encryptionKey, this.options.addChecksums);
 				return this.writeRaw(serializedEntries);
 			}
 
@@ -56,7 +74,7 @@ namespace ZincDB {
 				if (!Array.isArray(newRevisions))
 					throw new TypeError("New revisions argument is not an array");
 
-				return await this.rewriteRaw(DB.EntrySerializer.serializeEntries(newRevisions, this.options.encryptionKey));
+				return await this.rewriteRaw(DB.EntrySerializer.serializeEntries(newRevisions, this.options.encryptionKey, this.options.addChecksums));
 			}
 
 			async rewriteRaw(content: Uint8Array): Promise<WriteResponseObject> {
@@ -158,9 +176,9 @@ namespace ZincDB {
 				let results: Entry<any>[];
 
 				if (compact)
-					results = DB.EntrySerializer.compactAndDeserializeEntries(responseBody, this.options.encryptionKey);
+					results = DB.EntrySerializer.compactAndDeserializeEntries(responseBody, this.options.encryptionKey, this.options.verifyChecksums);
 				else
-					results = DB.EntrySerializer.deserializeEntries(responseBody, this.options.encryptionKey);
+					results = DB.EntrySerializer.deserializeEntries(responseBody, this.options.encryptionKey, this.options.verifyChecksums);
 
 				return results;
 			}
@@ -190,22 +208,6 @@ namespace ZincDB {
 					throw new Error("Response has status code other than 200 OK");
 				}
 			}
-		}
-
-		export type ClientOptions = {
-			datastoreURL: string;
-			encryptionKey?: string;
-			accessKey?: string;
-			verifyServerCertificate?: boolean
-		}
-
-		export type WriteResponseObject = {
-			commitTimestamp: number;
-		}
-
-		export type ServerMetadata = {
-			lastModified: number;
-			lastRewritten: number;
 		}
 	}
 
