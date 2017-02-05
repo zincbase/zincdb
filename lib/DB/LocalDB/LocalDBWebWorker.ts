@@ -69,7 +69,7 @@ namespace ZincDB {
 					if (navigator.appVersion.indexOf("MSIE 10") >= 0)
 						self.postMessage(responseMessage, <any>[]);
 					else
-						self.postMessage(responseMessage, <any>ObjectTools.deepSearchTransferableObjects(responseMessage));
+						self.postMessage(responseMessage, <any>ObjectTools.deepSearchTypedArrays(responseMessage));
 				}
 				catch (err) {
 					let errObject;

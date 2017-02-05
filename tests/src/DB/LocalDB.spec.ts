@@ -47,11 +47,13 @@ namespace ZincDB {
 						let db: LocalDB;
 
 						beforeEach(async () => {
-							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, {
+							const dbOptions: Partial<LocalDBOptions> = {
 								storageMedium,
 								useWorker,
 								storagePath: "tests/temp"
-							});
+							}
+
+							db = await open(`Test_${JSRandom.getWordCharacterString(10)}`, dbOptions);
 						});
 
 						afterEach(async () => {
@@ -59,7 +61,7 @@ namespace ZincDB {
 							db = <any>undefined;
 						});
 
-						it("Stores several entries within a transaction", async () => {
+						it("Stores several nodes within a transaction", async () => {
 							const dataObject = {
 								"a": {
 									"b": {
@@ -112,6 +114,19 @@ namespace ZincDB {
 
 							expect(await db.getMulti([["a", "b"], ["a", "c"], ["d", "b", "e f"]]))
 								.toEqual([undefined, "go", [1, 2, 3]]);
+						});
+
+						it("Stores nodes containing typed arrays, date and regexp objects", async () => {
+							const complexObject1 = [1, 2, new Int16Array([-1, -2]), new Float32Array([-4232.12, -66666.321]), new Date(), /^abc$/g];
+							const complexObject2 = { a: new Float64Array([-13423432.4444, 2234324.5555]), b: [new Date(4321), /^aasabc$/gi] };
+
+							await db.transaction()
+								.put(["a", "b"], complexObject1)
+								.put(["a", "c"], complexObject2)
+								.commit();
+
+							expect(await db.getMulti([["a", "b"], ["a", "c"], "a"]))
+								.toEqual([complexObject1, complexObject2, { b: complexObject1, c: complexObject2 }]);
 						});
 
 						it("Stores several nodes and then updates them", async () => {
@@ -457,14 +472,14 @@ namespace ZincDB {
 						}
 
 						if (ZincDBTestConfig.host == null || ZincDBTestConfig.accessKey == null) {
-							log("Skipped tests requiring a remote server as a g as a global ZincDB test configuration object was found but did not contain a 'host' or 'accessKey' properties.");
+							log("Skipped tests requiring a remote server as a global ZincDB test configuration object was found but did not contain a 'host' or 'accessKey' properties.");
 							return;
 						}
 
 						beforeEach(async () => {
 							const dbName = JSRandom.getWordCharacterString(10);
 
-							db = await open(`Test_${dbName}`, {
+							const dbOptions: Partial<LocalDBOptions> = {
 								storageMedium,
 								useWorker,
 								remoteSyncURL: `${ZincDBTestConfig.host}/datastore/${dbName}`,
@@ -472,7 +487,9 @@ namespace ZincDB {
 								encryptionKey: "4d2d3fb0356cf6a66617e6454641697b",
 								verifyServerCertificate: false,
 								storagePath: "tests/temp"
-							});
+							}
+
+							db = await open(`Test_${dbName}`, dbOptions );
 
 							await db.syncClient.rewrite([]);
 						});
@@ -527,6 +544,36 @@ namespace ZincDB {
 							});
 						});
 
+						it("Pushes entries containing typed array, date and regexp objects", async () => {
+							const complexObject1 = [1, 2, new Int16Array([-1, -2]), new Float32Array([-4232.12, -66666.321]), new Date(), /^abc$/g];
+							const complexObject2 = { a: new Float64Array([-13423432.4444, 2234324.5555]), b: [new Date(4321), /^aasabc$/gi] };
+							const simpleObject = { a: [4, true, null], b: "ok" };
+
+							await db.transaction()
+								.put(["a", "b"], complexObject1)
+								.put(["a", "c"], complexObject2)
+								.put(["b", "d"], simpleObject)
+								.commit();
+
+							await db.pushLocalChanges();
+							expect(await db.getLocalChanges()).toEqual([]);
+
+							const remoteDatastoreContent = await db.syncClient.read();
+
+							expect(remoteDatastoreContent.length).toEqual(4);
+
+							expect(remoteDatastoreContent[0].key).toEqual("");
+
+							expect(remoteDatastoreContent[1].key).toEqual("['a']['b']");
+							expect(remoteDatastoreContent[1].value).toEqual(complexObject1);
+
+							expect(remoteDatastoreContent[2].key).toEqual("['a']['c']");
+							expect(remoteDatastoreContent[2].value).toEqual(complexObject2);
+
+							expect(remoteDatastoreContent[3].key).toEqual("['b']['d']");
+							expect(remoteDatastoreContent[3].value).toEqual(simpleObject);
+						})
+
 						it("Pulls from a remote server", async () => {
 							const updateTime = Timer.getMicrosecondTimestamp();
 
@@ -569,6 +616,26 @@ namespace ZincDB {
 								}
 							});
 						});
+
+						it("Pulls entries containing typed array, date and regexp objects", async () => {
+							const complexObject1 = [1, 2, new Int16Array([-1, -2]), new Float32Array([-4232.12, -66666.321]), new Date(), /^abc$/g];
+							const complexObject2 = { a: new Float64Array([-13423432.4444, 2234324.5555]), b: [new Date(4321), /^aasabc$/gi] };
+							const simpleObject = { a: [4,true, null], b: "ok" };
+
+							const updateTime = Timer.getMicrosecondTimestamp();
+
+							const complexEntries: EntryArray<any> = [
+								{ key: "['a']['b']", value: complexObject1, metadata: { updateTime } },
+								{ key: "['a']['c']", value: complexObject2, metadata: { updateTime } },
+								{ key: "['b']['d']", value: simpleObject, metadata: { updateTime } },
+							];
+
+							await db.syncClient.write(complexEntries);
+							await db.pullRemoteChanges();
+
+							expect(await db.getMulti([["a", "b"], ["a", "c"], "a", ["b", "d"]]))
+								.toEqual([complexObject1, complexObject2, { b: complexObject1, c: complexObject2 }, simpleObject]);
+						})
 
 						function testContinuousPull(useWebSocket: boolean) {
 							it(`Continuously pulls from a remote server. Websocket enabled: ${useWebSocket}.`, () => {

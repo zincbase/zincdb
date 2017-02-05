@@ -41,17 +41,34 @@ namespace ZincDB {
 					await db.close();
 				});
 
-				it("Sets and retrieves a single record", async () => {
+				it("Sets and retrieves a single entry", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1 } });
-					expect(await db.get<string>("key1", "testObjectStore1")).toEqual(testEntry1);
+					expect(await db.get<any>("key1", "testObjectStore1")).toEqual(testEntry1);
 				});
 
-				it("Sets and retrieves multiple records", async () => {
+				it("Sets and retrieves multiple entries", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
-					expect(await db.get<string>(["key2", "key1", "key3", "key4"], "testObjectStore1")).toEqual([testEntry2, testEntry1, testEntry3, undefined]);
+					expect(await db.get<any>(["key2", "key1", "key3", "key4"], "testObjectStore1")).toEqual([testEntry2, testEntry1, testEntry3, undefined]);
 				});
 
-				it("Sets and then both sets and deletes multiple records", async () => {
+				it("Sets and retrieves entries containing typed arrays, date, and regexp objects", async () => {
+					const complexEntry1 = {
+						key: "key1", value: [1, 2, new Int16Array([-1, -2]), new Float32Array([-4232.12, -66666.321]), new Date(), /^abc$/g], metadata: { updateTime: 1000, commitTime: 2000 } };
+
+					const complexEntry2 = {
+						key: "key2", value: { a: new Float64Array([-13423432.4444, 2234324.5555]), b:  [new Date(4321), /^aasabc$/gi] }, metadata: { updateTime: 1000, commitTime: 2000 }
+					};
+
+					await db.set({
+						"testObjectStore1": { "key1": complexEntry1 },
+						"testObjectStore2": { "key2": complexEntry2 }
+					});
+
+					expect(await db.get<any>("key1", "testObjectStore1")).toEqual(complexEntry1);
+					expect(await db.get<any>("key2", "testObjectStore2")).toEqual(complexEntry2);
+				});
+
+				it("Sets and then both sets and deletes multiple entries", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
 					await db.set({ "testObjectStore1": { "key1": null, "key3": null, "key4": testEntry4 } });
 					expect(await db.get(["key1", "key2", "key3", "key4"], "testObjectStore1")).toEqual([undefined, testEntry2, undefined, testEntry4]);
@@ -59,23 +76,23 @@ namespace ZincDB {
 					expect(await db.get(["key1", "key2", "key3", "key4"], "testObjectStore1")).toEqual([testEntry1, testEntry2, testEntry3, undefined]);
 				});
 
-				it("Checks for existence of a single record", async () => {
+				it("Checks for existence of a single entry", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1 } });
 					expect(await db.has("key1", "testObjectStore1")).toEqual(true);
 					expect(await db.has("key2", "testObjectStore1")).toEqual(false);
 				});
 
-				it("Checks for existence of multiple records", async () => {
+				it("Checks for existence of multiple entries", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
 					expect(await db.has(["key2", "key1", "key5", "key3", "key4"], "testObjectStore1")).toEqual([true, true, false, true, false]);
 				});
 
-				it("Counts all records", async () => {
+				it("Counts all entries", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
 					expect(await db.count({}, "testObjectStore1")).toEqual(3);
 				});
 
-				it("Gets all records", async () => {
+				it("Gets all entries", async () => {
 					await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
 					expect(await db.getAll("testObjectStore1")).toEqual([testEntry1, testEntry2, testEntry3, testEntry4]);
 				});

@@ -74,6 +74,10 @@ namespace ZincDB {
 					valueBytes = entry.value;
 					valueEncoding = DataEncoding.Binary;
 				}
+				else if (ObjectTools.deepContainsOmniJsonEncodables(entry.value)) {
+					valueBytes = Encoding.UTF8.encode(Encoding.OmniJson.encode(entry.value));
+					valueEncoding = DataEncoding.OmniJson;
+				}
 				else {
 					valueBytes = Encoding.UTF8.encode(Encoding.JsonX.encode(entry.value));
 					valueEncoding = DataEncoding.Json;
@@ -220,7 +224,10 @@ namespace ZincDB {
 						key = Encoding.UTF8.decode(keyBytes);
 						break;
 					case DataEncoding.Json:
-						key = JSON.parse(Encoding.UTF8.decode(keyBytes));
+						key = Encoding.JsonX.decode(Encoding.UTF8.decode(keyBytes));
+						break;
+					case DataEncoding.OmniJson:
+						key = Encoding.OmniJson.decode(Encoding.UTF8.decode(keyBytes));
 						break;
 					default:
 						throw new TypeError(`deserializeKeyAndValueToEncoding: invalid key encoding '${keyEncoding}'`);
@@ -235,7 +242,10 @@ namespace ZincDB {
 							value = Encoding.UTF8.decode(valueBytes);
 							break;
 						case DataEncoding.Json:
-							value = JSON.parse(Encoding.UTF8.decode(valueBytes));
+							value = Encoding.JsonX.decode(Encoding.UTF8.decode(valueBytes));
+							break;
+						case DataEncoding.OmniJson:
+							value = Encoding.OmniJson.decode(Encoding.UTF8.decode(valueBytes));
 							break;
 						default:
 							throw new TypeError(`deserializeKeyAndValueToEncoding: invalid value encoding '${valueEncoding}'`);
@@ -247,15 +257,15 @@ namespace ZincDB {
 
 			export const deserializeHeaderAndValidateEntryBytes = function (bytes: Uint8Array, verifyChecksums: boolean): [EntryHeader, Uint8Array] {
 				if (bytes.length < EntryHeaderByteSize)
-					throw new EntryCorruptionError("Bytes has length shorter than primary header size, this may be due to corruption");
+					throw new EntryCorruptedError("Bytes has length shorter than primary header size, this may be due to corruption");
 
 				const header = deserializeHeader(bytes);
 
 				if (header.totalSize < EntryHeaderByteSize)
-					throw new EntryCorruptionError("Entry has length shorter than primary header size, this may be due to corruption");
+					throw new EntryCorruptedError("Entry has length shorter than primary header size, this may be due to corruption");
 
 				if (header.totalSize > bytes.length)
-					throw new EntryCorruptionError("Entry has a longer length than bytes given");
+					throw new EntryCorruptedError("Entry has a longer length than bytes given");
 
 				const entryBytes = bytes.subarray(0, header.totalSize);
 

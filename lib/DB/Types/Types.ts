@@ -14,7 +14,5 @@ namespace ZincDB {
 		}
 	}
 
-	export type EntrySerializationFormat = "raw" | "jsonArray" | "jsonObject" | "tabbedJson" | "tabbedJsonShort";
-
-	export class EntryCorruptionError extends Error { };
+	export class EntryCorruptedError extends Error { };
 }

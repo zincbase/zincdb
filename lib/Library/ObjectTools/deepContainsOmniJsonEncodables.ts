@@ -1,18 +1,14 @@
 namespace ZincDB {
 	export namespace ObjectTools {
-		export const deepSearchTransferableObjects = function (obj: any): ArrayBuffer[] {
-			const reducer = (val: any, currentResult: number[]): any[] => {
+		export const deepContainsOmniJsonEncodables = function (obj: any): boolean {
+			const predicate = (val: any): boolean => {
 				if (val == null || typeof val !== "object")
-					return currentResult;
-				
+					return false;
+
 				const prototypeIdentifier = toString.call(val);
 
 				switch (prototypeIdentifier) {
 					case "[object ArrayBuffer]":
-						if (currentResult.indexOf(val) === -1) {
-							return currentResult.concat(val);
-						}
-						break;
 					case "[object Int8Array]":
 					case "[object Uint8Array]":
 					case "[object Uint8ClampedArray]":
@@ -22,17 +18,15 @@ namespace ZincDB {
 					case "[object Uint32Array]":
 					case "[object Float32Array]":
 					case "[object Float64Array]":
-						if (currentResult.indexOf(val.buffer) === -1) {
-							return currentResult.concat(val.buffer);
-						}
-						
-						break;
+					case "[object Date]":
+					case "[object RegExp]":
+						return true;
+					default:
+						return false;
 				}
-
-				return currentResult;
 			}
 
-			return deepReduce(obj, reducer, []);
+			return deepContains(obj, predicate);
 		}
 	}
 }

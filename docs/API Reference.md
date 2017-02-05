@@ -17,6 +17,9 @@ db.transaction()
 
 // Read operations
 db.get(path)
+db.getMulti(paths)
+db.has(path)
+db.hasMulti(paths)
 db.subscribe(path, handler)
 db.observe(path, handler)
 db.unsubscribe(handler)
