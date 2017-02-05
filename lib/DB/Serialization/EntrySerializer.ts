@@ -166,9 +166,9 @@ namespace ZincDB {
 
 				while (bytes.length > 0) {
 					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes, verifyChecksums);
-					const payloadStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
+					const keyStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
 
-					const keyBytes = entryBytes.subarray(payloadStartOffset, payloadStartOffset + header.keySize);
+					const keyBytes = entryBytes.subarray(keyStartOffset, keyStartOffset + header.keySize);
 					compactionMap.set(Encoding.Hex.encode(keyBytes), { offset: offset, header: header, entryBytes: entryBytes });
 
 					bytes = bytes.subarray(header.totalSize);
@@ -190,9 +190,9 @@ namespace ZincDB {
 			}
 
 			export const deserializeEntryBody = function (entryBytes: Uint8Array, header: EntryHeader, decryptionKeyHex?: string): Entry<any> {
-				const payloadStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
-				let keyBytes = entryBytes.subarray(payloadStartOffset, payloadStartOffset + header.keySize);
-				let valueBytes = entryBytes.subarray(payloadStartOffset + header.keySize);
+				const keyStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
+				let keyBytes = entryBytes.subarray(keyStartOffset, keyStartOffset + header.keySize);
+				let valueBytes = entryBytes.subarray(keyStartOffset + header.keySize);
 
 				if (header.encryptionMethod !== EncryptionMethod.None) {
 					if (header.encryptionMethod !== EncryptionMethod.AES_CBC_128)

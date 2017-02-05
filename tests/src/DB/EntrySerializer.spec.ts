@@ -212,6 +212,39 @@ namespace ZincDB {
 							expect(deserializedEntries).toEqual(entries);
 						});
 
+						it("Deserializes entries containing secondary headers", () => {
+							const timestamp = Timer.getMicrosecondTimestamp();
+
+							const testHeader: EntryHeader =
+								{
+									totalSize: 6000,
+									updateTime: timestamp,
+									commitTime: 0,
+									keySize: 14,
+									keyEncoding: DataEncoding.Json,
+									valueEncoding: DataEncoding.Binary,
+									encryptionMethod: EncryptionMethod.None,
+									flags: 0,
+									secondaryHeaderSize: 5000,
+									primaryHeaderChecksum: 0,
+									payloadChecksum: 0,
+								}
+
+							const secondaryHeaderBytes = Crypto.Random.getBytes(testHeader.secondaryHeaderSize);
+							const keyBytes = Encoding.UTF8.encode(`"Hello World!"`);
+							const valueBytes = Crypto.Random.getBytes(testHeader.totalSize - EntryHeaderByteSize - testHeader.secondaryHeaderSize - testHeader.keySize);
+
+							const serializedHeader = EntrySerializer.serializeHeader(testHeader);
+							const entryBytes = ArrayTools.concatUint8Arrays([serializedHeader, secondaryHeaderBytes, keyBytes, valueBytes])
+							EntrySerializer.addChecksumsToSerializedEntry(entryBytes);
+							expect(EntrySerializer.verifyChecksumsInSerializedEntry(entryBytes)).toBe(true);
+
+							const deserializedEntry = EntrySerializer.deserializeFirstEntry(entryBytes);
+							expect(deserializedEntry.key).toEqual("Hello World!");
+							expect(deserializedEntry.metadata.updateTime).toEqual(timestamp);
+							expect(deserializedEntry.value).toEqual(valueBytes);
+						});
+
 						it("Android <= 4.3 test matcher bug test", () => {
 							const a = new Uint8Array([2, 3]);
 							const b = new Uint8Array([2, 3]);
