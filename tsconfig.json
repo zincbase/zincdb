@@ -3,7 +3,11 @@
 	"compilerOptions": {
 		"target": "es5",
 		"module": "none",
-		"lib": ["es5", "es2015.promise", "dom"],
+		"lib": [
+			"es5",
+			"es2015.promise",
+			"dom"
+		],
 		"outFile": "build/development/zincdb.js",
 		"watch": false,
 		"sourceMap": true,
@@ -32,11 +36,13 @@
 		"lib/Types/**/*.ts",
 		"lib/Globals/**/*.js",
 		"lib/Globals/**/*.ts",
+		"lib/TestEnvironment/**/*.ts",
 		"lib/Library/**/*.ts",
 		"lib/NodeLibrary/**/*.ts",
 		"lib/DB/**/*.ts",
-		"tests/testconfig.js",
 		"tests/src/**/*.ts",
+		"tests/testconfig.js",
+		"tests/TestInstaller.ts",
 		"benchmarks/src/**/*.ts",
 		"editor/src/**/*.ts",
 		"editor/src/**/*.tsx"

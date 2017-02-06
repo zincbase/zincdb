@@ -85,17 +85,17 @@ namespace ZincDB {
 	}
 
 	export const getGlobalObject = function (): any {
-		if (typeof window === "object")
+		if (typeof global === "object")
+			return global;
+		else if (typeof window === "object")
 			return window;
 		else if (typeof self === "object")
 			return self;
-		else if (typeof global === "object")
-			return global;
 		else
-			return undefined;
+			return {};
 	}
-	
-	export const toString = Object.prototype.toString;	
+
+	export const toString = Object.prototype.toString;
 
 	if (commonJSAvailable()) {
 		module.exports = ZincDB;

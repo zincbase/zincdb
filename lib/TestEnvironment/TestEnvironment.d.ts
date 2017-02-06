@@ -1,12 +1,12 @@
-declare function describe(description: string, specDefinitions: () => void): void;
+declare function describe(description: string, testFunction: () => void): void;
 
-declare function before(action: (done: (err?: Error) => void) => void): void;
-declare function after(action: (done: (err?: Error) => void) => void): void;
+declare function before(action: (done: (err?: Error) => void) => void | Promise<any>): void;
+declare function after(action: (done: (err?: Error) => void) => void | Promise<any>): void;
 
-declare function beforeEach(action: (done: (err?: Error) => void) => void): void;
-declare function afterEach(action: (done: (err?: Error) => void) => void): void;
+declare function beforeEach(action: (done: (err?: Error) => void) => void | Promise<any>): void;
+declare function afterEach(action: (done: (err?: Error) => void) => void | Promise<any>): void;
 
-declare function it(expectationString: string, assertion?: (done: (err?: Error) => void) => void): void;
+declare function it(expectationString: string, specFunction?: (done: (err?: Error) => void) => void | Promise<any>): void;
 
 declare function expect(actual: any): ExpectMatcher;
 
