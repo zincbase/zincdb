@@ -2,4 +2,4 @@ node_modules
 backup.cmd
 npm-debug.log
 .vscode/spellchecker.json
-testconfig.js
+tests/testconfig.js

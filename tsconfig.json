@@ -35,7 +35,7 @@
 		"lib/Library/**/*.ts",
 		"lib/NodeLibrary/**/*.ts",
 		"lib/DB/**/*.ts",
-		"testconfig.js",
+		"tests/testconfig.js",
 		"tests/src/**/*.ts",
 		"benchmarks/src/**/*.ts",
 		"editor/src/**/*.ts",

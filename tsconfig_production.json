@@ -6,7 +6,7 @@
 		"removeComments": true
 	},
 	"exclude": [
-		"testconfig.js",		
+		"tests/testconfig.js",
 		"tests/src/**/*",
 		"benchmarks/src/**/*",
 		"editor/src/**/*"

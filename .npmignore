@@ -8,7 +8,7 @@ lib
 tests
 backup.cmd
 Gruntfile.js
-testconfig.js
+tests/testconfig.js
 tsconfig.json
 tsconfig_production.json
 tslint.json
