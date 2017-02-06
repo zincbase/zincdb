@@ -6,8 +6,8 @@
 		"removeComments": true
 	},
 	"exclude": [
-		"src/**/*.spec.ts",
 		"src/TestEnvironment/**/*",
+		"src/**/*.spec.ts",
 		"editor/**/*",
 		"benchmarks/**/*",
 		"tests/**/*"

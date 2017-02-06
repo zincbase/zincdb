@@ -45,7 +45,7 @@
 		"editor/src/**/*.tsx",
 		"benchmarks/src/**/*.ts",
 		"tests/testconfig.js",
-		"tests/TestInstaller.ts"
+		"tests/TestSuiteInstaller.ts"
 	],
 	"exclude": [
 		"node_modules"
