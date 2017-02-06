@@ -12,7 +12,7 @@ Features:
 * Fully asynchronous (promise based).
 * Selectable IndexedDB/WebSQL/SQLite/LevelDB/LocalStorage/SessionStorage/In-memory storage adapters with automatic fallbacks based on availability.
 * Optionally runs in a web worker, or a child process in Node.js. Designed for short loading times and minimal impact over the responsiveness of the main application, web-page or server.
-* Supports storing raw binary data in all storage adapters. Supports a form of structural cloning such that typed arrays, Date and RegExp objects would be correctly preserved even if stored deep object trees.
+* Supports storing raw binary data in all storage adapters. Supports a form of structural cloning which enables typed arrays, Date and RegExp objects to be correctly preserved even if nested deeply in object trees.
 * Fine-grained customization of background synchronization types (manual, automatic, unidirectional, bidirectional, WebSocket, COMET etc.).
 * Asynchronous, sophisticated interactive conflict resolution.
 * Built-in end-to-end encryption (optional).

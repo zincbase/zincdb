@@ -104,7 +104,7 @@ db.put(path, val)
 
 **Arguments**:
 
-* `path` (array of strings or string, required): A path specifying the leaf to assign.
+* `path` (string or array of strings, required): A path specifying the leaf to assign.
 * `val` (any, required): The primitive value, object, or array to assign.
 
 **Return value**
@@ -153,7 +153,7 @@ db.update(path, newValue)
 
 **Arguments**:
 
-* `path` (array of strings or string, required): the path of the entity to update. Can be either a leaf node, branch node (including the root), or a leaf node value's descendant property or array index.
+* `path` (string or array of strings, required): the path of the entity to update. Can be either a leaf node, branch node (including the root), or a leaf node value's descendant property or array index.
 * `newValue` (any, required): the new value to assign the entity.
 
 **Example**:
@@ -223,7 +223,7 @@ db.addListItem(containerPath, value)
 
 **Arguments**:
 
-* `containerPath` (array of strings or string, required): the containing path.
+* `containerPath` (string or array of strings, required): the containing path.
 * `value` (any, required): the value to assign to the new list item.
 
 **Return type**:
@@ -389,7 +389,7 @@ db.getMulti(paths)
 
 **Arguments**:
 
-* `paths` (array): An array of paths retrieve.
+* `paths` (array): A list of paths retrieve.
 
 **Return value**:
 
@@ -484,7 +484,7 @@ db.observe(path, handler)
 
 **Arguments**:
 
-* `path` (array of strings or string, required): the path of the entity to watch. This can be any path supported by `get()`.
+* `path` (string or array of strings, required): the path of the entity to watch. This can be any path supported by `get()`.
 * `handler` (function, required): a handler function to be called when a relevant update occurred. The handler function receives a single argument - an event object of the form:
 
 ```ts
@@ -705,7 +705,7 @@ db.discardLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (array of strings or string, optional): the base node path for the changes to discard.
+* `path` (string or array of strings, optional): the base node path for the changes to discard.
 
 **Return value**:
 
@@ -737,7 +737,7 @@ db.getLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (array of strings or string, optional): the base node for the local changes to retrieve.
+* `path` (string or array of strings, optional): the base node for the local changes to retrieve.
 
 **Return value**:
 
