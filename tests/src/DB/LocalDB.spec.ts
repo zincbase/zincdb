@@ -21,7 +21,7 @@ namespace ZincDB {
 				runDBTests("SQLite", false);
 
 			if (LevelUpAdapter.isAvailable)
-				runDBTests("LevelDB", false);
+				runDBTests("LevelUP", false);
 			*/
 
 			if (webWorkersAvailable()) {
@@ -38,7 +38,7 @@ namespace ZincDB {
 					runDBTests("SQLite", true);
 
 				if (LevelUpAdapter.isAvailable)
-					runDBTests("LevelDB", true);
+					runDBTests("LevelUP", true);
 			}
 
 			function runDBTests(storageMedium: LocalDBOptions['storageMedium'], useWorker: boolean) {

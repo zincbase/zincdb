@@ -13,7 +13,7 @@ namespace ZincDB {
 
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Initialization operations
-			//////////////////////////////////////////////////////////////////////////////////////			
+			//////////////////////////////////////////////////////////////////////////////////////
 			async open(name: string, options: LocalDBOptions) {
 				if (this.db !== undefined) {
 					if (ObjectTools.deepCompare(options, this.currentOpenOptions) === true)
@@ -50,9 +50,9 @@ namespace ZincDB {
 						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
 						break;
 
-					case "LevelDB":
+					case "LevelUP":
 						if (!LevelUpAdapter.isAvailable)
-							throw new Error("LevelDB is not available at the current context.");
+							throw new Error("LevelUP is not available at the current context.");
 
 						this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
 						break;
@@ -81,7 +81,7 @@ namespace ZincDB {
 						else if (WebSQLAdapter.isAvailable)
 							this.db = new WebSQLAdapter(localDBIdentifier);
 						else if (WebStorageAdapter.isAvailable)
-							this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");			
+							this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");
 						else
 							this.db = new InMemoryAdapter(localDBIdentifier);
 						break;
@@ -476,12 +476,12 @@ namespace ZincDB {
 					if (!newEntry.metadata.commitTime)
 						throw new Error("Encountered a remote entry with no commit timestamp");
 
-					// If a head entry is encountered and the datastore has already been synced before, 
-					// clear all entries in the datastore, and discard all previous updates that were timed before 
+					// If a head entry is encountered and the datastore has already been synced before,
+					// clear all entries in the datastore, and discard all previous updates that were timed before
 					// the head entry. Otherwise skip.
 					if (newEntry.metadata.isHeadEntry) {
 						if (serverMetadata.lastModified > 0) {
-							// Clear all new entries that were added to the update objects 
+							// Clear all new entries that were added to the update objects
 							commitObject = {};
 
 							// Set the diff to include all known remote entry keys to value `undefined`
@@ -515,7 +515,7 @@ namespace ZincDB {
 					}
 
 					// Check it the given leaf path is invalid or shares heritage with an existing leaf path.
-					// This includes local entries that haven't been transmitted yet. 
+					// This includes local entries that haven't been transmitted yet.
 					let entryPath: NodePath;
 
 					try {
@@ -555,7 +555,7 @@ namespace ZincDB {
 					[GlobalMetadataStoreName]: { "serverMetadata": { key: "serverMetadata", value: serverMetadata, metadata: {} } },
 				});
 
-				// Add add paths as leaf nodes, if needed. 
+				// Add add paths as leaf nodes, if needed.
 				this.nodeLookup.addPathStrings(diff.map((entry) => entry.key));
 
 				return diff;
@@ -768,7 +768,7 @@ namespace ZincDB {
 
 			/////////////////////////////////////////////////////////////////////////////////////////////////
 			/// Finalization operations
-			/////////////////////////////////////////////////////////////////////////////////////////////////			
+			/////////////////////////////////////////////////////////////////////////////////////////////////
 			async destroyLocalData() {
 				if (this.isClosed)
 					throw new Error("Database is closed.");

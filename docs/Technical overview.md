@@ -1,10 +1,10 @@
 # Technical overview
 
-ZincBase is a distributed database platform aiming to provide a full solution for the storage and retrieval of structured application data, both locally and in the cloud. It consists of two independents components:
+ZincBase is a distributed database platform aiming to provide a complete solution for the storage and retrieval of structured application data, both locally and in the cloud. It consists of two independents components:
 
 ## [ZincDB](https://github.com/zincbase/zincdb)
 
-A Javascript object database managed through a high-level API, available as a library. Provides a local database using either browser based persistence (IndexedDB/WebSQL), an external library (SQLite or LevelDB in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
+A Javascript object database managed through a high-level API, available as a library. Provides a local database using either browser based persistence (IndexedDB/WebSQL/LocalStorage/SessionStorage), an external library (SQLite or LevelUP in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
 
 Features:
 
@@ -12,7 +12,7 @@ Features:
 * Fully asynchronous (promise based).
 * Selectable IndexedDB/WebSQL/SQLite/LevelDB/LocalStorage/SessionStorage/In-memory storage adapters with automatic fallbacks based on availability.
 * Optionally runs in a web worker, or a child process in Node.js. Designed for short loading times and minimal impact over the responsiveness of the main application, web-page or server.
-* Supports storing raw binary data in all storage adapters.
+* Supports storing raw binary data in all storage adapters. Supports a form of structural cloning such that typed arrays, Date and RegExp objects would be correctly preserved even if stored deep object trees.
 * Fine-grained customization of background synchronization types (manual, automatic, unidirectional, bidirectional, WebSocket, COMET etc.).
 * Asynchronous, sophisticated interactive conflict resolution.
 * Built-in end-to-end encryption (optional).
@@ -21,13 +21,13 @@ Features:
 
 ## [ZincServer](https://github.com/zincbase/zincserver)
 
-A secondary, optional server back-end providing a very thin and efficient remote persistence service for single and multi-client synchronization. A single server instance can serve up to tens of thousands of concurrent clients and provide real-time synchronization between them. The server can be run anywhere: in the cloud, at a local network, locally on the same computer, or possibly even on an embedded device, tablet or a smartphone.
+A secondary, optional server back-end providing a very thin and efficient remote persistence service for single and multi-client synchronization. A single server instance can serve up to tens of thousands of concurrent clients and provide real-time synchronization between them. The server can be run anywhere: in the cloud, at a local network, locally on the same computer, or technically even on an embedded device, tablet or a smartphone.
 
 ZincServer is highly configurable and can provide a partial or even full replacement for custom application servers. Unlike most database servers it was designed to be fully open to the global internet and interfaced directly from browsers, mobile or desktop applications.
 
 Features:
 
-* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md). A design analogous to a cross between a transactional key-value datastore and a message broker.
+* [Chronological keyed datastore](https://github.com/zincbase/zincserver/blob/master/docs/Technical%20overview.md). A design analogous to a cross between a message broker and a transactional key-value datastore.
 * Built on a custom, on-disk, fully ACID, high performance storage engine based on append-only files. Written in Go.
 * Can serve an arbitrary number of datastores and up to several tens of thousands concurrent requests on consumer hardware, with low memory footprint for any given instance.
 * WebSocket and COMET support for real-time synchronization.

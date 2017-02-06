@@ -20,7 +20,7 @@ namespace ZincDB {
 			testStorageAdapter("SQLite", new NodeSQLiteAdapter(dbName, `tests/temp`));
 
 		if (LevelUpAdapter.isAvailable)
-			testStorageAdapter("LevelDB", new LevelUpAdapter(dbName, `tests/temp`));
+			testStorageAdapter("LevelUP", new LevelUpAdapter(dbName, `tests/temp`));
 
 
 		function testStorageAdapter(adapterName: LocalDBOptions['storageMedium'], db: StorageAdapter) {
