@@ -6,9 +6,10 @@
 		"removeComments": true
 	},
 	"exclude": [
-		"tests/testconfig.js",
-		"tests/src/**/*",
-		"benchmarks/src/**/*",
-		"editor/src/**/*"
+		"src/**/*.spec.ts",
+		"src/TestEnvironment/**/*",
+		"editor/**/*",
+		"benchmarks/**/*",
+		"tests/**/*"
 	]
 }
