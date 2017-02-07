@@ -15,7 +15,7 @@ namespace ZincDB {
 			it("Produces values cummulatively averaging around 127.5", () => {
 				const byteCount = 10000;
 				const randomBytes = Crypto.Random.getBytes(byteCount);
-				
+
 				let sum = 0;
 
 				for (let i = 0; i < byteCount; i++) {

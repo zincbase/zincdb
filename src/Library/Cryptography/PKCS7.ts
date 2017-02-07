@@ -1,7 +1,7 @@
 namespace ZincDB {
 	export namespace Crypto {
 		export namespace PKCS7 {
-			export const pad = function(input: Uint8Array, blockSize: number): Uint8Array {
+			export const pad = function (input: Uint8Array, blockSize: number): Uint8Array {
 				if (!input)
 					throw new TypeError(`pad: No input was given.`);
 
@@ -16,7 +16,7 @@ namespace ZincDB {
 				return result;
 			}
 
-			export const unpad = function(input: Uint8Array, blockSize: number): Uint8Array {
+			export const unpad = function (input: Uint8Array, blockSize: number): Uint8Array {
 				if (!input)
 					throw new TypeError(`unpad: No input was given.`);
 

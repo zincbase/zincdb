@@ -1,17 +1,17 @@
 namespace ZincDB {
 	export namespace Crypto {
 		export namespace AES_CBC_JS {
-			export const encrypt = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const encrypt = function (plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				plaintext = PKCS7.pad(plaintext, 16);
 				return encryptWithoutPadding(plaintext, keyHex, iv);
 			}
 
-			export const decrypt = function(ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const decrypt = function (ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				const plaintext = decryptWithoutPadding(ciphertext, keyHex, iv);
 				return PKCS7.unpad(plaintext, 16);
 			}
 
-			export const encryptWithoutPadding = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const encryptWithoutPadding = function (plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				if (iv.length !== 16)
 					throw new Error(`AES_CBC.encrypt: invalid IV received, size must be 16.`);
 
@@ -37,7 +37,7 @@ namespace ZincDB {
 				return cipherText;
 			}
 
-			export const decryptWithoutPadding = function(ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const decryptWithoutPadding = function (ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				if (iv.length !== 16)
 					throw new Error(`AES_CBC.decrypt: invalid IV received.`);
 

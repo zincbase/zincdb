@@ -4,7 +4,7 @@ namespace ZincDB {
 			if (runningInNodeJS())
 				var NodeCrypto: typeof nodecrypto = require("crypto");
 
-			export const hash = function(bytes: Uint8Array | Buffer): Uint8Array {
+			export const hash = function (bytes: Uint8Array | Buffer): Uint8Array {
 				if (runningInNodeJS()) {
 					if (Buffer.isBuffer(bytes))
 						return hashUsingNode(bytes);
@@ -16,7 +16,7 @@ namespace ZincDB {
 				}
 			}
 
-			export const hashStringToHex = function(input: string): string {
+			export const hashStringToHex = function (input: string): string {
 				const result = hash(Encoding.UTF8.encode(input));
 
 				return Encoding.Hex.encode(result);
@@ -24,7 +24,7 @@ namespace ZincDB {
 
 			const extendedWordsHelperBuffer = new Array(80);
 
-			export const hashUsingNode = function(bytes: Buffer): Uint8Array {
+			export const hashUsingNode = function (bytes: Buffer): Uint8Array {
 				if (!Buffer.isBuffer(bytes))
 					throw new Error("Received bytes are not a buffer");
 
@@ -33,7 +33,7 @@ namespace ZincDB {
 				return BufferTools.bufferToUint8Array(hash);
 			}
 
-			export const hashUsingJS = function(bytes: Uint8Array): Uint8Array {
+			export const hashUsingJS = function (bytes: Uint8Array): Uint8Array {
 				const words = Encoding.Tools.bigEndianByteArrayToIntArray(bytes);
 				const resultWords = hashWordsUsingJS(words, bytes.length * 8);
 				return Encoding.Tools.intArrayToBigEndianByteArray(resultWords);
@@ -52,7 +52,7 @@ namespace ZincDB {
 			 *
 			 * Source: http://pajhome.org.uk/crypt/md5/sha1.html
 			*/
-			const hashWordsUsingJS = function(words: number[], bitLength?: number): number[] {
+			const hashWordsUsingJS = function (words: number[], bitLength?: number): number[] {
 				// Helper functions:
 				//
 				// Add integers, wrapping at 2^32.

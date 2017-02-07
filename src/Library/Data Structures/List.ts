@@ -225,7 +225,7 @@ namespace ZincDB {
 		async mapAsync<R>(transformFunc: (element: T, index?: number) => R, maxInterval = 20): Promise<List<R>> {
 			const results = new List<R>();
 			await this.forEachAsync((value, index) => results.add(transformFunc(value, index)), maxInterval);
-			
+
 			return results;
 		}
 
@@ -262,11 +262,11 @@ namespace ZincDB {
 			let equalToPivotCount: number, largerThanPivotCount: number;
 
 			const timer = new Timer();
-			let comparisonCount: number = 0;			
+			let comparisonCount: number = 0;
 
 			while (partitionStack.length > 0) {
-				rightIndex = <number> partitionStack.pop();
-				leftIndex = <number> partitionStack.pop();
+				rightIndex = <number>partitionStack.pop();
+				leftIndex = <number>partitionStack.pop();
 
 				//console.log("(" + leftIndex + ", " + rightIndex + "), length: "+ (rightIndex - leftIndex + 1))
 

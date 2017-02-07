@@ -8,13 +8,13 @@ namespace ZincDB {
 				encryptByteBlock: (input: Uint8Array, output?: Uint8Array) => Uint8Array
 				decryptByteBlock: (input: Uint8Array, output?: Uint8Array) => Uint8Array
 			}
-			
+
 			if (runningInNodeJS())
 				var NodeCrypto: typeof nodecrypto = require("crypto");
 
 			const cache: GenericAESCipherInstance[] = [];
 
-			export const fromCache = function(key: number[]): GenericAESCipherInstance {
+			export const fromCache = function (key: number[]): GenericAESCipherInstance {
 				for (let i = 0; i < cache.length; i++) {
 					const member = cache[i];
 

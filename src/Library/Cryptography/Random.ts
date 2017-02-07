@@ -5,7 +5,7 @@
 namespace ZincDB {
 	export namespace Crypto {
 		export namespace Random {
-			export const getAlphanumericString = function(length: number): string {
+			export const getAlphanumericString = function (length: number): string {
 				const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 				const randomBytes = getBytes(length);
 
@@ -17,21 +17,21 @@ namespace ZincDB {
 				return result;
 			}
 
-			export const getUint32 = function(): number {
+			export const getUint32 = function (): number {
 				const randomBytes = getBytes(4);
 				const result = Encoding.Tools.buildUint32BigEndian(randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]);
 
 				return result;
 			}
 
-			export const getInt32 = function(): number {
+			export const getInt32 = function (): number {
 				const randomBytes = getBytes(4);
 				const result = Encoding.Tools.buildInt32BigEndian(randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]);
 
 				return result;
 			}
 
-			export const getBytes = function(length: number): Uint8Array {
+			export const getBytes = function (length: number): Uint8Array {
 				if (runningInNodeJS()) {
 					return getBytesUsingNodeCrypto(length);
 				} else {
@@ -52,7 +52,7 @@ namespace ZincDB {
 				}
 			}
 
-			const getBytesUsingNodeCrypto = function(length: number): Uint8Array {
+			const getBytesUsingNodeCrypto = function (length: number): Uint8Array {
 				const NodeCrypto: typeof nodecrypto = require("crypto");
 
 				let randomByteBuffer: Buffer;
@@ -67,7 +67,7 @@ namespace ZincDB {
 				return new Uint8Array(randomByteBuffer);
 			}
 
-			const getBytesUsingJSRandom = function(length: number): Uint8Array {
+			const getBytesUsingJSRandom = function (length: number): Uint8Array {
 				const bytes = new Uint8Array(length);
 
 				for (let i = 0; i < length; i++) {
@@ -77,7 +77,7 @@ namespace ZincDB {
 				return bytes;
 			}
 
-			const getWebCryptoGenerator = function(): typeof crypto.getRandomValues | undefined {
+			const getWebCryptoGenerator = function (): typeof crypto.getRandomValues | undefined {
 				const globalObject = getGlobalObject();
 				const cryptoObject: typeof crypto = globalObject["crypto"] || globalObject["msCrypto"];
 
@@ -89,7 +89,7 @@ namespace ZincDB {
 
 			// An implementation of an entropy collector based CSPRNG based on a simplified version of
 			// the Fortuna algorithm
-			const getBytesUsingCollectedEntropy = function(length: number): Uint8Array {
+			const getBytesUsingCollectedEntropy = function (length: number): Uint8Array {
 				// Generate the needed amount of bytes using the cipher
 				const bytes = new Uint8Array(length);
 				generatorCipher.transformBytesInPlace(bytes);
@@ -98,7 +98,7 @@ namespace ZincDB {
 			}
 
 			let generatorCipher: AES_CTR_JS;
-			const startCollectingEntropy = function() {
+			const startCollectingEntropy = function () {
 				// Initialize entropy to the Javascript RNG output
 				let entropyState = getBytesUsingJSRandom(20);
 

@@ -1,19 +1,19 @@
 namespace ZincDB {
 	export namespace Crypto {
 		export namespace AES_CBC_Node {
-			export const encrypt = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const encrypt = function (plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				plaintext = PKCS7.pad(plaintext, 16);
 				return encryptWithoutPadding(plaintext, keyHex, iv);
 			}
 
-			export const decrypt = function(ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const decrypt = function (ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				const decryptedPlaintext = decryptWithoutPadding(ciphertext, keyHex, iv);
 				const result = PKCS7.unpad(decryptedPlaintext, 16);
 
 				return result;
 			}
 
-			export const encryptWithoutPadding = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const encryptWithoutPadding = function (plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				if (iv.length !== 16)
 					throw new Error(`AES_CBC_Node.encryptWithoutPadding: invalid IV received, size must be 16.`);
 
@@ -39,7 +39,7 @@ namespace ZincDB {
 				return output;
 			}
 
-			export const decryptWithoutPadding = function(ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
+			export const decryptWithoutPadding = function (ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				if (iv.length !== 16)
 					throw new Error(`AES_CBC_Node.decryptWithoutPadding: invalid IV received, size must be 16.`);
 
@@ -69,7 +69,7 @@ namespace ZincDB {
 			const cipherCache: { [keyHex: string]: nodecrypto.Cipher } = {};
 			const decipherCache: { [keyHex: string]: nodecrypto.Decipher } = {};
 
-			export const getCipher = function(keyHex: string) {
+			export const getCipher = function (keyHex: string) {
 				let cachedCipher = cipherCache[keyHex];
 
 				if (!cachedCipher) {
@@ -84,7 +84,7 @@ namespace ZincDB {
 				return cachedCipher;
 			}
 
-			export const getDecipher = function(keyHex: string) {
+			export const getDecipher = function (keyHex: string) {
 				let cachedDecipher = decipherCache[keyHex];
 
 				if (!cachedDecipher) {
