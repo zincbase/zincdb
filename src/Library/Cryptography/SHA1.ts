@@ -6,13 +6,12 @@ namespace ZincDB {
 
 			export const hash = function(bytes: Uint8Array | Buffer): Uint8Array {
 				if (runningInNodeJS()) {
-					if (bytes instanceof Uint8Array)
-						bytes = BufferTools.uint8ArrayToBuffer(<Uint8Array>bytes);
-
-					return hashUsingNode(<Buffer>bytes);
+					if (Buffer.isBuffer(bytes))
+						return hashUsingNode(bytes);
+					else
+						return hashUsingNode(BufferTools.uint8ArrayToBuffer(bytes));
 				}
 				else {
-
 					return hashUsingJS(<Uint8Array>bytes);
 				}
 			}
@@ -41,7 +40,7 @@ namespace ZincDB {
 			}
 
 			/* Calculate the SHA-1 of an array of big-endian words, given a bit length
-			 * 
+			 *
 			 * Based on:
 			 *
 			 * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
@@ -56,7 +55,7 @@ namespace ZincDB {
 			const hashWordsUsingJS = function(words: number[], bitLength?: number): number[] {
 				// Helper functions:
 				//
-				// Add integers, wrapping at 2^32. 
+				// Add integers, wrapping at 2^32.
 				const add = (x: number, y: number): number => {
 					// This uses 16-bit operations internally
 					// to work around bugs in some JS interpreters.

@@ -213,6 +213,19 @@ namespace ZincDB {
 				const result = this.decryptBlock(Encoding.Tools.bigEndianByteArrayToIntArray(input));
 				return Encoding.Tools.intArrayToBigEndianByteArray(result);
 			}
+
+			static cache: { [keyHex: string]: AES } = {};
+
+			static getAES(keyHex: string): AES {
+				let cachedAESObject = this.cache[keyHex];
+
+				if (!cachedAESObject) {
+					cachedAESObject = new AES(Encoding.Tools.bigEndianByteArrayToIntArray(Encoding.Hex.decode(keyHex)));
+					this.cache[keyHex] = cachedAESObject;
+				}
+
+				return cachedAESObject;
+			}
 		}
 
 		export const enum AESOperationType {

@@ -8,7 +8,7 @@ namespace ZincDB {
 			reusableCiphertextBlock: number[] = [0, 0, 0, 0];
 			reusableCiphertextBlockBytes: Uint8Array = new Uint8Array(16);
 
-			constructor(public aes: AES, nonce: number[] = [0, 0, 0], initialCounter = 0) {
+			constructor(public aes: AES, nonce: number[] = [0, 0, 0, 0], initialCounter = 0) {
 				this.key = aes.key;
 				this.reset(nonce, initialCounter);
 			}
@@ -21,7 +21,12 @@ namespace ZincDB {
 						this.aes.encryptBlock(this.keystreamBlock, this.reusableCiphertextBlock);
 						Encoding.Tools.intArrayToBigEndianByteArray(this.reusableCiphertextBlock, 0, this.reusableCiphertextBlockBytes);
 
-						this.keystreamBlock[3] = (this.keystreamBlock[3] + 1) | 0; // Increment the counter, wrap on MaxInt, this allows safely encrypting up to 68.72GB of data.
+						// Increment the counter, wrap on MaxInt. Note this only allows to safely encrypting
+						// up to 68.72GB of data with the same key (2^32 * 16 bytes).
+						//
+						// Anything more than that would cause the counter to return back to the same
+						// value it started from.
+						this.keystreamBlock[3] = (this.keystreamBlock[3] + 1) | 0;
 						this.currentByteOffsetInBlock = 0;
 					}
 
@@ -40,10 +45,10 @@ namespace ZincDB {
 			}
 
 			reset(nonce: number[], counter: number = 0) {
-				this.keystreamBlock[0] = nonce[0] || 0;
-				this.keystreamBlock[1] = nonce[1] || 0;
-				this.keystreamBlock[2] = nonce[2] || 0;
-				this.keystreamBlock[3] = nonce[3] ^ counter;
+				this.keystreamBlock[0] = nonce[0];
+				this.keystreamBlock[1] = nonce[1];
+				this.keystreamBlock[2] = nonce[2];
+				this.keystreamBlock[3] = nonce[3] ^ (counter | 0);
 
 				this.currentByteOffsetInBlock = 16;
 			}

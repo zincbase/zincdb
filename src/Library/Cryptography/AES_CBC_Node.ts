@@ -2,13 +2,13 @@ namespace ZincDB {
 	export namespace Crypto {
 		export namespace AES_CBC_Node {
 			export const encrypt = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
-				plaintext = PKCS7.applyPadding(plaintext, 16);
+				plaintext = PKCS7.pad(plaintext, 16);
 				return encryptWithoutPadding(plaintext, keyHex, iv);
 			}
 
 			export const decrypt = function(ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				const decryptedPlaintext = decryptWithoutPadding(ciphertext, keyHex, iv);
-				const result = PKCS7.removePadding(decryptedPlaintext, 16);
+				const result = PKCS7.unpad(decryptedPlaintext, 16);
 
 				return result;
 			}
@@ -97,7 +97,7 @@ namespace ZincDB {
 				}
 
 				return cachedDecipher;
-			}			
+			}
 		}
 	}
 }

@@ -226,11 +226,6 @@ namespace ZincDB {
 			Crypto.SHA1.hashUsingJS(this.randomUTF8Bytes);
 		}
 
-		// AESHash
-		calculateAESHAsh() {
-			Crypto.AESHash.hash(this.randomUTF8Bytes);
-		}
-
 		// Escape
 		encodeURIComponentRandomString() {
 			this.uriEncodedRandomString = encodeURIComponent(this.randomUTF16String);
@@ -240,19 +235,7 @@ namespace ZincDB {
 			decodeURIComponent(this.uriEncodedRandomString);
 		}
 
-		// AES CTR
-		aes_CTR_JS() {
-			const aesStream = new Crypto.AES_CTR_JS(this.aes, [0, 0, 0, 0]);
-			aesStream.transformBytes(this.randomUTF8Bytes, 0, this.aesStreamOutput, 0, this.randomUTF8Bytes.length);
-		}
-
-		aes_CTR_Node() {
-			if (this.aes_ctr_nodeCipher)
-				this.aes_ctr_nodeCipher.update(this.randomUTF8BytesBuffer);
-		}
-
 		// AES CBC
-
 		aes_CBC_JS_Encryption() {
 			this.cipherText = Crypto.AES_CBC_JS.encrypt(this.randomUTF8Bytes, this.zeroBlockHex, Crypto.AES_CBC.zeroBlock);
 		}

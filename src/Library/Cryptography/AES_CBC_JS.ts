@@ -2,13 +2,13 @@ namespace ZincDB {
 	export namespace Crypto {
 		export namespace AES_CBC_JS {
 			export const encrypt = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
-				plaintext = PKCS7.applyPadding(plaintext, 16);
+				plaintext = PKCS7.pad(plaintext, 16);
 				return encryptWithoutPadding(plaintext, keyHex, iv);
 			}
 
 			export const decrypt = function(ciphertext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
 				const plaintext = decryptWithoutPadding(ciphertext, keyHex, iv);
-				return PKCS7.removePadding(plaintext, 16);
+				return PKCS7.unpad(plaintext, 16);
 			}
 
 			export const encryptWithoutPadding = function(plaintext: Uint8Array, keyHex: string, iv: Uint8Array): Uint8Array {
@@ -18,7 +18,7 @@ namespace ZincDB {
 				if (plaintext.length % 16 !== 0)
 					throw new Error(`AES_CBC.encrypt: plaintext length must be a multiple of 16.`)
 
-				const aes = AESCache_JS.getAES(keyHex);
+				const aes = AES.getAES(keyHex);
 
 				let inputBlock = [0, 0, 0, 0];
 				const ciphertextBlock = Encoding.Tools.bigEndianByteArrayToIntArray(iv);
@@ -44,7 +44,7 @@ namespace ZincDB {
 				if (ciphertext.length % 16 !== 0)
 					throw new Error(`AES_CBC.decrypt: ciphertext length must be a multiple of 16.`)
 
-				const aes = AESCache_JS.getAES(keyHex);
+				const aes = AES.getAES(keyHex);
 
 				const previousInputBlock = Encoding.Tools.bigEndianByteArrayToIntArray(iv);
 				let inputBlock = [0, 0, 0, 0];

@@ -54,7 +54,7 @@ namespace ZincDB {
 
 			const getBytesUsingNodeCrypto = function(length: number): Uint8Array {
 				const NodeCrypto: typeof nodecrypto = require("crypto");
-				
+
 				let randomByteBuffer: Buffer;
 				try {
 					randomByteBuffer = NodeCrypto.randomBytes(length);
@@ -116,7 +116,7 @@ namespace ZincDB {
 				}
 
 				const reseedEncryptionKeyFromEntropy = () => {
-					// XOR the current entropy state with a constant mask (here: SHA1("crypto")) and then hash it 
+					// XOR the current entropy state with a constant mask (here: SHA1("crypto")) and then hash it
 					let maskedEntropy = new Uint8Array([68, 169, 113, 51, 80, 229, 56, 88, 240, 88, 70, 61, 75, 247, 241, 229, 66, 217, 202, 75]);
 					ArrayTools.xorNumberArrays(maskedEntropy, entropyState, 20);
 					maskedEntropy = SHA1.hash(maskedEntropy);
@@ -139,4 +139,4 @@ namespace ZincDB {
 				startCollectingEntropy();
 		}
 	}
-} 
+}

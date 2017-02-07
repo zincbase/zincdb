@@ -1,9 +1,9 @@
 namespace ZincDB {
 	export namespace Crypto {
 		export namespace PKCS7 {
-			export const applyPadding = function(input: Uint8Array, blockSize: number): Uint8Array {
+			export const pad = function(input: Uint8Array, blockSize: number): Uint8Array {
 				if (!input)
-					throw new TypeError(`removePadding: No input was given.`);
+					throw new TypeError(`pad: No input was given.`);
 
 				const bytesToAdd = blockSize - (input.length % blockSize);
 
@@ -16,15 +16,15 @@ namespace ZincDB {
 				return result;
 			}
 
-			export const removePadding = function(input: Uint8Array, blockSize: number): Uint8Array {
+			export const unpad = function(input: Uint8Array, blockSize: number): Uint8Array {
 				if (!input)
-					throw new TypeError(`removePadding: No input was given.`);
+					throw new TypeError(`unpad: No input was given.`);
 
 				if (input.length < blockSize)
-					throw new Error(`removePadding: Input size is smaller than then block size.`);
+					throw new Error(`unpad: Input size is smaller than then block size.`);
 
 				if (input.length % blockSize)
-					throw new Error(`removePadding: Input size is not a multiple of the block size.`);
+					throw new Error(`unpad: Input size is not a multiple of the block size.`);
 
 				const bytesToRemove = input[input.length - 1];
 

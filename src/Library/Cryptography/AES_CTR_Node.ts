@@ -4,7 +4,7 @@ namespace ZincDB {
 			nodeCipher: nodecrypto.Cipher;
 			keyBytes: Uint8Array;
 
-			constructor(public key: number[], nonce: number[] = [0, 0, 0], initialCounter = 0) {
+			constructor(public key: number[], nonce: number[] = [0, 0, 0, 0], initialCounter = 0) {
 				this.keyBytes = Encoding.Tools.intArrayToBigEndianByteArray(key);
 				this.reset(nonce, initialCounter);
 			}
@@ -28,12 +28,7 @@ namespace ZincDB {
 			reset(nonce: number[], counter: number = 0) {
 				const NodeCrypto: typeof nodecrypto = require("crypto");
 
-				let iv = new Uint8Array(16);
-				iv.set(Encoding.Tools.intArrayToBigEndianByteArray(nonce));
-
-				if (counter != 0)
-					iv.set(Encoding.Tools.intArrayToBigEndianByteArray([counter]), 12);
-
+				const iv = Encoding.Tools.intArrayToBigEndianByteArray([nonce[0], nonce[1], nonce[2], nonce[3] ^ counter]);
 				this.nodeCipher = NodeCrypto.createCipheriv("aes-128-ctr", BufferTools.uint8ArrayToBuffer(this.keyBytes), BufferTools.uint8ArrayToBuffer(iv));
 			}
 		}

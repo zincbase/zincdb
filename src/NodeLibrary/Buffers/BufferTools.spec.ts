@@ -1,6 +1,6 @@
 namespace ZincDB {
 	if (runningInNodeJS()) {
-		describe("BufferUtils:", () => {
+		describe("BufferTools:", () => {
 			const buffer0 = new Buffer([1, 2, 3]);
 			const buffer1 = new Buffer([4, 5]);
 			const buffer2 = new Buffer([6, 7, 8, 9]);
