@@ -1,32 +1,6 @@
 namespace ZincDB {
 	export namespace Encoding {
 		export namespace Tools {
-			export const getUnicodeCodePoint = function(str: string, position: number): number {
-				const charCode = str.charCodeAt(position);
-
-				if (charCode < 0xD800 || charCode > 0xDBFF)
-					return charCode;
-				else {
-					const nextCharCode = str.charCodeAt(position + 1);
-
-					if (nextCharCode >= 0xDC00 && nextCharCode <= 0xDFFF)
-						return 0x10000 + (((charCode - 0xD800) << 10) + (nextCharCode - 0xDC00));
-					else
-						throw new Error("codePointAt: Found a lead surrogate character not followed by a trailing one");
-				}
-			}
-
-			export const getStringFromUnicodeCodePoint = function(codePoint: number): string {
-				if (codePoint < 65536)
-					return String.fromCharCode(codePoint);
-				else if (codePoint < 1112064)
-					return String.fromCharCode(
-						0xD800 + ((codePoint - 0x10000) >>> 10),
-						0xDC00 + ((codePoint - 0x10000) & 1023));
-				else
-					throw new RangeError("A code point of " + codePoint + " cannot be encoded in UTF-16");
-			}
-
 			export const intArrayToBigEndianByteArray = function(intArray: number[], readOffset = 0, output?: Uint8Array, writeOffset = 0, intCount?: number): Uint8Array {
 				if (!intCount)
 					intCount = intArray.length - readOffset;
@@ -100,10 +74,6 @@ namespace ZincDB {
 
 			export const buildInt32BigEndian = function(b0: number, b1: number, b2: number, b3: number): number {
 				return b0 << 24 | b1 << 16 | b2 << 8 | b3;
-			}
-
-			export const utf16ToUTF8RawBinaryString = function(str: string): string {
-				return RawBinaryString.decode(UTF8.encode(str));
 			}
 		}
 	}

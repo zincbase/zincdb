@@ -23,10 +23,10 @@ namespace ZincDB {
 			});
 
 			it("Encodes and decodes random UTF-16 strings of varying lengths", () => {
-				for (let i = 1; i < 100; i++) {
+				for (let i = 0; i < 100; i++) {
 					const randomString = JSRandom.getUTF16String(i);
 					const encodedString = encode(randomString);
-					expect(/^[A-Za-z0-9_]+$/.test(encodedString)).toEqual(true);
+					expect(/^[A-Za-z0-9_]*$/.test(encodedString)).toEqual(true);
 					expect(decode(encodedString)).toEqual(randomString);
 				}
 			});

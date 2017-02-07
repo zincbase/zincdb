@@ -19,7 +19,7 @@ namespace ZincDB {
 				let str = "";
 
 				for (let i = 0; i < 100; i++)
-					str += Encoding.UTF8.getStringFromUnicodeCodePoint(166734);
+					str += Encoding.CodePoint.decodeToString(166734);
 
 				const stringBuilder = new StringBuilder();
 

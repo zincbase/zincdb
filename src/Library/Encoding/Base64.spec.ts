@@ -25,9 +25,11 @@ namespace ZincDB {
 
 			if (runningInNodeJS()) {
 				it("Produces output equivalent to node.js library", () => {
-					for (let i = 0; i < 100; i++) {
-						const randomBytes = JSRandom.getIntegerArray(i, 0, 256);
-						expect(Encoding.Base64.encodeWithJS(new Uint8Array(randomBytes))).toEqual((new Buffer(randomBytes)).toString("base64"));
+					for (let len = 0; len < 100; len++) {
+						for (let i = 0; i < 5; i++) {
+							const randomBytes = Crypto.Random.getBytes(len);
+							expect(Encoding.Base64.encodeWithJS(randomBytes)).toEqual((new Buffer(randomBytes)).toString("base64"));
+						}
 					}
 				});
 			}

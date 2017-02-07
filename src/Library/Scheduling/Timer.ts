@@ -47,7 +47,19 @@ namespace ZincDB {
 		}
 
 		private static createGlobalTimestampFunction() {
-			if (typeof chrome === "object" && chrome.Interval) {
+			if (typeof process === "object" && typeof process.hrtime === "function") {
+				let baseTimestamp = 0;
+
+				this.timestampFunc = () => {
+					const nodeTimeStamp = process.hrtime();
+					const millisecondTime = (nodeTimeStamp[0] * 1000) + (nodeTimeStamp[1] / 1000000)
+
+					return baseTimestamp + millisecondTime;
+				}
+
+				baseTimestamp = Date.now() - this.timestampFunc();
+			}
+			else if (typeof chrome === "object" && chrome.Interval) {
 				const baseTimestamp = Date.now();
 
 				const chromeIntervalObject = new chrome.Interval();
@@ -59,18 +71,6 @@ namespace ZincDB {
 				const baseTimestamp = Date.now() - performance.now();
 
 				this.timestampFunc = () => baseTimestamp + performance.now();
-			}
-			else if (typeof process === "object" && process.hrtime) {
-				let baseTimestamp = 0;
-
-				this.timestampFunc = () => {
-					const nodeTimeStamp = process.hrtime();
-					const millisecondTime = (nodeTimeStamp[0] * 1000) + (nodeTimeStamp[1] / 1000000)
-
-					return baseTimestamp + millisecondTime;
-				}
-
-				baseTimestamp = Date.now() - this.timestampFunc();
 			}
 			else if (Date.now) {
 				this.timestampFunc = () => Date.now();

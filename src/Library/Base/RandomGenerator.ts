@@ -26,6 +26,15 @@ namespace ZincDB {
 			return result;
 		}
 
+		getByteArray(length: number): Uint8Array {
+			const result = new Uint8Array(length);
+
+			for (let i = 0; i < length; i++)
+				result[i] = this.getIntegerInRange(0, 256);
+
+			return result;
+		}
+
 		getWordCharacterString(length: number) {
 			const characters = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`;
 
@@ -46,17 +55,20 @@ namespace ZincDB {
 		getUTF16String(length: number): string {
 			const stringBuilder = new StringBuilder();
 
-			for (let i = 0; i < length; i++) {
-				let randomCodePoint;
-
-				do {
-					randomCodePoint = this.getIntegerInRange(0, 1112064);
-				} while (randomCodePoint >= 0xD800 && randomCodePoint <= 0xDFFF);
-
-				stringBuilder.appendCodePoint(randomCodePoint);
-			}
+			for (let i = 0; i < length; i++)
+				stringBuilder.appendCodePoint(this.getCodePoint());
 
 			return stringBuilder.getOutputString();
+		}
+
+		getCodePoint(): number {
+			let randomCodePoint: number;
+
+			do {
+				randomCodePoint = this.getIntegerInRange(0, 1112064);
+			} while (randomCodePoint >= 0xD800 && randomCodePoint <= 0xDFFF);
+
+			return randomCodePoint;
 		}
 
 		divideNumberToRandomIntegerAddends(num: number, count: number): List<number> {
@@ -102,6 +114,10 @@ namespace ZincDB {
 
 		static getWordCharacterString(length: number): string {
 			return JSRandom.globalInstance.getWordCharacterString(length);
+		}
+
+		static getCodePoint(): number {
+			return JSRandom.globalInstance.getCodePoint();
 		}
 
 		static getUTF16String(length: number): string {
@@ -158,4 +174,4 @@ namespace ZincDB {
 			return this.currentValue;
 		}
 	}
-} 
+}

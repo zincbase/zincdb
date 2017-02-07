@@ -2,7 +2,7 @@ namespace ZincDB {
 	export namespace Encoding {
 		export namespace UTF8 {
 			declare const TextEncoder: any;
-			declare const TextDecoder: any;			
+			declare const TextDecoder: any;
 			let nativeTextEncoder: any;
 			let nativeTextDecoder: any;
 
@@ -46,7 +46,7 @@ namespace ZincDB {
 				let writeIndex = 0;
 
 				for (let readIndex = 0; readIndex < str.length; readIndex++) {
-					const charCode = getUnicodeCodePoint(str, readIndex);
+					const charCode = CodePoint.encodeFromString(str, readIndex);
 
 					if (charCode <= 0x7F) {
 						outputArray[writeIndex++] = charCode;
@@ -124,32 +124,6 @@ namespace ZincDB {
 				return output.getOutputString();
 			}
 
-			export const getUnicodeCodePoint = function(str: string, position: number): number {
-				const charCode = str.charCodeAt(position);
-
-				if (charCode < 0xD800 || charCode > 0xDBFF)
-					return charCode;
-				else {
-					const nextCharCode = str.charCodeAt(position + 1);
-
-					if (nextCharCode >= 0xDC00 && nextCharCode <= 0xDFFF)
-						return 0x10000 + (((charCode - 0xD800) << 10) + (nextCharCode - 0xDC00));
-					else
-						throw new Error("getUnicodeCodePoint: Received a lead surrogate character not followed by a trailing one");
-				}
-			}
-
-			export const getStringFromUnicodeCodePoint = function(codePoint: number): string {
-				if (codePoint <= 0xFFFF)
-					return String.fromCharCode(codePoint);
-				else if (codePoint <= 0x10FFFF)
-					return String.fromCharCode(
-						0xD800 + ((codePoint - 0x10000) >>> 10),
-						0xDC00 + ((codePoint - 0x10000) & 1023));
-				else
-					throw new Error("getStringFromUnicodeCodePoint: A code point of " + codePoint + " cannot be encoded in UTF-16");
-			}
-
 			export const createNativeTextEncoderAndDecoderIfAvailable = function(): boolean {
 				if (nativeTextEncoder)
 					return true;
@@ -165,4 +139,4 @@ namespace ZincDB {
 			}
 		}
 	}
-} 
+}

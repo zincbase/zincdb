@@ -10,9 +10,11 @@ namespace ZincDB {
 
 			if (runningInNodeJS()) {
 				it("Produces output equivalent to node.js library", () => {
-					for (let i = 0; i < 100; i++) {
-						const randomBytes = JSRandom.getIntegerArray(i, 0, 256);
-						expect(Encoding.Hex.encodeWithJS(new Uint8Array(randomBytes))).toEqual((new Buffer(randomBytes)).toString("hex"));
+					for (let len = 0; len < 100; len++) {
+						for (let i = 0; i < 5; i++) {
+							const randomBytes = Crypto.Random.getBytes(len);
+							expect(Encoding.Hex.encodeWithJS(randomBytes)).toEqual((new Buffer(randomBytes)).toString("hex"));
+						}
 					}
 				});
 			}
