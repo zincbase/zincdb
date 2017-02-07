@@ -10,8 +10,10 @@ namespace ZincDB {
 					const testEntry3: Entry<any> = { key: "key3", value: "value3", metadata: { updateTime: 3 } };
 					const testEntry4: Entry<any> = { key: "key4", value: "value4", metadata: { updateTime: 4 } };
 
+					const testSuiteId = JSRandom.getWordCharacterString(10);
+
 					beforeEach(async () => {
-						db = new IndexedDBAdapter("testSuite");
+						db = new IndexedDBAdapter(`IndexedDBAdapter_TestSuite_${testSuiteId}`);
 						await db.open();
 					});
 

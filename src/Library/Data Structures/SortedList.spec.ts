@@ -9,13 +9,14 @@ namespace ZincDB {
 
 			let numberedObjectsSortedList: SortedList<any>;
 			const numberedObjectsComparer: Comparer<any> = (e1, e2) => e1.value - e2.value;
+			const rand = new SeededRandom();
 
 			beforeEach(() => {
 				objectSortedList = new SortedList<any>(lastNamePropertyComparer, propertyObjects);
 				numberedObjectsSortedList = new SortedList<any>(numberedObjectsComparer);
 
 				for (let i = 0; i < 100; i++)
-					numberedObjectsSortedList.add({ value: JSRandom.getIntegerInRange(-5, 50) });
+					numberedObjectsSortedList.add({ value: rand.getIntegerInRange(-5, 50) });
 			});
 
 			it("Copies the content of the given array or object", () => {
@@ -33,7 +34,7 @@ namespace ZincDB {
 				let addedElement: any;
 
 				beforeEach(() => {
-					addedElement = { "firstName": "Johny", "lastName": JSRandom.getWordCharacterString(5), "age": 22 }
+					addedElement = { "firstName": "Johny", "lastName": rand.getWordCharacterString(5), "age": 22 }
 					objectSortedList.add(addedElement);
 				});
 
@@ -53,7 +54,7 @@ namespace ZincDB {
 
 				beforeEach(() => {
 					previousLength = objectSortedList.elements.length;
-					removedElement = objectSortedList.elements[JSRandom.getIntegerInRange(0, objectSortedList.elements.length)];
+					removedElement = objectSortedList.elements[rand.getIntegerInRange(0, objectSortedList.elements.length)];
 					objectSortedList.removeExactMatch(removedElement);
 				});
 
@@ -78,9 +79,9 @@ namespace ZincDB {
 
 				it("Repositions an element if it breaks the sort order", () => {
 					for (let i = 0; i < 1000; i++) {
-						const repositionedElementOldPosition = JSRandom.getIntegerInRange(0, objectSortedList.elements.length);
+						const repositionedElementOldPosition = rand.getIntegerInRange(0, objectSortedList.elements.length);
 						const repositionedElement = objectSortedList.elements[repositionedElementOldPosition];
-						repositionedElement["lastName"] = JSRandom.getWordCharacterString(5);
+						repositionedElement["lastName"] = rand.getWordCharacterString(5);
 
 						if (!objectSortedList.isPositionedCorrectly(repositionedElementOldPosition)) {
 							const previousLength = objectSortedList.elements.length;
@@ -173,9 +174,11 @@ namespace ZincDB {
 				};
 
 				it("Returns all elements in range", () => {
+					const rand = new SeededRandom();
+
 					for (let i = 0; i < 50; i++) {
-						const randomMin = JSRandom.getIntegerInRange(-4, 25);
-						const randomMax = JSRandom.getIntegerInRange(-4, 25);
+						const randomMin = rand.getIntegerInRange(-4, 25);
+						const randomMax = rand.getIntegerInRange(-4, 25);
 						expect(numberedObjectsSortedList.binarySearchForRange(randomMin, randomMax)).toEqual(linearSearchForRange(randomMin, randomMax));
 					}
 				});

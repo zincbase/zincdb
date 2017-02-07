@@ -5,7 +5,7 @@ process.on('uncaughtException', function (e) {
 
 const ZincDB = require("../build/development/zincdb")
 
-//ZincDB.ToolsBenchmarks.start();
+ZincDB.ToolsBenchmarks.start();
 //ZincDB.NodeCompressionBenchmarks.start();
 //ZincDB.SortingBenchmarks.start();
 //ZincDB.DataStructureBenchmarks.start();
@@ -13,4 +13,4 @@ const ZincDB = require("../build/development/zincdb")
 //ZincDB.EncodingBenchmarks.start();
 //ZincDB.NodeServerCommonBenchmarks.start();
 //ZincDB.ObjectToolsBenchmarks.start();
-ZincDB.EntrySerializerBenchmarks.start();
+//ZincDB.EntrySerializerBenchmarks.start();

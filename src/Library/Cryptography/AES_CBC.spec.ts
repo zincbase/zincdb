@@ -5,12 +5,14 @@ namespace ZincDB {
 				const NodeCrypto: typeof nodecrypto = require("crypto");
 
 				it("Produces output equivalent to node.js library (OpenSSL) and decodes it correctly (no padding)", () => {
-					for (let i = 0; i < 16 * 100; i += 16) {
-						const plaintext = Crypto.Random.getBytes(i)
+					const rand = new SeededRandom();
 
-						const keyBytes = Crypto.Random.getBytes(16);
+					for (let i = 0; i < 16 * 100; i += 16) {
+						const plaintext = rand.getBytes(i)
+
+						const keyBytes = rand.getBytes(16);
 						const keyHex = Encoding.Hex.encode(keyBytes);
-						let iv = Crypto.Random.getBytes(16);
+						let iv = rand.getBytes(16);
 
 						// Encryption:
 						// Get reference result
@@ -30,12 +32,14 @@ namespace ZincDB {
 				});
 
 				it("Produces output equivalent to node.js library (OpenSSL) and decodes it correctly (with PKCS#7 padding)", () => {
-					for (let i = 0; i < 100; i++) {
-						const plaintext = Crypto.Random.getBytes(i)
+					const rand = new SeededRandom();
 
-						const keyBytes = Crypto.Random.getBytes(16);
+					for (let i = 0; i < 100; i++) {
+						const plaintext = rand.getBytes(i)
+
+						const keyBytes = rand.getBytes(16);
 						const keyHex = Encoding.Hex.encode(keyBytes);
-						let iv = Crypto.Random.getBytes(16);
+						let iv = rand.getBytes(16);
 
 						// Encryption:
 						// Get reference ciphertext
@@ -65,14 +69,16 @@ namespace ZincDB {
 				if (!webCryptoAvailable)
 					return;
 
+				const rand = new SeededRandom();
+
 				// Note: passing a 0 length plaintext array to WebCrypto breaks Edge with an
 				// unexpected 8070000b error
 				for (let i = 1; i < 50; i++) {
-					const plaintext = Crypto.Random.getBytes(i)
+					const plaintext = rand.getBytes(i)
 
-					const keyBytes = Crypto.Random.getBytes(16);
+					const keyBytes = rand.getBytes(16);
 					const keyHex = Encoding.Hex.encode(keyBytes);
-					let iv = Crypto.Random.getBytes(16);
+					let iv = rand.getBytes(16);
 
 					// Encryption:
 					// Get reference ciphertext

@@ -46,12 +46,13 @@ namespace ZincDB {
 			if (runningInNodeJS()) {
 				it("Produces output equivalent to node.js library (OpenSSL)", () => {
 					const NodeCrypto: typeof nodecrypto = require("crypto");
+					const rand = new SeededRandom();
 
 					for (let i = 0; i < 100; i++) {
-						const keyBytes = Crypto.Random.getBytes(16);
+						const keyBytes = rand.getBytes(16);
 						const aes = new Crypto.AES(Encoding.Tools.bigEndianByteArrayToIntArray(keyBytes));
 
-						const randomPlaintext = Crypto.Random.getBytes(16);
+						const randomPlaintext = rand.getBytes(16);
 						const randomPlaintextAs32BitArray = Encoding.Tools.bigEndianByteArrayToIntArray(randomPlaintext);
 						const jsCiphertext = Encoding.Tools.intArrayToBigEndianByteArray(aes.encryptBlock(randomPlaintextAs32BitArray));
 

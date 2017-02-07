@@ -26,20 +26,22 @@ namespace ZincDB {
 					});
 
 					it("Serializes and deserializes random headers correctly", () => {
+						const rand = new SeededRandom();
+
 						for (let i = 0; i < 1000; i++) {
 							const randomHeader: EntryHeader =
 								{
-									totalSize: JSRandom.getIntegerInRange(0, 2 ** 53),
-									updateTime: JSRandom.getIntegerInRange(0, 2 ** 53),
-									commitTime: JSRandom.getIntegerInRange(0, 2 ** 53),
-									keySize: JSRandom.getIntegerInRange(0, 2 ** 16),
-									keyEncoding: JSRandom.getIntegerInRange(0, 2 ** 8),
-									valueEncoding: JSRandom.getIntegerInRange(0, 2 ** 8),
-									encryptionMethod: JSRandom.getIntegerInRange(0, 2 ** 8),
-									flags: JSRandom.getIntegerInRange(0, 2 ** 8),
-									secondaryHeaderSize: JSRandom.getIntegerInRange(0, 2 ** 16),
-									primaryHeaderChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),
-									payloadChecksum: JSRandom.getIntegerInRange(0, 2 ** 32),
+									totalSize: rand.getIntegerInRange(0, 2 ** 53),
+									updateTime: rand.getIntegerInRange(0, 2 ** 53),
+									commitTime: rand.getIntegerInRange(0, 2 ** 53),
+									keySize: rand.getIntegerInRange(0, 2 ** 16),
+									keyEncoding: rand.getIntegerInRange(0, 2 ** 8),
+									valueEncoding: rand.getIntegerInRange(0, 2 ** 8),
+									encryptionMethod: rand.getIntegerInRange(0, 2 ** 8),
+									flags: rand.getIntegerInRange(0, 2 ** 8),
+									secondaryHeaderSize: rand.getIntegerInRange(0, 2 ** 16),
+									primaryHeaderChecksum: rand.getIntegerInRange(0, 2 ** 32),
+									payloadChecksum: rand.getIntegerInRange(0, 2 ** 32),
 								}
 
 							const serializedHeader = EntrySerializer.serializeHeader(randomHeader);
@@ -120,13 +122,15 @@ namespace ZincDB {
 						});
 
 						it("Serializes and deserializes random entries correctly", () => {
+							const rand = new SeededRandom();
+
 							for (let i = 0; i < 1000; i++) {
 								const randomEntry: Entry<any> = {
-									key: JSRandom.getUTF16String(JSRandom.getIntegerInRange(1, 100)),
-									value: { data: JSRandom.getUTF16String(JSRandom.getIntegerInRange(1, 100)), num: JSRandom.getFloatInRange(-79342324, 3948593845) },
+									key: rand.getUTF16String(rand.getIntegerInRange(1, 100)),
+									value: { data: rand.getUTF16String(rand.getIntegerInRange(1, 100)), num: rand.getFloatInRange(-79342324, 3948593845) },
 
 									metadata: {
-										updateTime: JSRandom.getIntegerInRange(0, 2 ** 53),
+										updateTime: rand.getIntegerInRange(0, 2 ** 53),
 									}
 								}
 
@@ -138,22 +142,24 @@ namespace ZincDB {
 						});
 
 						it("Serializes and deserializes multiple random entries correctly", () => {
+							const rand = new SeededRandom();
+
 							for (let i = 0; i < 100; i++) {
 								const randomEntries: Entry<any>[] = [];
 								const randomEntriesMetadata: EntryMetadata[] = [];
-								const entryCount = JSRandom.getIntegerInRange(0, 10);
+								const entryCount = rand.getIntegerInRange(0, 10);
 
 								for (let i = 0; i < entryCount; i++) {
 									randomEntries.push({
-										key: JSRandom.getUTF16String(JSRandom.getIntegerInRange(1, 100)),
-										value: { data: JSRandom.getUTF16String(JSRandom.getIntegerInRange(1, 100)), num: JSRandom.getFloatInRange(-79342324, 3948593845) },
+										key: rand.getUTF16String(rand.getIntegerInRange(1, 100)),
+										value: { data: rand.getUTF16String(rand.getIntegerInRange(1, 100)), num: rand.getFloatInRange(-79342324, 3948593845) },
 										metadata: {
-											updateTime: JSRandom.getIntegerInRange(0, 2 ** 53),
+											updateTime: rand.getIntegerInRange(0, 2 ** 53),
 										}
 									});
 
 									randomEntriesMetadata.push({
-										updateTime: JSRandom.getIntegerInRange(0, 2 ** 53),
+										updateTime: rand.getIntegerInRange(0, 2 ** 53),
 									});
 								}
 
@@ -191,16 +197,18 @@ namespace ZincDB {
 						});
 
 						it("Serializes and deserializes entries including binary values", () => {
+							const rand = new SeededRandom();
+
 							const entries: Entry<any>[] = [{
 								key: "你好世界",
-								value: Crypto.Random.getBytes(100),
+								value: rand.getBytes(100),
 								metadata: {
 									updateTime: 5456168961684,
 								}
 							},
 							{
 								key: "你好世界2",
-								value: Crypto.Random.getBytes(100),
+								value: rand.getBytes(100),
 								metadata: {
 									updateTime: 2346168961685,
 								}
@@ -214,6 +222,7 @@ namespace ZincDB {
 
 						it("Deserializes entries containing secondary headers", () => {
 							const timestamp = Timer.getMicrosecondTimestamp();
+							const rand = new SeededRandom();
 
 							const testHeader: EntryHeader =
 								{
@@ -230,9 +239,9 @@ namespace ZincDB {
 									payloadChecksum: 0,
 								}
 
-							const secondaryHeaderBytes = Crypto.Random.getBytes(testHeader.secondaryHeaderSize);
+							const secondaryHeaderBytes = rand.getBytes(testHeader.secondaryHeaderSize);
 							const keyBytes = Encoding.UTF8.encode(`"Hello World!"`);
-							const valueBytes = Crypto.Random.getBytes(testHeader.totalSize - EntryHeaderByteSize - testHeader.secondaryHeaderSize - testHeader.keySize);
+							const valueBytes = rand.getBytes(testHeader.totalSize - EntryHeaderByteSize - testHeader.secondaryHeaderSize - testHeader.keySize);
 
 							const serializedHeader = EntrySerializer.serializeHeader(testHeader);
 							const entryBytes = ArrayTools.concatUint8Arrays([serializedHeader, secondaryHeaderBytes, keyBytes, valueBytes])

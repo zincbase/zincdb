@@ -59,8 +59,7 @@ namespace ZincDB {
 				try {
 					randomByteBuffer = NodeCrypto.randomBytes(length);
 				}
-				catch (e) // In case the entropy source has been drained, resort to a weaker source
-				{
+				catch (e) { // In case the entropy source has been drained, resort to a weaker source
 					randomByteBuffer = NodeCrypto.pseudoRandomBytes(length);
 				}
 
@@ -68,13 +67,7 @@ namespace ZincDB {
 			}
 
 			const getBytesUsingJSRandom = function (length: number): Uint8Array {
-				const bytes = new Uint8Array(length);
-
-				for (let i = 0; i < length; i++) {
-					bytes[i] = JSRandom.getIntegerInRange(0, 256);
-				}
-
-				return bytes;
+				return JSRandom.getBytes(length);
 			}
 
 			const getWebCryptoGenerator = function (): typeof crypto.getRandomValues | undefined {

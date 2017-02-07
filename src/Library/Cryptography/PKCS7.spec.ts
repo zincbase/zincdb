@@ -16,9 +16,11 @@ namespace ZincDB {
 			});
 
 			it("Correctly adds and removes padding to random inputs in various lengths, and various pad lengths", () => {
+				const rand = new SeededRandom();
+
 				for (let i = 0; i < 100; i++) {
 					for (let padLength = 1; padLength <= 32; padLength++) {
-						const randomInput = Crypto.Random.getBytes(i);
+						const randomInput = rand.getBytes(i);
 
 						expect(unpad(pad(randomInput, padLength), padLength)).toEqual(randomInput)
 					}

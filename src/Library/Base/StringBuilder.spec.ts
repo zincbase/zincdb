@@ -15,19 +15,23 @@ namespace ZincDB {
 				expect(stringBuilder.getOutputString()).toEqual(str);
 			});
 
-			it("Builds a string containing unicode characters with code up to 1114111", () => {
-				let str = "";
+			it("Builds a string containing random unicode characters, including ones having non-BMP codepoints", () => {
+				const rand = new SeededRandom();
 
-				for (let i = 0; i < 100; i++)
-					str += Encoding.CodePoint.decodeToString(166734);
+				let str = "";
+				const codePoints: number[] = [];
+
+				for (let i = 0; i < 100; i++) {
+					const randomCodePoint = rand.getCodePoint();
+
+					codePoints.push(randomCodePoint);
+					str += Encoding.CodePoint.decodeToString(randomCodePoint);
+				}
 
 				const stringBuilder = new StringBuilder();
 
-				for (let i = 0; i < str.length / 2; i++)
-					stringBuilder.appendCodePoint(166734);
-
+				codePoints.forEach((codePoint) => stringBuilder.appendCodePoint(codePoint));
 				const result = stringBuilder.getOutputString();
-
 				expect(result).toEqual(str);
 			});
 		});

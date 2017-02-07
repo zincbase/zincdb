@@ -1,14 +1,5 @@
 namespace ZincDB {
 	export abstract class RandomGenerator {
-		currentValue: number;
-
-		constructor(seed?: number) {
-			if (seed == null)
-				seed = Date.now();
-
-			this.currentValue = seed;
-		}
-
 		getIntegerInRange(minimum: number, maximum: number) {
 			return minimum + Math.floor(this.getFloat() * (maximum - minimum));
 		}
@@ -26,11 +17,11 @@ namespace ZincDB {
 			return result;
 		}
 
-		getByteArray(length: number): Uint8Array {
+		getBytes(length: number): Uint8Array {
 			const result = new Uint8Array(length);
 
 			for (let i = 0; i < length; i++)
-				result[i] = this.getIntegerInRange(0, 256);
+				result[i] = (this.getFloat() * 256) | 0;
 
 			return result;
 		}
@@ -45,11 +36,14 @@ namespace ZincDB {
 			return randomString;
 		}
 
-		getDigitString(length = 53): string {
-			if (length > 53)
-				throw new RangeError(`Digit string cannot be longer than 53 characters`);
+		getCodePoint(): number {
+			let randomCodePoint: number;
 
-			return (this.getFloat()).toFixed(length).substr(2, length);
+			do {
+				randomCodePoint = this.getIntegerInRange(0, 1112064);
+			} while (randomCodePoint >= 0xD800 && randomCodePoint <= 0xDFFF);
+
+			return randomCodePoint;
 		}
 
 		getUTF16String(length: number): string {
@@ -60,15 +54,12 @@ namespace ZincDB {
 
 			return stringBuilder.getOutputString();
 		}
+		
+		getDigitString(length = 53): string {
+			if (length > 53)
+				throw new RangeError(`Digit string cannot be longer than 53 characters`);
 
-		getCodePoint(): number {
-			let randomCodePoint: number;
-
-			do {
-				randomCodePoint = this.getIntegerInRange(0, 1112064);
-			} while (randomCodePoint >= 0xD800 && randomCodePoint <= 0xDFFF);
-
-			return randomCodePoint;
+			return (this.getFloat()).toFixed(length).substr(2, length);
 		}
 
 		divideNumberToRandomIntegerAddends(num: number, count: number): List<number> {
@@ -87,11 +78,9 @@ namespace ZincDB {
 		abstract getFloat(): number;
 	}
 
+	// A non-seeded generator based on the native implementation in the Javascript runtime
+	// Also including convenient static methods that can be used without creating an instance.
 	export class JSRandom extends RandomGenerator {
-		constructor() {
-			super();
-		}
-
 		getFloat(): number {
 			return Math.random();
 		}
@@ -110,6 +99,10 @@ namespace ZincDB {
 
 		static getIntegerArray(length: number, min: number, max: number): number[] {
 			return JSRandom.globalInstance.getIntegerArray(length, min, max);
+		}
+
+		static getBytes(length: number) {
+			return JSRandom.globalInstance.getBytes(length);
 		}
 
 		static getWordCharacterString(length: number): string {
@@ -131,13 +124,22 @@ namespace ZincDB {
 		private static globalInstance = new JSRandom();
 	}
 
+	// A simple multiplicative congruential pseudo-random number generator
 	// Similar to the minstd_rand function (C++11)
-	export class LehmerRandomGenerator extends RandomGenerator {
-		constructor(seed: number = 0) {
+	// For more information, see:
+	// http://www.cplusplus.com/reference/random/minstd_rand/
+	// https://en.wikipedia.org/wiki/Lehmer_random_number_generator
+	export class SeededRandom extends RandomGenerator {
+		private currentValue: number;
+
+		// The default seed was chosen at random as a prime in the range [1, 2147483647)
+		constructor(seed: number = 1103521651) {
 			if (seed > 186596491780)
 				throw new RangeError(`A seed larger than 186596491780 should not be used as it significantly decreases the quality of the psuedorandom values (186596491780 * 48271 is the last multiplication result still smaller than 2^53)`);
 
-			super(seed);
+			super();
+
+			this.currentValue = seed;
 		}
 
 		getInteger(): number {
@@ -149,29 +151,14 @@ namespace ZincDB {
 			return this.getInteger() * 4.656612875245796924105750827168e-10; // (1/2147483647)
 		}
 
-		// Take the top 16 and 15 bits of two values to create a higher quality unsigned 31bit number
-		getIntegerHQ(): number {
-			return ((this.getInteger() >>> 15) << 15) | (this.getInteger() >>> 16);
-		}
+		getBytes(length: number): Uint8Array {
+			const result = new Uint8Array(length);
 
-		getFloatHQ(): number {
-			return this.getIntegerHQ() * 4.656612875245796924105750827168e-10; // (1/2147483647)
-		}
-	}
+			for (let i = 0; i < length; i++) {
+				result[i] = (this.getInteger() >>> 16) & 0xff;
+			}
 
-	export class MultiplyWithCarryRandomGenerator extends RandomGenerator {
-		private carry = 1;
-
-		constructor(seed: number = 0) {
-			super(seed | 0);
-		}
-
-		getFloat() {
-			const result = (2091639 * this.currentValue) + (this.carry * 2.3283064365386963e-10); // (2^-32)
-			this.carry = result | 0;
-			this.currentValue = result - this.carry;
-
-			return this.currentValue;
+			return result;
 		}
 	}
 }

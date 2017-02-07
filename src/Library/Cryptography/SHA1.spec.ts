@@ -15,8 +15,10 @@ namespace ZincDB {
 
 			if (runningInNodeJS()) {
 				it("Produces output equivalent to node.js library (OpenSSL)", () => {
+					const rand = new SeededRandom();
+
 					for (let i = 0; i < 100; i++) {
-						const randomPlaintext = Crypto.Random.getBytes(i);
+						const randomPlaintext = rand.getBytes(i);
 						const jsHash = Crypto.SHA1.hashUsingJS(randomPlaintext);
 						const nodeHash = Crypto.SHA1.hashUsingNode(BufferTools.uint8ArrayToBuffer(randomPlaintext));
 

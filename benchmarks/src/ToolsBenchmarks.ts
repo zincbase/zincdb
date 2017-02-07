@@ -1,22 +1,26 @@
 namespace ZincDB {
 	export class ToolsBenchmarks {
-		val1 = 1457332888612;
+		lehmerRand = new SeededRandom(1234);
 
 		constructor() {
 		}
 
 		beforeEach() {
-
 		}
 
-		integerToBase10AsciiStringBytes_JS() {
+		randomBytesNonCryptoNative_x1000() {
 			for (let i = 0; i < 1000; i++)
-				Tools.integerToBase10AsciiStringBytes(this.val1);
+				JSRandom.getBytes(100);
 		}
 
-		integerToBase10AsciiStringBytes_Native() {
+		randomBytesNonCryptoLehmer_x1000() {
 			for (let i = 0; i < 1000; i++)
-				Encoding.UTF8.encode(this.val1.toString());
+				this.lehmerRand.getBytes(100);
+		}
+
+		randomBytesCrypto_x1000() {
+			for (let i = 0; i < 1000; i++)
+				Crypto.Random.getBytes(100);
 		}
 
 		static start() {
