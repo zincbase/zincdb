@@ -23,7 +23,7 @@ namespace ZincDB {
 				expect(await dispatcher.exec("", "a", [11, 22])).toEqual(1122);
 				expect(await dispatcher.exec("", "b", [33, 44])).toEqual(3344);
 
-				expectPromiseToReject(dispatcher.exec("", "c", [33, 44]));
+				await expectPromiseToReject(dispatcher.exec("", "c", [33, 44]));
 			});
 		});
 	});
