@@ -29,7 +29,7 @@ namespace ZincDB {
 
 			async open(): Promise<void> {
 				try {
-					this.rollbackIfNeeded();
+					await this.rollbackIfNeeded();
 				} catch (e) {
 					throw new Error(`WebStorageAdapter Fatal error: couldn't roll-back a previous incomplete transaction. Reason: ${createErrorMessage(e)}`);
 				}
@@ -90,8 +90,8 @@ namespace ZincDB {
 			//////////////////////////////////////////////////////////////////////////////////////
 			async set(transactionObject: { [objectStoreName: string]: { [key: string]: Entry<any> | null } }): Promise<void> {
 				if (!this.isOpen)
-					throw new Error("Database is not open");				
-				
+					throw new Error("Database is not open");
+
 				const objectStoreNames = await this.getObjectStoreNames();
 
 				for (const objectStoreName in transactionObject)
@@ -132,7 +132,7 @@ namespace ZincDB {
 					// If an error occured while writing the transaction, roll-back all changes,
 					// If the roll-back itself fails, the roll-back record would remain in storage
 					// and would be applied the next time the database is opened.
-					this.rollbackIfNeeded();
+					await this.rollbackIfNeeded();
 
 					// Rethrow the error
 					throw e;
@@ -143,7 +143,7 @@ namespace ZincDB {
 				//
 				// For the special case of LocalStorage (SessionStorage is most likely memory-only):
 				//
-				// If the underlying engine for LocalStorage treats function boundaries as transactions, 
+				// If the underlying engine for LocalStorage treats function boundaries as transactions,
 				// it would mean that the data would be stored atomically on disk, otherwise, it is not
 				// in practice 100% safe to clear the roll-back record, but there isn't much that can be done as
 				// saving arbitrary length transaction logs would risk reaching the storage quota
@@ -253,7 +253,7 @@ namespace ZincDB {
 			async destroy(): Promise<void> {
 				if (!this.isOpen)
 					throw new Error("Database is not open");
-									
+
 				await this.deleteObjectStores(await this.getObjectStoreNames());
 				this.deleteKey("@metadata", undefined);
 				await this.close();
@@ -291,7 +291,7 @@ namespace ZincDB {
 
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Low-level write operations (private)
-			//////////////////////////////////////////////////////////////////////////////////////				
+			//////////////////////////////////////////////////////////////////////////////////////
 			private putRawValue(key: string, rawValue: string, objectStoreName: string | undefined): void {
 				this.webStorage.setItem(this.encodeToRawKey(key, objectStoreName), rawValue);
 			}
@@ -326,13 +326,20 @@ namespace ZincDB {
 			//////////////////////////////////////////////////////////////////////////////////////
 			// Roll-back operations (private)
 			//////////////////////////////////////////////////////////////////////////////////////
-			private rollbackIfNeeded() {
+			private async rollbackIfNeeded() {
 				const rollbackRecord = this.getRollbackRecord();
 
 				if (!rollbackRecord)
 					return;
 
+				const objectStoreNames = await this.getObjectStoreNames();
+
 				rollbackRecord.forEach(([objectStoreName, key, rawValue]) => {
+					// Don't try to rollback transactions within object stores
+					// that do not exist anymore
+					if (objectStoreNames.indexOf(objectStoreName) === -1)
+						return;
+
 					if (rawValue === null)
 						this.deleteKey(key, objectStoreName);
 					else
