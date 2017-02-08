@@ -175,8 +175,7 @@ namespace ZincDB {
 					});
 
 					it("Destroys the database", async () => {
-						await db.destroy();
-						expect(true).toBe(true);
+						expectPromiseToResolve(db.destroy());
 					});
 				});
 			}

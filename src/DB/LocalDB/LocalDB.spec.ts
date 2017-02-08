@@ -681,7 +681,7 @@ namespace ZincDB {
 
 							expect(await db.getMulti([["a", "b"], ["a", "c"], "a", ["b", "d"]]))
 								.toEqual([complexObject1, complexObject2, { b: complexObject1, c: complexObject2 }, simpleObject]);
-						})
+						});
 
 						function testContinuousPull(useWebSocket: boolean) {
 							it(`Continuously pulls from a remote server. Websocket enabled: ${useWebSocket}.`, () => {
