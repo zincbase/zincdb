@@ -1,6 +1,7 @@
 /// <reference path="SHA1.ts"/>
 /// <reference path="../Encoding/Tools.ts"/>
 /// <reference path="../Scheduling/Timer.ts"/>
+/// <reference path="../Random/JSRandom.ts" />
 
 namespace ZincDB {
 	export namespace Crypto {

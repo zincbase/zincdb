@@ -1,3 +1,5 @@
+/// <reference path="RandomGenerator.ts" />
+
 namespace ZincDB {
 	// A simple multiplicative congruential pseudo-random number generator
 	// Similar to the minstd_rand function (C++11)
