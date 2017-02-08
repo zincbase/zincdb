@@ -1,4 +1,4 @@
-/// <reference path="LocalDBOperations.ts"/>
+/// <reference path="../LocalDBOperations.ts"/>
 
 namespace ZincDB {
 	export namespace DB {
@@ -25,7 +25,7 @@ namespace ZincDB {
 
 					if (message.error)
 						message.error = new Error(message.error.message);
-				
+
 					this.dispatcher.announceResponse(message);
 				});
 
@@ -42,7 +42,7 @@ namespace ZincDB {
 		const initializeIfRunningInNodeWorker = function () {
 			if (!runningInNodeChildProcess())
 				return;
-			
+
 			const encode = Encoding.OmniJson.encode;
 			const decode = Encoding.OmniJson.decode;
 
@@ -74,7 +74,7 @@ namespace ZincDB {
 					} else {
 						errObject = { name: "error", message: JSON.stringify(err) }
 					}
-					
+
 					const responseMessage: TokenizedResponse = { target: message.target, operation: message.operation, error: errObject, token: message.token }
 					process.send!(encode(responseMessage));
 				}

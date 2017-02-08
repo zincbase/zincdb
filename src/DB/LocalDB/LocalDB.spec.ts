@@ -129,6 +129,23 @@ namespace ZincDB {
 								.toEqual([complexObject1, complexObject2, { b: complexObject1, c: complexObject2 }]);
 						});
 
+						it("Stores nodes containing containing randomly generated object trees", async () => {
+							const rand = new SeededRandom();
+
+							for (let i = 0; i < 50; i++) {
+								const randomObject1 = RandomObject.generate(10, 3, rand);
+								const randomObject2 = RandomObject.generate(10, 3, rand);
+
+								await db.transaction()
+									.put(["a", "b"], randomObject1)
+									.put(["a", "c"], randomObject2)
+									.commit();
+
+								expect(await db.getMulti([["a", "b"], ["a", "c"], "a"]))
+									.toEqual([randomObject1, randomObject2, { b: randomObject1, c: randomObject2 }]);
+							}
+						});
+
 						it("Stores several nodes and then updates them", async () => {
 							await db.transaction()
 								.put(["a", "b"], "yo")
@@ -573,6 +590,35 @@ namespace ZincDB {
 							expect(remoteDatastoreContent[3].key).toEqual("['b']['d']");
 							expect(remoteDatastoreContent[3].value).toEqual(simpleObject);
 						})
+
+						it("Pushes a series of entries containing randomly generated object trees", async () => {
+							const rand = new SeededRandom();
+
+							for (let i = 0; i < 25; i++) {
+								const randomObject1 = RandomObject.generate(10, 3, rand);
+								const randomObject2 = RandomObject.generate(10, 3, rand);
+
+								await db.transaction()
+									.put(["a", "b"], randomObject1)
+									.put(["a", "c"], randomObject2)
+									.commit();
+
+								await db.pushLocalChanges();
+								expect(await db.getLocalChanges()).toEqual([]);
+
+								const remoteDatastoreContent = await db.syncClient.read();
+
+								expect(remoteDatastoreContent.length).toEqual(3);
+
+								expect(remoteDatastoreContent[0].key).toEqual("");
+
+								expect(remoteDatastoreContent[1].key).toEqual("['a']['b']");
+								expect(remoteDatastoreContent[1].value).toEqual(randomObject1);
+
+								expect(remoteDatastoreContent[2].key).toEqual("['a']['c']");
+								expect(remoteDatastoreContent[2].value).toEqual(randomObject2);
+							}
+						});
 
 						it("Pulls from a remote server", async () => {
 							const updateTime = Timer.getMicrosecondTimestamp();

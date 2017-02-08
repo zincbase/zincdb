@@ -1,4 +1,4 @@
-/// <reference path="LocalDBOperations.ts"/>
+/// <reference path="../LocalDBOperations.ts"/>
 
 namespace ZincDB {
 	export namespace DB {

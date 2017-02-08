@@ -70,6 +70,32 @@ namespace ZincDB {
 						expect(await db.get<any>("key2", "testObjectStore2")).toEqual(complexEntry2);
 					});
 
+					it("Sets and retrieves entries containing randomly generated object trees", async () => {
+						const rand = new SeededRandom();
+
+						for (let i = 0; i < 50; i++) {
+							const randomEntry1 = {
+								key: "key1",
+								value: RandomObject.generate(10, 3, rand),
+								metadata: { updateTime: 1000, commitTime: 2000 }
+							};
+
+							const randomEntry2 = {
+								key: "key2",
+								value: RandomObject.generate(10, 3, rand),
+								metadata: { updateTime: 1000, commitTime: 2000 }
+							};
+
+							await db.set({
+								"testObjectStore1": { "key1": randomEntry1 },
+								"testObjectStore2": { "key2": randomEntry2 }
+							});
+
+							expect(await db.get<any>("key1", "testObjectStore1")).toEqual(randomEntry1);
+							expect(await db.get<any>("key2", "testObjectStore2")).toEqual(randomEntry2);
+						}
+					});
+
 					it("Sets and then both sets and deletes multiple entries", async () => {
 						await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3 } });
 						await db.set({ "testObjectStore1": { "key1": null, "key3": null, "key4": testEntry4 } });
