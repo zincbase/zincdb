@@ -1,39 +1,4 @@
 namespace ZincDB {
-	export interface DispatcherSchema { [name: string]: { Args: any[]; ReturnValue: any } };
-
-	export interface Dispatcher<Schema extends DispatcherSchema> {
-		exec<K extends keyof Schema>(target: string, name: K, args: Schema[K]['Args'], options?: object): Promise<Schema[K]['ReturnValue']>;
-	}
-
-	export class MethodDispatcher implements Dispatcher<any> {
-		constructor(private handlerObject: object) {
-			if (typeof handlerObject !== "object")
-				throw new TypeError("Handler object is not an object.");
-		}
-
-		async exec(target: string, operation: string, args: any[]): Promise<any> {
-			const handler: Function = this.handlerObject[operation];
-
-			if (typeof handler !== "function")
-				throw new Error(`Invalid or missing handler for '${operation}.'`);
-			
-			const result = handler.apply(this.handlerObject, args);
-
-			if (result instanceof Promise)
-				return result;
-			else
-				return Promise.resolve(result);
-		}
-	}
-
-	export class SerializingMethodDispatcher extends MethodDispatcher {
-		private promiseQueue = new PromiseQueue();
-
-		async exec(target: string, operation: string, args: any[]): Promise<any> {
-			return this.promiseQueue.add(() => super.exec(target, operation, args));
-		}
-	}
-
 	export type TokenizedRequest = {
 		target: string;
 		operation: string;
@@ -46,9 +11,9 @@ namespace ZincDB {
 		operation: string;
 		result?: any;
 		error?: Error;
-		token: string;		
+		token: string;
 	}
-	
+
 	export type TokenizedRequestHandler = (request: TokenizedRequest, options?: object) => void
 	export type TokenizedResponseHandler = (response: TokenizedResponse) => void
 
@@ -71,7 +36,7 @@ namespace ZincDB {
 					operation,
 					args,
 					token: this.baseToken + "_" + Crypto.Random.getAlphanumericString(16)
-				} 
+				}
 
 				this.responseHandlers.set(requestMessage.token, (response) => {
 					this.responseHandlers.delete(requestMessage.token);
@@ -102,7 +67,7 @@ namespace ZincDB {
 		}
 
 		isOwnMessage(message: TokenizedRequest | TokenizedResponse): boolean {
-			return message && typeof message.token === "string" && Tools.stringStartsWith(message.token, this.baseToken); 
+			return message && typeof message.token === "string" && Tools.stringStartsWith(message.token, this.baseToken);
 		}
 	}
 }
