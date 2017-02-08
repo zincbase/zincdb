@@ -34,7 +34,7 @@ module.exports = function (grunt) {
 				options: {
 					ui: 'bdd',
 					slow: -1,
-					timeout: 10000,
+					timeout: 20000,
 					reporter: 'spec',
 					quiet: false,
 					clearRequireCache: false,
@@ -92,7 +92,7 @@ module.exports = function (grunt) {
 				options: {
 					port: 25398,
 				}
-			}			
+			}
 		},
 
 		mocha_phantomjs: {
@@ -101,7 +101,7 @@ module.exports = function (grunt) {
 					urls: ['http://localhost:25398/tests/index.html']
 				}
 			}
-		}		
+		}
 	});
 
 	require('load-grunt-tasks')(grunt);
@@ -124,7 +124,7 @@ module.exports = function (grunt) {
 			'buildDevelopment',
 			'connect:phantomjsTestServer',
 			'mocha_phantomjs:runTests'
-		]);		
+		]);
 
 	grunt.registerTask('buildProduction',
 		[
@@ -136,7 +136,7 @@ module.exports = function (grunt) {
 	grunt.registerTask('startDevServer',
 		[
 			'connect:devserver',
-		]);		
+		]);
 
 	grunt.registerTask('default',
 		[
