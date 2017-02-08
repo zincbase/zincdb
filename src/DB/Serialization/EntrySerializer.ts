@@ -233,23 +233,21 @@ namespace ZincDB {
 						throw new TypeError(`deserializeKeyAndValueToEncoding: invalid key encoding '${keyEncoding}'`);
 				}
 
-				if (valueBytes.length > 0) {
-					switch (valueEncoding) {
-						case DataEncoding.Binary:
-							value = valueBytes;
-							break;
-						case DataEncoding.UTF8:
-							value = Encoding.UTF8.decode(valueBytes);
-							break;
-						case DataEncoding.Json:
-							value = Encoding.JsonX.decode(Encoding.UTF8.decode(valueBytes));
-							break;
-						case DataEncoding.OmniJson:
-							value = Encoding.OmniJson.decode(Encoding.UTF8.decode(valueBytes));
-							break;
-						default:
-							throw new TypeError(`deserializeKeyAndValueToEncoding: invalid value encoding '${valueEncoding}'`);
-					}
+				switch (valueEncoding) {
+					case DataEncoding.Binary:
+						value = valueBytes;
+						break;
+					case DataEncoding.UTF8:
+						value = Encoding.UTF8.decode(valueBytes);
+						break;
+					case DataEncoding.Json:
+						value = Encoding.JsonX.decode(Encoding.UTF8.decode(valueBytes));
+						break;
+					case DataEncoding.OmniJson:
+						value = Encoding.OmniJson.decode(Encoding.UTF8.decode(valueBytes));
+						break;
+					default:
+						throw new TypeError(`deserializeKeyAndValueToEncoding: invalid value encoding '${valueEncoding}'`);
 				}
 
 				return [key, value];

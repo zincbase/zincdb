@@ -8,10 +8,6 @@ namespace ZincDB {
 			return this.getIntegerInRange(0, maximumInclusive + 1);
 		}
 
-		getFloatInRange(minimum: number, maximum: number) {
-			return minimum + this.getFloat() * (maximum - minimum);
-		}
-
 		getIntegerArray(length: number, min: number, max: number): number[] {
 			const result = new Array(length);
 
@@ -19,6 +15,10 @@ namespace ZincDB {
 				result[i] = this.getIntegerInRange(min, max);
 
 			return result;
+		}
+
+		getFloatInRange(minimum: number, maximum: number) {
+			return minimum + this.getFloat() * (maximum - minimum);
 		}
 
 		getBytes(length: number): Uint8Array {
@@ -38,6 +38,10 @@ namespace ZincDB {
 				randomString += characters.charAt(this.getIntegerInRange(0, characters.length));
 
 			return randomString;
+		}
+
+		getBool() {
+			return this.getIntegerUpTo(1) === 1;
 		}
 
 		getCodePoint(): number {

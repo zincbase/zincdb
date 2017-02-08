@@ -126,8 +126,8 @@ namespace ZincDB {
 
 							for (let i = 0; i < 1000; i++) {
 								const randomEntry: Entry<any> = {
-									key: rand.getUTF16String(rand.getIntegerInRange(1, 100)),
-									value: { data: rand.getUTF16String(rand.getIntegerInRange(1, 100)), num: rand.getFloatInRange(-79342324, 3948593845) },
+									key: rand.getUTF16String(rand.getIntegerInRange(1, 20)),
+									value: RandomObject.generate(10, 3, rand),
 
 									metadata: {
 										updateTime: rand.getIntegerInRange(0, 2 ** 53),
@@ -136,7 +136,6 @@ namespace ZincDB {
 
 								const serializedEntry = EntrySerializer.serializeEntry(randomEntry, encryptionKey);
 								const deserializedEntry = EntrySerializer.deserializeFirstEntry(serializedEntry, encryptionKey);
-
 								expect(deserializedEntry).toEqual(randomEntry);
 							}
 						});
@@ -152,7 +151,7 @@ namespace ZincDB {
 								for (let i = 0; i < entryCount; i++) {
 									randomEntries.push({
 										key: rand.getUTF16String(rand.getIntegerInRange(1, 100)),
-										value: { data: rand.getUTF16String(rand.getIntegerInRange(1, 100)), num: rand.getFloatInRange(-79342324, 3948593845) },
+										value: RandomObject.generate(10, 3, rand),
 										metadata: {
 											updateTime: rand.getIntegerInRange(0, 2 ** 53),
 										}
