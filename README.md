@@ -11,7 +11,7 @@ Some of its features:
 * Real-time synchronization and multi-user collaboration through a WebSocket or COMET connection with a [ZincServer](https://github.com/zincbase/zincserver) instance.
 * Subscribe for updates for specific objects or values.
 * Operates in a web-worker (browser) or child process (Node.js). Optimized for short loading times and minimal impact over the responsiveness of the hosting application.
-* Pluggable storage engines. Currently supported: IndexedDB, WebSQL, Local Storage, Session Storage, In-memory, SQLite (in Node.js through [`node-sqlite3`](https://github.com/mapbox/node-sqlite3)), LevelDB (in Node.js, through [`LevelUP`](https://github.com/Level/levelup), which can also wrap [`RocksDB`](https://github.com/facebook/rocksdb)), SQLite (Node.js).
+* Pluggable storage engines. Currently supported: IndexedDB, WebSQL, Local Storage, Session Storage, In-memory, SQLite (in Node.js through [`node-sqlite3`](https://github.com/mapbox/node-sqlite3)), LevelDB (in Node.js through [`LevelUP`](https://github.com/Level/levelup), which can also wrap [`RocksDB`](https://github.com/facebook/rocksdb)).
 
 Learn more about the ZincBase framework's client and server design, capabilities and target use cases at the [technical overview](https://github.com/zincbase/zincdb/blob/master/docs/Technical%20overview.md).
 

@@ -47,15 +47,15 @@ ZincDB.open(name, options?);
 
 **Arguments**:
 
-* `name` (string, required): The identifier to use when persisting data in local storage mediums like IndexedDB or WebSQL. The actual identifier used is additionally prefixed with "Zinc_", i.e.. `Zinc_<name>`.
+* `name` (string, required): The identifier to use when persisting data in on-disk storage mediums like IndexedDB or WebSQL. The actual identifier used is additionally prefixed with "ZincDB_", i.e.. `ZincDB_<name>`.
 
 * `options` (object, optional):
 	* `remoteSyncURL` (string, optional): A full URL of a remote datastore to synchronize with.
-	* `remoteAccessKey` (string, optional): An access key to use when communicating with the remote datastore host. If provided, must be 32 lowercase hexadecimal characters.
-	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries that are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.
+	* `remoteAccessKey` (string, optional): An access key to authenticate with the remote datastore host. If provided, must be 32 lowercase hexadecimal characters.
+	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries before and after they are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.
 	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"LevelUP"`, `"IndexedDB"`, `"SQLite"`, `"WebSQL", "LocalStorage", "SessionStorage"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
 	* `useWorker`(boolean, optional): Execute operations in a web worker, if available (browser) or inside a child-process (Node.js). Note that only one worker is spawned globally and is shared between all databases. Defaults to `false`.
-	* `webWorkerURI` (string, optional): A URI or relative script path to load the worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used. Only relevant when running in a browser, ignored in Node.js.
+	* `webWorkerURI` (string, optional): A URI or relative script path to load a web worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used. Only relevant when running in a browser, ignored in Node.js.
 	* `verifyServerCertificate` (boolean, optional). Verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.
 	* `storagePath` (string, optional). A storage directory path for SQLite and LevelUP databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"`, `"LevelUP"` or `"OnDisk"`. Defaults to current working directory.
 
@@ -80,7 +80,7 @@ const db = await ZincDB.open("MyDB", {
 });
 ```
 
-Open a database named "MyDB" with a remote synchronization host and access key specified, on-disk storage medium, web workers enabled, and an encryption/decryption key:
+Open a database named "MyDB" with a remote synchronization host and access key specified, on-disk storage medium, worker enabled, and an encryption/decryption key:
 
 ```ts
 const db = await ZincDB.open("MyDB", {
@@ -104,7 +104,7 @@ db.put(path, val)
 
 **Arguments**:
 
-* `path` (string or array of strings, required): A path specifying the leaf to assign.
+* `path` (string or array, required): A path specifying the leaf to assign.
 * `val` (any, required): The primitive value, object, or array to assign.
 
 **Return value**
@@ -153,7 +153,7 @@ db.update(path, newValue)
 
 **Arguments**:
 
-* `path` (string or array of strings, required): the path of the entity to update. Can be either a leaf node, branch node (including the root), or a leaf node value's descendant property or array index.
+* `path` (string or array, required): the path of the entity to update. Can be either a leaf node, branch node (including the root), or a leaf node value's descendant property or array index.
 * `newValue` (any, required): the new value to assign the entity.
 
 **Example**:
@@ -187,7 +187,7 @@ await db.update([], { // Update the root branch
 
 **Notes**:
 
-* If the given path is an ancestor to one or multiple existing leaf nodes, the given value must be an object, and would internally be matched to each corresponding leaf node within the given path. If an existing node cannot be matched, it will be taken to be deleted. If the object contains properties or descendant properties that cannot be matched in the database, an error will be thrown and the operation would be aborted.
+* If the given path represents an ancestor to one or multiple existing leaf nodes, the given value must be an object. The object's content would be internally be matched to each corresponding leaf node within the given path. If an existing node cannot be matched, it will be taken to be deleted. If the object contains properties or descendant properties that cannot be matched in the database, an error will be thrown and the operation would be aborted.
 
 ## `delete`
 
@@ -201,11 +201,11 @@ db.delete(path)
 
 **Arguments**:
 
-* `path` (array of strings or string, required): the entity to delete. This can be any leaf nodes, branch, property or array element path.
+* `path` (string or array, required): the entity to delete. This can be any leaf nodes, branch, property or array element path.
 
 **Return value**:
 
-A promise resolving when the data has been successfully deleted from the database.
+A promise resolving when the data has been successfully deleted.
 
 **Notes**:
 
@@ -223,7 +223,7 @@ db.addListItem(containerPath, value)
 
 **Arguments**:
 
-* `containerPath` (string or array of strings, required): the containing path.
+* `containerPath` (string or array, required): the containing path.
 * `value` (any, required): the value to assign to the new list item.
 
 **Return type**:
@@ -308,7 +308,7 @@ db.get(path)
 
 **Arguments**:
 
-* `path` (string or array of strings, required): the path of the entity to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants. If a path provided is a `string`, e.g. `"dogs"`, it would be converted to a single node path `["dogs"]`.
+* `path` (string or array, required): the path of the entity to retrieve. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants. If a path provided is a `string`, e.g. `"dogs"`, it would be converted to a single node path `["dogs"]`.
 
 **Return value**:
 
@@ -430,7 +430,7 @@ db.has(path)
 
 **Arguments**:
 
-* `path` (string or array of strings, required): the path of the entity to check the existence of. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
+* `path` (string or array, required): the path of the entity to check the existence of. The path can address any type of node (root, branch, leaf) and optionally extend a leaf node's path to its value's internal descendants.
 
 **Return value**:
 
@@ -484,7 +484,7 @@ db.observe(path, handler)
 
 **Arguments**:
 
-* `path` (string or array of strings, required): the path of the entity to watch. This can be any path supported by `get()`.
+* `path` (string or array, required): the path of the entity to watch. This can be any path supported by `get()`.
 * `handler` (function, required): a handler function to be called when a relevant update occurred. The handler function receives a single argument - an event object of the form:
 
 ```ts
@@ -705,7 +705,7 @@ db.discardLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array of strings, optional): the base node path for the changes to discard.
+* `path` (string or array, optional): the base node path for the changes to discard.
 
 **Return value**:
 
@@ -737,7 +737,7 @@ db.getLocalChanges(path?)
 
 **Arguments**:
 
-* `path` (string or array of strings, optional): the base node for the local changes to retrieve.
+* `path` (string or array, optional): the base node for the local changes to retrieve.
 
 **Return value**:
 
