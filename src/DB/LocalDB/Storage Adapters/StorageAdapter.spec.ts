@@ -121,12 +121,12 @@ namespace ZincDB {
 					});
 
 					it("Gets all entries", async () => {
-						await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
+						await db.set({ "testObjectStore1": { "key2": testEntry2, "key1": testEntry1, "key3": testEntry3, "key4": testEntry4 } });
 						expect(await db.getAll("testObjectStore1")).toEqual([testEntry1, testEntry2, testEntry3, testEntry4]);
 					});
 
 					it("Gets all keys", async () => {
-						await db.set({ "testObjectStore1": { "key1": testEntry1, "key2": testEntry2, "key3": testEntry3, "key4": testEntry4 } });
+						await db.set({ "testObjectStore1": { "key2": testEntry2, "key1": testEntry1, "key3": testEntry3, "key4": testEntry4 } });
 						expect(await db.getAllKeys("testObjectStore1")).toEqual(["key1", "key2", "key3", "key4"]);
 					});
 

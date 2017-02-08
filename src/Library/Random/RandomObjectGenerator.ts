@@ -79,7 +79,12 @@ namespace ZincDB {
 							return new Date(rand.getIntegerUpTo(2 ** 50));
 						case AtomType.RegExp: // Needs more work
 							return /^Hello World!$/gi;
+						default:
+							throw new Error(`Invalid atom type: ${atomType}`);
 					}
+
+				default:
+					throw new Error(`Invalid antity type: ${entityType}`);
 			}
 		}
 	}

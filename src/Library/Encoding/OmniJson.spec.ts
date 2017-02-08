@@ -41,14 +41,13 @@ namespace ZincDB {
 			it("Encodes and decodes a series of random object trees", () => {
 				const rand = new SeededRandom();
 
-				for (let i = 0; i < 100; i++) {
+				for (let i = 0; i < 1000; i++) {
 					const randObject = RandomObject.generate(10, 3, rand);
 
 					const encoded = Encoding.OmniJson.encode(randObject);
 					const decoded = Encoding.OmniJson.decode(encoded);
 
 					expect(decoded).toEqual(randObject);
-					expect(ObjectTools.deepCompare(decoded, randObject)).toBe(true);
 				}
 			});
 		});

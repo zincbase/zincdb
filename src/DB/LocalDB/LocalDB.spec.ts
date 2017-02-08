@@ -129,7 +129,7 @@ namespace ZincDB {
 								.toEqual([complexObject1, complexObject2, { b: complexObject1, c: complexObject2 }]);
 						});
 
-						it("Stores nodes containing containing randomly generated object trees", async () => {
+						it("Stores nodes containing randomly generated object trees", async () => {
 							const rand = new SeededRandom();
 
 							for (let i = 0; i < 50; i++) {
