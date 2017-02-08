@@ -828,19 +828,5 @@ namespace ZincDB {
 				});
 			}
 		});
-
-		function expectPromiseToReject(promise: Promise<any>) {
-			return promise
-				.then(
-				() => expect(true).toBe(false, "Expected promise to reject"),
-				() => expect(true).toBe(true))
-		}
-
-		function expectPromiseToResolve(promise: Promise<any>) {
-			return promise
-				.then(
-				() => expect(true).toBe(true),
-				() => expect(true).toBe(false, "Expected promise to reject"))
-		}
 	}
 }
