@@ -5,7 +5,7 @@ namespace ZincDB {
 			keyBytes: Uint8Array;
 
 			constructor(public key: number[], nonce: number[] = [0, 0, 0, 0], initialCounter = 0) {
-				this.keyBytes = Encoding.Tools.intArrayToBigEndianByteArray(key);
+				this.keyBytes = Encoding.BigEndian.fromIntArray(key);
 				this.reset(nonce, initialCounter);
 			}
 
@@ -28,7 +28,7 @@ namespace ZincDB {
 			reset(nonce: number[], counter: number = 0) {
 				const NodeCrypto: typeof nodecrypto = require("crypto");
 
-				const iv = Encoding.Tools.intArrayToBigEndianByteArray([nonce[0], nonce[1], nonce[2], nonce[3] ^ counter]);
+				const iv = Encoding.BigEndian.fromIntArray([nonce[0], nonce[1], nonce[2], nonce[3] ^ counter]);
 				this.nodeCipher = NodeCrypto.createCipheriv("aes-128-ctr", BufferTools.uint8ArrayToBuffer(this.keyBytes), BufferTools.uint8ArrayToBuffer(iv));
 			}
 		}

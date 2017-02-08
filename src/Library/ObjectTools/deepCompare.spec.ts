@@ -74,6 +74,16 @@ namespace ZincDB {
 				}
 			});
 
+			it("Compares a series of randomly generated object trees", () => {
+				const rand = new SeededRandom();
+
+				for (let i = 0; i < 1000; i++) {
+					const randObjectTree = RandomObject.generate(10, 3, rand);
+					const randObjectTreeClone = deepClone(randObjectTree);
+					expect(deepCompare(randObjectTree, randObjectTreeClone)).toBe(true);
+				}
+			});
+
 			it("Detects a simple cycle and errors on it", () => {
 				const x: any = { a: null };
 				x.a = x;

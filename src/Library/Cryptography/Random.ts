@@ -1,5 +1,5 @@
 /// <reference path="SHA1.ts"/>
-/// <reference path="../Encoding/Tools.ts"/>
+/// <reference path="../Encoding/BigEndian.ts"/>
 /// <reference path="../Scheduling/Timer.ts"/>
 /// <reference path="../Random/JSRandom.ts" />
 
@@ -20,14 +20,14 @@ namespace ZincDB {
 
 			export const getUint32 = function (): number {
 				const randomBytes = getBytes(4);
-				const result = Encoding.Tools.buildUint32BigEndian(randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]);
+				const result = Encoding.BigEndian.buildUint32(randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]);
 
 				return result;
 			}
 
 			export const getInt32 = function (): number {
 				const randomBytes = getBytes(4);
-				const result = Encoding.Tools.buildInt32BigEndian(randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]);
+				const result = Encoding.BigEndian.buildInt32(randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]);
 
 				return result;
 			}
@@ -116,7 +116,7 @@ namespace ZincDB {
 					maskedEntropy = SHA1.hash(maskedEntropy);
 
 					// Use the masked entropy as a key to a AES-CTR-128 cipher
-					const encryptionKey = Encoding.Tools.bigEndianByteArrayToIntArray(maskedEntropy.subarray(0, 16));
+					const encryptionKey = Encoding.BigEndian.toIntArray(maskedEntropy.subarray(0, 16));
 					generatorCipher = new AES_CTR_JS(new AES(encryptionKey));
 				}
 

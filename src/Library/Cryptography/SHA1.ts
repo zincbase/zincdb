@@ -34,9 +34,9 @@ namespace ZincDB {
 			}
 
 			export const hashUsingJS = function (bytes: Uint8Array): Uint8Array {
-				const words = Encoding.Tools.bigEndianByteArrayToIntArray(bytes);
+				const words = Encoding.BigEndian.toIntArray(bytes);
 				const resultWords = hashWordsUsingJS(words, bytes.length * 8);
-				return Encoding.Tools.intArrayToBigEndianByteArray(resultWords);
+				return Encoding.BigEndian.fromIntArray(resultWords);
 			}
 
 			/* Calculate the SHA-1 of an array of big-endian words, given a bit length

@@ -29,9 +29,9 @@ namespace ZincDB {
 				const plaintext = Encoding.Hex.decodeWithJS(plaintextHex);
 				const expectedCiphertext = Encoding.Hex.decodeWithJS(expectedCiphertextHex)
 
-				const keyNumberArray = Encoding.Tools.bigEndianByteArrayToIntArray(key);
-				const plaintextNumberArray = Encoding.Tools.bigEndianByteArrayToIntArray(plaintext);
-				const expectedCiphertextNumberArray = Encoding.Tools.bigEndianByteArrayToIntArray(expectedCiphertext);
+				const keyNumberArray = Encoding.BigEndian.toIntArray(key);
+				const plaintextNumberArray = Encoding.BigEndian.toIntArray(plaintext);
+				const expectedCiphertextNumberArray = Encoding.BigEndian.toIntArray(expectedCiphertext);
 
 				const aes = new Crypto.AES(keyNumberArray);
 				const cipherText = aes.encryptBlock(plaintextNumberArray);
@@ -50,11 +50,11 @@ namespace ZincDB {
 
 					for (let i = 0; i < 100; i++) {
 						const keyBytes = rand.getBytes(16);
-						const aes = new Crypto.AES(Encoding.Tools.bigEndianByteArrayToIntArray(keyBytes));
+						const aes = new Crypto.AES(Encoding.BigEndian.toIntArray(keyBytes));
 
 						const randomPlaintext = rand.getBytes(16);
-						const randomPlaintextAs32BitArray = Encoding.Tools.bigEndianByteArrayToIntArray(randomPlaintext);
-						const jsCiphertext = Encoding.Tools.intArrayToBigEndianByteArray(aes.encryptBlock(randomPlaintextAs32BitArray));
+						const randomPlaintextAs32BitArray = Encoding.BigEndian.toIntArray(randomPlaintext);
+						const jsCiphertext = Encoding.BigEndian.fromIntArray(aes.encryptBlock(randomPlaintextAs32BitArray));
 
 						// Encryption
 						const nodeCipher = NodeCrypto.createCipheriv("aes-128-ecb", new Buffer(keyBytes), new Buffer([]));

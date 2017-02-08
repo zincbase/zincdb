@@ -9,9 +9,9 @@ namespace ZincDB {
 						const plaintext = rand.getBytes(i);
 
 						const keyBytes = rand.getBytes(16);
-						const key = Encoding.Tools.bigEndianByteArrayToIntArray(keyBytes);
+						const key = Encoding.BigEndian.toIntArray(keyBytes);
 						const nonceBytes = rand.getBytes(16);
-						const nonce = Encoding.Tools.bigEndianByteArrayToIntArray(nonceBytes);
+						const nonce = Encoding.BigEndian.toIntArray(nonceBytes);
 
 						const aesStream = new Crypto.AES_CTR_JS(new Crypto.AES(key), nonce, i);
 						const jsCiphertext = new Uint8Array(plaintext.length);

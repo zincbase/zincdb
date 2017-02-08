@@ -29,8 +29,8 @@ namespace ZincDB {
 				let newObject: GenericAESCipherInstance;
 
 				if (runningInNodeJS()) {
-					const encryptionObject = NodeCrypto.createCipher("aes-128-ecb", Encoding.Tools.intArrayToBigEndianByteArray(key));
-					const decryptionObject = NodeCrypto.createDecipher("aes-128-ecb", Encoding.Tools.intArrayToBigEndianByteArray(key));
+					const encryptionObject = NodeCrypto.createCipher("aes-128-ecb", Encoding.BigEndian.fromIntArray(key));
+					const decryptionObject = NodeCrypto.createDecipher("aes-128-ecb", Encoding.BigEndian.fromIntArray(key));
 
 					newObject =
 						{

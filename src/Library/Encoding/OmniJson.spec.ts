@@ -36,7 +36,21 @@ namespace ZincDB {
 				const encodedTest = Encoding.OmniJson.encode(test);
 				const decodedResult = Encoding.OmniJson.decode(encodedTest);
 				expect(decodedResult).toEqual(test);
-			});			
+			});
+
+			it("Encodes and decodes a series of random object trees", () => {
+				const rand = new SeededRandom();
+
+				for (let i = 0; i < 100; i++) {
+					const randObject = RandomObject.generate(10, 3, rand);
+
+					const encoded = Encoding.OmniJson.encode(randObject);
+					const decoded = Encoding.OmniJson.decode(encoded);
+
+					expect(decoded).toEqual(randObject);
+					expect(ObjectTools.deepCompare(decoded, randObject)).toBe(true);
+				}
+			});
 		});
 	});
 }

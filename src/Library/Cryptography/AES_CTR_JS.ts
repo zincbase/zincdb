@@ -19,7 +19,7 @@ namespace ZincDB {
 					readPosition++ , writePosition++ , this.currentByteOffsetInBlock++) {
 					if (this.currentByteOffsetInBlock === 16) {
 						this.aes.encryptBlock(this.keystreamBlock, this.reusableCiphertextBlock);
-						Encoding.Tools.intArrayToBigEndianByteArray(this.reusableCiphertextBlock, 0, this.reusableCiphertextBlockBytes);
+						Encoding.BigEndian.fromIntArray(this.reusableCiphertextBlock, 0, this.reusableCiphertextBlockBytes);
 
 						// Increment the counter, wrap on MaxInt. Note this only allows to safely encrypting
 						// up to 68.72GB of data with the same key (2^32 * 16 bytes).

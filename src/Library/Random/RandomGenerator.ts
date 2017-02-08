@@ -4,6 +4,10 @@ namespace ZincDB {
 			return minimum + Math.floor(this.getFloat() * (maximum - minimum));
 		}
 
+		getIntegerUpTo(maximumInclusive: number) {
+			return this.getIntegerInRange(0, maximumInclusive + 1);
+		}
+
 		getFloatInRange(minimum: number, maximum: number) {
 			return minimum + this.getFloat() * (maximum - minimum);
 		}

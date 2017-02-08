@@ -21,17 +21,17 @@ namespace ZincDB {
 				const aes = AES.getAES(keyHex);
 
 				let inputBlock = [0, 0, 0, 0];
-				const ciphertextBlock = Encoding.Tools.bigEndianByteArrayToIntArray(iv);
+				const ciphertextBlock = Encoding.BigEndian.toIntArray(iv);
 
 				const cipherText = new Uint8Array(plaintext.length);
 
 				for (let blockStartOffset = 0; blockStartOffset < plaintext.length; blockStartOffset += 16) {
-					Encoding.Tools.bigEndianByteArrayToIntArray(plaintext, blockStartOffset, inputBlock, 0, 16);
+					Encoding.BigEndian.toIntArray(plaintext, blockStartOffset, inputBlock, 0, 16);
 
 					ArrayTools.xorNumberArrays(inputBlock, ciphertextBlock, 4);
 					aes.encryptBlock(inputBlock, ciphertextBlock);
 
-					Encoding.Tools.intArrayToBigEndianByteArray(ciphertextBlock, 0, cipherText, blockStartOffset);
+					Encoding.BigEndian.fromIntArray(ciphertextBlock, 0, cipherText, blockStartOffset);
 				}
 
 				return cipherText;
@@ -46,19 +46,19 @@ namespace ZincDB {
 
 				const aes = AES.getAES(keyHex);
 
-				const previousInputBlock = Encoding.Tools.bigEndianByteArrayToIntArray(iv);
+				const previousInputBlock = Encoding.BigEndian.toIntArray(iv);
 				let inputBlock = [0, 0, 0, 0];
 				const outputBlock = [0, 0, 0, 0];
 
 				const decryptedPlaintext = new Uint8Array(ciphertext.length);
 
 				for (let blockStartOffset = 0; blockStartOffset < ciphertext.length; blockStartOffset += 16) {
-					Encoding.Tools.bigEndianByteArrayToIntArray(ciphertext, blockStartOffset, inputBlock, 0, 16);
+					Encoding.BigEndian.toIntArray(ciphertext, blockStartOffset, inputBlock, 0, 16);
 
 					aes.decryptBlock(inputBlock, outputBlock);
 					ArrayTools.xorNumberArrays(outputBlock, previousInputBlock, 4);
 
-					Encoding.Tools.intArrayToBigEndianByteArray(outputBlock, 0, decryptedPlaintext, blockStartOffset, 4);
+					Encoding.BigEndian.fromIntArray(outputBlock, 0, decryptedPlaintext, blockStartOffset, 4);
 
 					ArrayTools.copyElements(inputBlock, 0, previousInputBlock, 0, 4);
 				}

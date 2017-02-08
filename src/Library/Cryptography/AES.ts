@@ -205,13 +205,13 @@ namespace ZincDB {
 			}
 
 			encryptByteBlock(input: Uint8Array, output?: Uint8Array): Uint8Array {
-				const result = this.encryptBlock(Encoding.Tools.bigEndianByteArrayToIntArray(input));
-				return Encoding.Tools.intArrayToBigEndianByteArray(result);
+				const result = this.encryptBlock(Encoding.BigEndian.toIntArray(input));
+				return Encoding.BigEndian.fromIntArray(result);
 			}
 
 			decryptByteBlock(input: Uint8Array, output?: Uint8Array): Uint8Array {
-				const result = this.decryptBlock(Encoding.Tools.bigEndianByteArrayToIntArray(input));
-				return Encoding.Tools.intArrayToBigEndianByteArray(result);
+				const result = this.decryptBlock(Encoding.BigEndian.toIntArray(input));
+				return Encoding.BigEndian.fromIntArray(result);
 			}
 
 			static cache: { [keyHex: string]: AES } = {};
@@ -220,7 +220,7 @@ namespace ZincDB {
 				let cachedAESObject = this.cache[keyHex];
 
 				if (!cachedAESObject) {
-					cachedAESObject = new AES(Encoding.Tools.bigEndianByteArrayToIntArray(Encoding.Hex.decode(keyHex)));
+					cachedAESObject = new AES(Encoding.BigEndian.toIntArray(Encoding.Hex.decode(keyHex)));
 					this.cache[keyHex] = cachedAESObject;
 				}
 
