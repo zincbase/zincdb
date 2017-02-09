@@ -29,10 +29,10 @@ The tests are performed with [mocha](https://github.com/mochajs/mocha) test runn
 
 ## Directory structure
 
-* `lib` is the library source code root.
+* `src` is the library source code root.
 * `build/production` contains the latest production build generated.
 * `build/development` contains the latest development build generated. The development build contains the tests, benchmarks and the editor in the addition to what is included in the production build. This build would also be continuously updated if used with TypeScript's live compilation.
-* `tests` is the base directory for web based testing. Sources are at `tests/src`.
+* `tests` is the base directory for web based testing. The test sources themselves are spread within `src`. Every source file has its own set of unit tests in `<filename>.spec.ts`, usually located at the same directory.
 * `benchmarks` is the base directory for benchmarking in web browsers. Sources are at `benchmarks/src`.
 * `editor` is the editor's base directory, including its HTML and stylesheets. Sources are at `editor/src`.
 * `docs` contains the documentation.
@@ -43,6 +43,7 @@ The `src` directory contains the following subdirectories:
 
 * `Types` - global type definitions.
 * `Globals` - global utility functions and polyfills.
+* `TestEnvironment` - various utility functions and preparation code needed for the test cases.
 * `Library` - many utility classes and functions used internally, covering areas like cryptography, hashing, data structures, encoding, scheduling, parsing, keypaths, and many others..
 * `NodeLibrary` - utility functions particular to Node.js.
 * `DB` - the actual ZincDB database source code.
