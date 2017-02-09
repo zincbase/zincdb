@@ -53,11 +53,11 @@ ZincDB.open(name, options?);
 	* `remoteSyncURL` (string, optional): A full URL of a remote datastore to synchronize with.
 	* `remoteAccessKey` (string, optional): An access key to authenticate with the remote datastore host. If provided, must be 32 lowercase hexadecimal characters.
 	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries before and after they are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.
-	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"LevelUP"`, `"IndexedDB"`, `"SQLite"`, `"WebSQL", "LocalStorage", "SessionStorage"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
+	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"LevelDB"`, `"IndexedDB"`, `"SQLite"`, `"WebSQL", "LocalStorage", "SessionStorage"`, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or fall back to `"InMemory"` if none is available. Defaults to `"InMemory"`.
 	* `useWorker`(boolean, optional): Execute operations in a web worker, if available (browser) or inside a child-process (Node.js). Note that only one worker is spawned globally and is shared between all databases. Defaults to `false`.
 	* `webWorkerURI` (string, optional): A URI or relative script path to load a web worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used. Only relevant when running in a browser, ignored in Node.js.
 	* `verifyServerCertificate` (boolean, optional). Verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.
-	* `storagePath` (string, optional). A storage directory path for SQLite and LevelUP databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"`, `"LevelUP"` or `"OnDisk"`. Defaults to current working directory.
+	* `storagePath` (string, optional). A storage directory path for SQLite and LevelDB databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"`, `"LevelDB"` or `"OnDisk"`. Defaults to current working directory.
 
 **Return value**:
 
@@ -294,7 +294,7 @@ await db.transaction()
 
 * If at least one operation fails, all other operations would fail as well and no data would be written.
 * Once `commit()` has been called, calling any other method would result in an error.
-* Accumulating multiple operations into large, complex transaction can significantly increase write performance if a large quantity of write operations are expected.
+* Accumulating multiple operations into large, complex transactions can significantly increase write performance if a large quantity of write operations are expected.
 
 ## `get`
 

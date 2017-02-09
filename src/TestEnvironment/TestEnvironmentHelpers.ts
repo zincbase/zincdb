@@ -12,7 +12,4 @@ namespace ZincDB {
 			() => expect(true).toBe(true),
 			() => expect(true).toBe(false, "Expected promise to resolve"))
 	}
-
-	export const seededRand = function () {
-	}
 }

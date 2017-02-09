@@ -4,7 +4,7 @@ ZincBase is a distributed database platform aiming to provide a complete solutio
 
 ## [ZincDB](https://github.com/zincbase/zincdb)
 
-A Javascript object database managed through a high-level API, available as a library. Provides a local database using either browser based persistence (IndexedDB/WebSQL/LocalStorage/SessionStorage), an external library (SQLite or LevelUP in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
+A Javascript object database managed through a high-level API, available as a library. Provides a local database using either browser based persistence (IndexedDB/WebSQL/LocalStorage/SessionStorage), an external library (SQLite or LevelDB in Node.js) or in-memory storage. It is an independent module that works fully offline. It operates and synchronizes in the background, within a web worker (if available).
 
 Features:
 

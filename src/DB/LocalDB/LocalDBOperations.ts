@@ -50,7 +50,7 @@ namespace ZincDB {
 						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
 						break;
 
-					case "LevelUP":
+					case "LevelDB":
 						if (!LevelUpAdapter.isAvailable)
 							throw new Error("LevelUP is not available at the current context.");
 
