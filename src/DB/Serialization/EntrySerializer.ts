@@ -30,6 +30,7 @@ namespace ZincDB {
 		export const enum EntryFlags {
 			None = 0,
 			TransactionEnd = 1,
+			HeadEntry = 2
 		}
 
 		export const enum EncryptionMethod {
@@ -376,7 +377,7 @@ namespace ZincDB {
 				if (header.commitTime)
 					metadata.commitTime = header.commitTime;
 
-				if (header.keySize === 0)
+				if ((header.flags & EntryFlags.HeadEntry) === EntryFlags.HeadEntry)
 					metadata.isHeadEntry = true;
 
 				return metadata;
