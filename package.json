@@ -1,6 +1,6 @@
 {
   "name": "zincdb",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "description": "A database and synchronization library for Javascript applications.",
   "keywords": [
     "database",
@@ -40,6 +40,8 @@
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-contrib-uglify": "^2.0.0",
+    "grunt-env": "^0.4.4",
+    "grunt-istanbul": "^0.7.2",
     "grunt-mocha-phantomjs": "^4.0.0",
     "grunt-mocha-test": "^0.13.2",
     "grunt-shell": "^2.1.0",
@@ -53,6 +55,7 @@
     "build": "grunt",
     "test": "grunt test",
     "testPhantomjs": "grunt testPhantomjs",
+    "test_coverage": "grunt test_coverage",
     "devserver": "grunt startDevServer"
   },
   "engines": {

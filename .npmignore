@@ -9,6 +9,7 @@ tests
 backup.cmd
 Gruntfile.js
 tests/testconfig.js
+tests/coverage
 tsconfig.json
 tsconfig_production.json
 tslint.json

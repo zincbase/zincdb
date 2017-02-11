@@ -42,9 +42,51 @@ module.exports = function (grunt) {
 				},
 
 				src: ['build/development/zincdb.js']
+			},
+
+			runInstrumentedTests: {
+				options: {
+					ui: 'bdd',
+					slow: -1,
+					timeout: 20000,
+					reporter: 'spec',
+					quiet: false,
+					clearRequireCache: false,
+					require: 'expectations'
+				},
+
+				src: ['tests/coverage/instrument/build/development/zincdb.js']
 			}
 		},
 
+		env: {
+			coverage: {
+				APP_DIR_FOR_CODE_COVERAGE: 'tests/coverage/instrument/build/development'
+			}
+		},
+
+		instrument: {
+			files: 'build/development/zincdb.js',
+			options: {
+				lazy: true,
+				basePath: 'tests/coverage/instrument/'
+			}
+		},
+
+		storeCoverage: {
+			options: {
+				dir: 'tests/coverage/reports'
+			}
+		},
+
+		makeReport: {
+			src: 'tests/coverage/reports/**/*.json',
+			options: {
+				type: 'lcov',
+				dir: 'tests/coverage/reports',
+				print: 'detail'
+			}
+		},
 		clean: {
 			temporaryTestFiles: ['tests/temp/*'],
 		},
@@ -80,7 +122,7 @@ module.exports = function (grunt) {
 			}
 		},
 
-  		connect: {
+		connect: {
 			devserver: {
 				options: {
 					port: 8888,
@@ -118,6 +160,15 @@ module.exports = function (grunt) {
 			'mochaTest:runTestsWithinDevelopmentBuild',
 			'clean:temporaryTestFiles'
 		]);
+
+	grunt.registerTask('test_coverage', [
+		'buildDevelopment',
+		'env:coverage',
+		'instrument',
+		'mochaTest:runInstrumentedTests',
+		'storeCoverage',
+		'makeReport'
+	]);
 
 	grunt.registerTask('testPhantomjs',
 		[
