@@ -7,15 +7,15 @@ namespace ZincDB {
 						const testHeader: EntryHeader =
 							{
 								totalSize: 2374682736482,
-								updateTime: 54561689616384,
-								commitTime: 24522359616543,
+								headerVersion: 1432,
 								keySize: 12537,
 								keyEncoding: 93,
 								valueEncoding: 113,
 								encryptionMethod: 75,
 								flags: 68,
-								secondaryHeaderSize: 34958,
-								primaryHeaderChecksum: 289645328,
+								updateTime: 54561689616384,
+								commitTime: 24522359616543,
+								headerChecksum: 289645328,
 								payloadChecksum: 1833682315,
 							}
 
@@ -32,15 +32,15 @@ namespace ZincDB {
 							const randomHeader: EntryHeader =
 								{
 									totalSize: rand.getIntegerInRange(0, 2 ** 53),
-									updateTime: rand.getIntegerInRange(0, 2 ** 53),
-									commitTime: rand.getIntegerInRange(0, 2 ** 53),
+									headerVersion: rand.getIntegerInRange(0, 2 ** 16),
 									keySize: rand.getIntegerInRange(0, 2 ** 16),
 									keyEncoding: rand.getIntegerInRange(0, 2 ** 8),
 									valueEncoding: rand.getIntegerInRange(0, 2 ** 8),
 									encryptionMethod: rand.getIntegerInRange(0, 2 ** 8),
 									flags: rand.getIntegerInRange(0, 2 ** 8),
-									secondaryHeaderSize: rand.getIntegerInRange(0, 2 ** 16),
-									primaryHeaderChecksum: rand.getIntegerInRange(0, 2 ** 32),
+									updateTime: rand.getIntegerInRange(0, 2 ** 53),
+									commitTime: rand.getIntegerInRange(0, 2 ** 53),
+									headerChecksum: rand.getIntegerInRange(0, 2 ** 32),
 									payloadChecksum: rand.getIntegerInRange(0, 2 ** 32),
 								}
 
@@ -217,40 +217,6 @@ namespace ZincDB {
 							const deserializedEntries = EntrySerializer.deserializeEntries(serializedEntries, encryptionKey);
 
 							expect(deserializedEntries).toEqual(entries);
-						});
-
-						it("Deserializes entries containing secondary headers", () => {
-							const timestamp = Timer.getMicrosecondTimestamp();
-							const rand = new SeededRandom();
-
-							const testHeader: EntryHeader =
-								{
-									totalSize: 6000,
-									updateTime: timestamp,
-									commitTime: 0,
-									keySize: 14,
-									keyEncoding: DataEncoding.Json,
-									valueEncoding: DataEncoding.Binary,
-									encryptionMethod: EncryptionMethod.None,
-									flags: 0,
-									secondaryHeaderSize: 5000,
-									primaryHeaderChecksum: 0,
-									payloadChecksum: 0,
-								}
-
-							const secondaryHeaderBytes = rand.getBytes(testHeader.secondaryHeaderSize);
-							const keyBytes = Encoding.UTF8.encode(`"Hello World!"`);
-							const valueBytes = rand.getBytes(testHeader.totalSize - EntryHeaderByteSize - testHeader.secondaryHeaderSize - testHeader.keySize);
-
-							const serializedHeader = EntrySerializer.serializeHeader(testHeader);
-							const entryBytes = ArrayTools.concatUint8Arrays([serializedHeader, secondaryHeaderBytes, keyBytes, valueBytes])
-							EntrySerializer.addChecksumsToSerializedEntry(entryBytes);
-							expect(EntrySerializer.verifyChecksumsInSerializedEntry(entryBytes)).toBe(true);
-
-							const deserializedEntry = EntrySerializer.deserializeFirstEntry(entryBytes);
-							expect(deserializedEntry.key).toEqual("Hello World!");
-							expect(deserializedEntry.metadata.updateTime).toEqual(timestamp);
-							expect(deserializedEntry.value).toEqual(valueBytes);
 						});
 
 						it("Android <= 4.3 test matcher bug test", () => {

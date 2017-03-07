@@ -3,16 +3,16 @@ namespace ZincDB {
 		export type EntryHeader = {
 			// All fields are little-endian
 			totalSize: number; // 64 bit unsigned integer
-			updateTime: number; // 64 bit unsigned integer
-			commitTime: number; // 64 bit unsigned integer
+			headerVersion: number; // 16 bit unsigned integer
 			keySize: number; // 16 bit unsigned integer
-			keyEncoding: DataEncoding; // 8 bit unsigned int
-			valueEncoding: DataEncoding; // 8 bit unsigned int
+			keyEncoding: DataEncoding; // 8 bit unsigned integer
+			valueEncoding: DataEncoding; // 8 bit unsigned integer
 			encryptionMethod: EncryptionMethod; // 4 bit unsigned integer
 			flags: EntryFlags; // 8 bit unsigned int
-			secondaryHeaderSize: number // 16 bit unsigned int
-			primaryHeaderChecksum: number // 32 bit unsigned int
-			payloadChecksum: number // 32 bit unsigned int
+			updateTime: number; // 64 bit unsigned integer
+			commitTime: number; // 64 bit unsigned integer
+			headerChecksum: number // 32 bit unsigned integer
+			payloadChecksum: number // 32 bit unsigned integer
 		}
 
 		export type ParsedEntry = {
@@ -97,15 +97,15 @@ namespace ZincDB {
 
 				const header: EntryHeader = {
 					totalSize: EntryHeaderByteSize + keyBytes.length + valueBytes.length,
-					updateTime: metadata.updateTime || 0,
-					commitTime: metadata.commitTime || 0,
+					headerVersion: 0,
 					keySize: keyBytes.length,
 					keyEncoding: DataEncoding.Json,
 					valueEncoding: valueEncoding,
 					encryptionMethod: encryptionMethod,
 					flags: EntryFlags.None,
-					secondaryHeaderSize: 0,
-					primaryHeaderChecksum: 0,
+					updateTime: metadata.updateTime || 0,
+					commitTime: metadata.commitTime || 0,
+					headerChecksum: 0,
 					payloadChecksum: 0,
 				}
 
@@ -167,7 +167,7 @@ namespace ZincDB {
 
 				while (bytes.length > 0) {
 					const [header, entryBytes] = deserializeHeaderAndValidateEntryBytes(bytes, verifyChecksums);
-					const keyStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
+					const keyStartOffset = EntryHeaderByteSize;
 
 					const keyBytes = entryBytes.subarray(keyStartOffset, keyStartOffset + header.keySize);
 					compactionMap.set(Encoding.Hex.encode(keyBytes), { offset: offset, header: header, entryBytes: entryBytes });
@@ -191,7 +191,7 @@ namespace ZincDB {
 			}
 
 			export const deserializeEntryBody = function (entryBytes: Uint8Array, header: EntryHeader, decryptionKeyHex?: string): Entry<any> {
-				const keyStartOffset = EntryHeaderByteSize + header.secondaryHeaderSize;
+				const keyStartOffset = EntryHeaderByteSize;
 				let keyBytes = entryBytes.subarray(keyStartOffset, keyStartOffset + header.keySize);
 				let valueBytes = entryBytes.subarray(keyStartOffset + header.keySize);
 
@@ -321,28 +321,28 @@ namespace ZincDB {
 				dataView.setUint32(0, totalSizeLow, true);
 				dataView.setUint32(4, totalSizeHigh, true);
 
+				dataView.setUint16(8, header.headerVersion, true);
+				dataView.setUint16(10, header.keySize, true);
+				dataView.setUint8(12, header.keyEncoding);
+				dataView.setUint8(13, header.valueEncoding);
+				dataView.setUint8(14, header.encryptionMethod);
+				dataView.setUint8(15, header.flags);
+
 				// Update time field
 				const updateTimeLow = (header.updateTime >>> 0);
 				const updateTimeHigh = (header.updateTime - updateTimeLow) / 4294967296
 
-				dataView.setUint32(8, updateTimeLow, true);
-				dataView.setUint32(12, updateTimeHigh, true);
+				dataView.setUint32(16, updateTimeLow, true);
+				dataView.setUint32(20, updateTimeHigh, true);
 
 				// Commit time field
 				const commitTimeLow = (header.commitTime >>> 0);
 				const commitTimeHigh = (header.commitTime - commitTimeLow) / 4294967296
 
-				dataView.setUint32(16, commitTimeLow, true);
-				dataView.setUint32(20, commitTimeHigh, true);
+				dataView.setUint32(24, commitTimeLow, true);
+				dataView.setUint32(28, commitTimeHigh, true);
 
-				dataView.setUint16(24, header.keySize, true);
-				dataView.setUint8(26, header.keyEncoding);
-				dataView.setUint8(27, header.valueEncoding);
-				dataView.setUint8(28, header.encryptionMethod);
-				dataView.setUint8(29, header.flags);
-				dataView.setUint16(30, header.secondaryHeaderSize, true);
-
-				dataView.setUint32(32, header.primaryHeaderChecksum, true);
+				dataView.setUint32(32, header.headerChecksum, true);
 				dataView.setUint32(36, header.payloadChecksum, true);
 
 				return headerBytes;
@@ -354,17 +354,18 @@ namespace ZincDB {
 
 				//
 				header.totalSize = dataView.getUint32(0, true) + (dataView.getUint32(4, true) * 4294967296);
-				header.updateTime = dataView.getUint32(8, true) + (dataView.getUint32(12, true) * 4294967296);
-				header.commitTime = dataView.getUint32(16, true) + (dataView.getUint32(20, true) * 4294967296);
 
-				header.keySize = dataView.getUint16(24, true);
-				header.keyEncoding = dataView.getUint8(26);
-				header.valueEncoding = dataView.getUint8(27);
-				header.encryptionMethod = dataView.getUint8(28);
-				header.flags = dataView.getUint8(29);
-				header.secondaryHeaderSize = dataView.getUint16(30, true);
+				header.headerVersion = dataView.getUint16(8, true);
+				header.keySize = dataView.getUint16(10, true);
+				header.keyEncoding = dataView.getUint8(12);
+				header.valueEncoding = dataView.getUint8(13);
+				header.encryptionMethod = dataView.getUint8(14);
+				header.flags = dataView.getUint8(15);
 
-				header.primaryHeaderChecksum = dataView.getUint32(32, true);
+				header.updateTime = dataView.getUint32(16, true) + (dataView.getUint32(20, true) * 4294967296);
+				header.commitTime = dataView.getUint32(24, true) + (dataView.getUint32(28, true) * 4294967296);
+
+				header.headerChecksum = dataView.getUint32(32, true);
 				header.payloadChecksum = dataView.getUint32(36, true);
 
 				return header;

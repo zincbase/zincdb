@@ -9,15 +9,15 @@ namespace ZincDB {
 		constructor() {
 			this.testHeader = {
 				totalSize: 2374682736482,
-				updateTime: 54561689616384,
-				commitTime: 24345345345244,
+				headerVersion: 444,
 				keySize: 12537,
 				keyEncoding: 93,
 				valueEncoding: 113,
 				encryptionMethod: 75,
 				flags: 68,
-				secondaryHeaderSize: 34534,
-				primaryHeaderChecksum: 289645328,
+				updateTime: 54561689616384,
+				commitTime: 24345345345244,
+				headerChecksum: 289645328,
 				payloadChecksum: 1833682315,
 			}
 
