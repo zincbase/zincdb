@@ -10,9 +10,10 @@ namespace ZincDB {
 		export type EntryArray<V> = Array<Entry<V>>;
 		export type ValueObject<V> = { [key: string]: V };
 		export type ValueComparer<V> = (value1: V, value2: V) => number;
+		export type StorageMedium = "InMemory" | "OnDisk" | "IndexedDB" | "WebSQL" | "SQLite" | "LevelDB" | "LocalStorage" | "SessionStorage"
 
 		export type LocalDBOptions = {
-			storageMedium: "InMemory" | "OnDisk" | "IndexedDB" | "WebSQL" | "SQLite" | "LevelDB" | "LocalStorage" | "SessionStorage";
+			storageMedium: StorageMedium | StorageMedium[];
 			remoteSyncURL: string;
 			remoteAccessKey: string;
 			encryptionKey?: string;

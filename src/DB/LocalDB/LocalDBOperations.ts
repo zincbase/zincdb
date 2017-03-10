@@ -24,71 +24,67 @@ namespace ZincDB {
 
 				const localDBIdentifier = `ZincDB_${name}`;
 
-				switch (options.storageMedium) {
-					case "InMemory":
-						this.db = new InMemoryAdapter(localDBIdentifier);
-						break;
+				let mediumList: StorageMedium[];
 
-					case "IndexedDB":
-						if (!IndexedDBAdapter.isAvailable)
-							throw new Error("IndexedDB is not available at the current context.");
-
-						this.db = new IndexedDBAdapter(localDBIdentifier);
-						break;
-
-					case "WebSQL":
-						if (!WebSQLAdapter.isAvailable)
-							throw new Error("WebSQL is not available at the current context.");
-
-						this.db = new WebSQLAdapter(localDBIdentifier);
-						break;
-
-					case "SQLite":
-						if (!NodeSQLiteAdapter.isAvailable)
-							throw new Error("SQLite is not available at the current context.");
-
-						this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
-						break;
-
-					case "LevelDB":
-						if (!LevelUpAdapter.isAvailable)
-							throw new Error("LevelUP is not available at the current context.");
-
-						this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
-						break;
-
-					case "LocalStorage":
-						if (!WebStorageAdapter.isAvailable)
-							throw new Error("LocalStorage is not available at the current context.");
-
-						this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");
-						break;
-
-					case "SessionStorage":
-						if (!WebStorageAdapter.isAvailable)
-							throw new Error("SessionStorage is not available at the current context.");
-
-						this.db = new WebStorageAdapter(localDBIdentifier, "SessionStorage");
-						break;
-
-					case "OnDisk":
-						if (LevelUpAdapter.isAvailable)
-							this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
-						else if (IndexedDBAdapter.isAvailable)
-							this.db = new IndexedDBAdapter(localDBIdentifier);
-						else if (NodeSQLiteAdapter.isAvailable)
-							this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
-						else if (WebSQLAdapter.isAvailable)
-							this.db = new WebSQLAdapter(localDBIdentifier);
-						else if (WebStorageAdapter.isAvailable)
-							this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");
-						else
-							this.db = new InMemoryAdapter(localDBIdentifier);
-						break;
-
-					default:
-						throw new Error("Invalid storage medium specified.")
+				if (typeof options.storageMedium === "string") {
+					if (options.storageMedium === "OnDisk") {
+						mediumList = ["LevelDB", "IndexedDB", "SQLite", "WebSQL", "LocalStorage"];
+					} else {
+						mediumList = [options.storageMedium];
+					}
+				} else {
+					mediumList = options.storageMedium;
 				}
+
+				for (const medium of mediumList) {
+					switch (medium) {
+						case "InMemory":
+							this.db = new InMemoryAdapter(localDBIdentifier);
+							break;
+
+						case "IndexedDB":
+							if (IndexedDBAdapter.isAvailable)
+								this.db = new IndexedDBAdapter(localDBIdentifier);
+							break;
+
+						case "WebSQL":
+							if (WebSQLAdapter.isAvailable)
+								this.db = new WebSQLAdapter(localDBIdentifier);
+							break;
+
+						case "SQLite":
+							if (NodeSQLiteAdapter.isAvailable)
+								this.db = new NodeSQLiteAdapter(localDBIdentifier, options.storagePath || "");
+							break;
+
+						case "LevelDB":
+							if (LevelUpAdapter.isAvailable)
+								this.db = new LevelUpAdapter(localDBIdentifier, options.storagePath || "");
+							break;
+
+						case "LocalStorage":
+							if (WebStorageAdapter.isAvailable)
+								this.db = new WebStorageAdapter(localDBIdentifier, "LocalStorage");
+							break;
+
+						case "SessionStorage":
+							if (WebStorageAdapter.isAvailable)
+								this.db = new WebStorageAdapter(localDBIdentifier, "SessionStorage");
+							break;
+
+						case "OnDisk":
+							break;
+
+						default:
+							throw new Error(`Invalid storage medium encountered: '${medium}'.`)
+					}
+
+					if (this.db != null)
+						break;
+				}
+
+				if (this.db == null)
+					throw new Error(`Could not find a supported storage medium in ${JSON.stringify(mediumList)}.`);
 
 				try {
 					await this.db.open();
