@@ -143,7 +143,7 @@ await db.put(["people", "John Doe"], {
 
 ## `update`
 
-Updates an existing entity in the database.
+Updates an existing entity.
 
 **Usage**:
 
@@ -191,7 +191,7 @@ await db.update([], { // Update the root branch
 
 ## `delete`
 
-Deletes an entity from the database.
+Deletes an entity.
 
 **Usage**:
 
