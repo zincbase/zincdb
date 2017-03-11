@@ -32,8 +32,10 @@ namespace ZincDB {
 					} else {
 						mediumList = [options.storageMedium];
 					}
-				} else {
+				} else if (Array.isArray(options.storageMedium)) {
 					mediumList = options.storageMedium;
+				} else {
+					throw new TypeError("Invalid storage medium argument provided: must be a string or an array of strings");
 				}
 
 				for (const medium of mediumList) {
@@ -76,7 +78,7 @@ namespace ZincDB {
 							break;
 
 						default:
-							throw new Error(`Invalid storage medium encountered: '${medium}'.`)
+							throw new Error(`Invalid storage medium specified: '${medium}'.`)
 					}
 
 					if (this.db != null)
