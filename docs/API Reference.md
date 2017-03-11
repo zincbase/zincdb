@@ -6,12 +6,12 @@ The core API consists of the following methods:
 
 ```ts
 // Construction
-const db = ZincDB.open(options?);
+const db = await ZincDB.open(options?);
 
 // Write operations
 db.put(path, value)
-db.delete(path)
 db.update(path, value)
+db.delete(path)
 db.addListItem(path, value)
 db.transaction()
 
@@ -50,7 +50,7 @@ ZincDB.open(name, options?);
 * `name` (string, required): The identifier to use when persisting data in on-disk storage mediums like IndexedDB or WebSQL. The actual identifier used is additionally prefixed with "ZincDB_", i.e.. `ZincDB_<name>`.
 
 * `options` (object, optional):
-	* `remoteSyncURL` (string, optional): A full URL of a ZincServer instance to synchronize with.
+	* `remoteSyncURL` (string, optional): A URL for a datastore to synchronize with. For example, ZincServer datastore paths look like `"https://example.com:1337/datastore/MyDB"`.
 	* `remoteAccessKey` (string, optional): An access key to authenticate with the remote server. If provided, must be 32 lowercase hexadecimal characters.
 	* `encryptionKey` (string, optional): A key to encrypt or decrypt entries before and after they are pushed or pulled from the remote datastore. If provided, must be a 32 character lowercase hexadecimal string. Defaults to `undefined`.
 	* `storageMedium` (`"InMemory"`, `"OnDisk"`, `"LevelDB"`, `"IndexedDB"`, `"SQLite"`, `"WebSQL", "LocalStorage", "SessionStorage"`, or an array of storage medium identifiers, optional): Storage medium to use for local persistence. `"OnDisk"` will automatically choose the first available persistent storage medium in the order listed, or error if none is available. A custom list of fallbacks can alternatively be specified by passing an array of medium identifiers such as `["LevelDB", "WebSQL", "SQLite", "InMemory"]`. Defaults to `"InMemory"`.
@@ -568,13 +568,13 @@ Unsubscribe a handler previously set by calling `subscribe()` or `observe()`.
 db.unsubscribe(handler)
 ```
 
-**Return value**:
-
-A promise resolving when the handler has been successfully unsubscribed.
-
 **Arguments**:
 
 * `handler`: the handler function previously registered with `subscribe()` or `observe()`.
+
+**Return value**:
+
+A promise resolving when the handler has been successfully unsubscribed.
 
 ## `pullRemoteChanges`
 
