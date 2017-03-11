@@ -94,7 +94,7 @@ const db = await ZincDB.open("MyDB", {
 
 ## `put`
 
-Creates or updates a leaf node at a the given path.
+Creates or updates a leaf node at the given path.
 
 **Usage**:
 
