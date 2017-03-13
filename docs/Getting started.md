@@ -50,14 +50,14 @@ Only nodes without children (also called "leaf" nodes) can be assigned values. A
 Attempting to assign any value to the path `["a", "b"]` would now fail:
 
 ```ts
-await db.put(["a", "b"], "hi"); // Error! the path ["a", "b"] cannot be assigned as it 
+await db.put(["a", "b"], "hi"); // Error! the path ["a", "b"] cannot be assigned as it
                                 // shares hertiage with the existing leaf node ["a", "b", "c"]
 ```
 
 Similarly, attempting to assign to a child of a node previously used as a leaf node would fail:
 
 ```ts
-await db.put(["a", "b", "c", "d"], 11);// Error! the path ["a", "b", "c", "d"] cannot be assigned as it 
+await db.put(["a", "b", "c", "d"], 11);// Error! the path ["a", "b", "c", "d"] cannot be assigned as it
                                        // shares hertiage with the existing leaf node ["a", "b", "c"]
 ```
 
@@ -67,7 +67,7 @@ Leaf nodes can be assigned with any value type, including simple objects and arr
 await db.put(["a", "b", "c"], {
 	"Hello World": [
 		1, 2, 3, 4
-	] 
+	]
 });
 ```
 
@@ -85,7 +85,7 @@ returns:
 	"Hello World": [
 		1, 2, 3, 4
 	]
-} 
+}
 ````
 
 In contrast to `put()`, `get()` is more permissive and is not only limited to leaf nodes:
@@ -104,7 +104,7 @@ returning:
 			c: {
 				"Hello World": [
 					11, 22, 33, 44
-				] 
+				]
 			}
 		}
 	}
@@ -124,15 +124,15 @@ returning:
 	c: {
 		"Hello World": [
 			11, 22, 33, 44
-		] 
-	}	
+		]
+	}
 }
 ```
 
 Or even properties internal to a leaf node's value or their own descendants.
 
 ```ts
-await db.get(["a", "b", "C", "Hello World"]);
+await db.get(["a", "b", "c", "Hello World"]);
 ```
 
 returning:
@@ -144,7 +144,7 @@ returning:
 Array elements can be addressed as well, using positive integer identifiers:
 
 ```ts
-await db.get(["a", "b", "C", "Hello World", 2]);
+await db.get(["a", "b", "c", "Hello World", 2]);
 ```
 
 returning:
@@ -155,7 +155,7 @@ returning:
 
 ## `subscribe()` and `observe()`
 
-Every path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`. The two methods are identical except `observe` also includes the updated value within its change event:
+Any path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`. The two methods are identical except `observe` also includes the updated value within its change event:
 
 ```ts
 await db.subscribe(["a", "b"], (changeEvent) => {
@@ -185,7 +185,7 @@ await db.update(["a", "b"], {
 	c: {
 		"Hello World": [
 			11, 22, 33, 44, 55
-		] 
+		]
 	}
 })
 ```
@@ -199,7 +199,7 @@ await db.update([], {
 			c: {
 				"Hello World": [
 					111, 222, 333 ,444
-				] 
+				]
 			}
 		}
 	}
@@ -224,7 +224,7 @@ await db.update(["a", "b"], {
 	d: 42
 })
 
-// Error: Failed updating branch ["a", "b"]. 
+// Error: Failed updating branch ["a", "b"].
 // The supplied branch object contained a descendant object whose path could
 // not be matched in the database. To create new leaf nodes please use 'put' instead.
 ```
@@ -235,14 +235,14 @@ The `delete()` operation is exactly identical to `update(path, undefined)` excep
 
 ## `addListItem()`
 
-To create a list that is safe for editing by multiple clients, use `addListItem()`.
+To create a list that is safe for editing by multiple clients, use `addListItem()`. `addListItem` creates a leaf node with a random identifier relative to the supplied branch node, and assigned the value specified on the second argument. The returned promise resolves with generated identifier.
 
 ```ts
 const db = await ZincDB.open("MyBirthday");
 
-const key1 = await db.addListItem("Guest List", { name: "John" }); // returns "YJ5xGKqrCckRKqlZ"
-const key2 = await db.addListItem("Guest List", { name: "Dana" }); // returns "lNK7CbxfNxFAc1hj"
-const key3 = await db.addListItem("Guest List", { name: "John" }); // returns "tb0Ve0S3JTVURswh"
+const key1 = await db.addListItem("Guest List", { name: "John" }); // resolves with "YJ5xGKqrCckRKqlZ"
+const key2 = await db.addListItem("Guest List", { name: "Dana" }); // resolves with "lNK7CbxfNxFAc1hj"
+const key3 = await db.addListItem("Guest List", { name: "John" }); // resolves with "tb0Ve0S3JTVURswh"
 ```
 
 The database now looks like:
@@ -264,21 +264,21 @@ A transaction is a set of write operations executed as a single unit, such that 
 To create a new transaction use `transaction()`:
 
 ```ts
-const b = db.transaction();
+const t = db.transaction();
 ```
 
 A transaction can include an arbitrary amount of `put`, `update`, `delete` and `addListItem` operations, in any order, for example:
 
 ```ts
-b.put(["a", "b"], "hi");
-b.update(["a", "b"], "ho");
-b.update(["a", "b"], "yo");
-b.put(["a", "c"], 55);
-b.delete(["a", "b"]);
-b.addListItem(["My list"], "Danny");
-b.addListItem(["My list"], "Sara");
+t.put(["a", "b"], "hi");
+t.update(["a", "b"], "ho");
+t.update(["a", "b"], "yo");
+t.put(["a", "c"], 55);
+t.delete(["a", "b"]);
+t.addListItem(["My list"], "Danny");
+t.addListItem(["My list"], "Sara");
 ```
-(Note these methods return immediately. There's no need to use `await` for each one here)
+(Note the transaction object's methods return immediately. There's no need to use `await` for each one here)
 
 
 To finalize (or _commit_) the transaction, use `commit()`:
@@ -290,7 +290,7 @@ await b.commit();
 The transaction's methods can also be chained, so that the above can be expressed in a single expression:
 
 ```ts
-await db.transaction(
+await db.transaction()
 	.put(["a", "b"], "hi")
 	.update(["a", "b"], "ho")
 	.update(["a", "b"], "yo")
@@ -301,7 +301,7 @@ await db.transaction(
 	.commit();
 ```
 
-(Note that `appendListItem` is used here, rather than `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing transaction object instead of a string, so it can be used within a chain).
+(Note that `appendListItem` is used here, instead of `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing transaction object instead of the generated identifier, so it can be used within a chain).
 
 ## Setting up a server
 
@@ -309,7 +309,7 @@ See the [ZincServer getting started guide](https://github.com/zincbase/zincserve
 
 ## Synchronizing with a server
 
-To open a database connection which would synchronize with a remote datastore URI, for example with datastore `https://example.com:2345/datastore/MyDB` and access key `3da541559918a808c2402bba5012f6c6`, the following options would be added when calling `open`:
+To open a database connection which would synchronize with a remote datastore URL, for example with datastore `https://example.com:2345/datastore/MyDB` and access key `3da541559918a808c2402bba5012f6c6`, the following options would be added when calling `open`:
 
 ```ts
 const db = await ZincDB.open("MyDB", {
@@ -318,7 +318,7 @@ const db = await ZincDB.open("MyDB", {
 });
 ```
 
-This will set the given URI as the remote host to synchronize with. To update the local database with any unreceived remote changes, call `pullRemoteChanges`:
+This will set the given URL as the remote host to synchronize with, but would not execute any synchronization upon opening the database. To update the local database with any unreceived remote changes, call `pullRemoteChanges`:
 
 ```ts
 await db.pullRemoteChanges();
@@ -343,15 +343,15 @@ It is also possible to only transmit a subset of the updates made, by specifying
 await db.pushLocalChanges({ path: ["hi"] });
 ```
 
-This will only transmit updates applied to descendants of the path `["hi"]`. The update made to `["hi", "there"]`, and the update to `["yo", "mate"]` would remain as a pending local changes.
+This will only transmit updates applied to descendants of the path `["hi"]`. The update to `["yo", "mate"]` would remain as a pending local changes.
 
 ## Handling conflicts
 
 A conflict happens when a local update is made, but is not transmitted to the server, then a remote update for the same node is received. In most other synchronizing databases, this would usually require to resolve the conflict immediately before the received data can be written locally.
 
-ZincDB deals with these scenarios a bit differently. It has a mechanism that allows remote data to be safely, and continuously pulled from the server even if conflicting data exists locally. In such cases, both the local and remote updates would coexist internally, with the local entries temporarily "shadowing" the conflicting remote ones. The conflict is only resolved when `pushLocalChanges()` is finally called.
+ZincDB deals with these scenarios a bit differently. It has a mechanism that allows remote data to be safely, and continuously pulled from the server even if conflicting data exists locally. In such cases, both the local and remote revisions would coexist internally, with the local revisions temporarily "shadowing" the conflicting remote ones. The conflict would only be resolved when `pushLocalChanges()` is finally called.
 
-If no special resolution method is given to `pushLocalChanges`, any conflicts would be resolved by always selecting the entry with the later update time. To override this behavior, a custom handler can be specified with the `conflictHandler` option:
+By default, conflicts would be resolved by choosing the revision with the later update time. To override this behavior, a custom handler can be specified by setting the `conflictHandler` option:
 
 ```ts
 await db.pushLocalChanges({ conflictHandler: (conflictInfo) => {
