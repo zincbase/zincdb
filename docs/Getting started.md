@@ -227,7 +227,7 @@ returns:
 true
 ```
 
-And even deep properties or array elements
+And even deep properties or array elements:
 ```ts
 await db.get(["a", "b", "c", "Hello World", 5]);
 ```
