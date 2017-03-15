@@ -35,7 +35,7 @@ const db = await ZincDB.open("MyDatabase");
 
 ## Introduction: data model and layout
 
-At its lowest-level, a ZincDB database is just a simple key-value store, where keys are strings and values are arbitrary Javascript objects (a more detailed list of supported types is described towards the end of this section). It supports the familiar operations `put`, `update`, `get`, `has`, etc. and allows them to be used with string keys, e.g.:
+At its lowest level, a ZincDB database is just a simple key-value store, where keys are strings and values are arbitrary Javascript objects (a more detailed list of supported types is described towards the end of this section). It supports the familiar operations `put`, `update`, `get`, `has`, etc. and allows them to be used with string keys, e.g.:
 
 ```ts
 await db.put("key1", 12);
@@ -86,7 +86,7 @@ However, the key is internally converted to a single specifier path, with the gi
 await db.get(["accounts"]);
 ```
 
-Values can contain most basic Javascript value types. This includes strings, numbers, booleans, objects and arrays. Additionally, typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` objects are supported as well, including when deeply nested in objects or arrays. Objects including circular references are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype chain.
+Values can contain most basic Javascript types. This includes strings, numbers, booleans, objects and arrays. Additionally, typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` objects are supported as well, including when deeply nested in objects or arrays. Objects including circular references are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype chain.
 
 ## `put()`
 
