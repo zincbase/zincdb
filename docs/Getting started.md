@@ -33,9 +33,48 @@ To open a new or existing database, use `open()`:
 const db = await ZincDB.open("MyDatabase");
 ```
 
-## Storing and retrieving data
+## Introduction: Data model
 
-A ZincDB database is structured as a single object tree, starting with the root node (represented by the empty array `[]`). Nodes are specified by paths, commonly encoded as arrays of the form `["x", "y", "z", ...]`, where each array member specifies the name of the next child node to follow in the hierarchy.
+At its lowest-level, a ZincDB database is just a simple key-value store, where keys are strings and values are arbitrary Javascript objects (a list of supported types is described in detail at the end of this section). It supports the familiar operations `put`, `update`, `get`, `has` and allows them to be used with regular string keys. E.g:
+
+```ts
+await db.put("key1", 12);
+await db.put("key2", "Hello");
+await db.put("key3", [1,2,3]);
+await db.get("key2");
+await db.has("key2");
+await db.update("key3", [3,2,1]);
+```
+
+For many applications, that may be sufficient. However, for many others, there may be a need to define "categories" or rudimentary "tables" so that entries can be classified into separate groups. One common approach to extend a key-value store to support a basic form of classification, is to add prefixes to keys, which results in a "registry-like" key layout, e.g:
+
+```ts
+await db.put("permissions.read.allowed", true);
+await db.put("permissions.write.allowed", false);
+await db.put("connections.max", 12);
+await db.put("users.johndoe.profile", "visitor");
+await db.get("connections.max");
+```
+
+ZincDB tries to take this a step further by providing built-in support for record hierarchies, and by checking and enforcing their definitions and usage. However, instead of encoding and decoding this information through prefixes, it accepts arrays of strings as keys, for example:
+
+```ts
+await db.put(["permissions", "read", "allowed"], true);
+await db.put(["permissions", "write", "allowed"], false);
+await db.put(["connections", "max"], 12);
+await db.put(["users", "johndoe", "profile"], "visitor");
+await db.get(["connections", "max"]);
+```
+
+The resulting structure is very "tree-like". For example, a key like `["permissions", "read", "allowed"]` implies the intermediate paths `["permissions"]` or `["permissions", "read"]`, as addressing "branch" nodes and the entire sequence, i.e. `["permissions", "read", "allowed"]` as representing a "leaf" node (note this also lends itself to the empty array `[]` as representing the top or "root" node - which is supported by the library for lookup operations).
+
+One way this differs from a more traditional tree structure, however, is that intermediate nodes are defined _ad-hoc_, i.e. they are introduced on the basis of first-usage alone and do not require any explicit prior declaration. For example, since `["permissions"]` has already been used as an intermediate path (i.e. a "branch" node), trying to subsequently assign it its own value would result in an error:
+
+```ts
+put(["permissions"], "Hi"); // <-- Error here
+```
+
+Values can contain most Javascript values. This includes strings, numbers, booleans, objects and arrays. Additionally typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` object are supported as well, including when nested in objects or arrays. Objects including circular references, are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype(s).
 
 ## `put()`
 
@@ -45,7 +84,7 @@ The `put()` operation creates a new leaf node or replaces the value of an existi
 await db.put(["a", "b", "c"], 54);
 ```
 
-Only nodes without children (also called "leaf" nodes) can be assigned values. A path can be used as a leaf node as long as it has never been used as a prefix to another path, and doesn't extend an existing path already used as a leaf node. For example:
+Only nodes without children (also called "leaf" nodes) can be assigned values. A path can be used to address a leaf node as long as it has never been used as a prefix to another path, and doesn't extend an existing path already used as for leaf node. For example:
 
 Attempting to assign any value to the path `["a", "b"]` would now fail:
 
@@ -86,7 +125,7 @@ returns:
 		1, 2, 3, 4
 	]
 }
-````
+```
 
 In contrast to `put()`, `get()` is more permissive and is not only limited to leaf nodes:
 
@@ -153,6 +192,42 @@ returning:
 33
 ```
 
+## `has()`
+
+The `has()` operation checks for the existence of a value at a given path:
+
+```ts
+await db.has(["a", "b", "c"]);
+```
+returns:
+
+```ts
+true
+```
+
+`has` can be used to check for the existence of branch nodes:
+```ts
+await db.has(["a", "b"]);
+```
+returns:
+
+```ts
+true
+```
+
+And even deep properties or array elements
+```ts
+await db.get(["a", "b", "c", "Hello World", 5]);
+```
+returns:
+```ts
+false
+```
+
+## `getMulti()` and `hasMulti()`
+
+These allow to get or check for the existence of multiple paths. Please see the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md) for additional information.
+
 ## `subscribe()` and `observe()`
 
 Any path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`. The two methods are identical except `observe` also includes the updated value within its change event:
@@ -168,7 +243,6 @@ await db.observe(["a", "b", "c", "Hello World", 1], (changeEvent) => {
 	console.log("The value has changed to " + changeEvent.newValue + "!");
 });
 ```
-
 
 ## `update()`
 
