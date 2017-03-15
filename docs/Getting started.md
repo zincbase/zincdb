@@ -33,9 +33,9 @@ To open a new or existing database, use `open()`:
 const db = await ZincDB.open("MyDatabase");
 ```
 
-## Introduction: Data model
+## Introduction: data model and layout
 
-At its lowest-level, a ZincDB database is just a simple key-value store, where keys are strings and values are arbitrary Javascript objects (a list of supported types is described in detail at the end of this section). It supports the familiar operations `put`, `update`, `get`, `has` and allows them to be used with string keys, e.g.:
+At its lowest-level, a ZincDB database is just a simple key-value store, where keys are strings and values are arbitrary Javascript objects (a list of supported types is described in detail at the end of this section). It supports the familiar operations `put`, `update`, `get`, `has`, etc. and allows them to be used with string keys, e.g.:
 
 ```ts
 await db.put("key1", 12);
@@ -46,7 +46,7 @@ await db.has("key2");
 await db.update("key3", [3,2,1]);
 ```
 
-For many applications, that may be sufficient. However, for many others, there may be a need to define "classes" or "tables" so that entries can be partitioned into separate groups. One common approach to extend a key-value store to support classification, is to add prefixes to keys, which results in a "registry-like" key layout, e.g.:
+For many applications, that may be sufficient. However, for many others, there may be a need to define "classes" or "tables" so that entries can be partitioned into separate groups. One common approach to extend a "flat" key-value store to a more structured one, is to add prefixes to keys, which results in a "registry-like" layout, e.g.:
 
 ```ts
 await db.put("permissions.read.allowed", true);
@@ -56,7 +56,7 @@ await db.put("users.johndoe.profile", "visitor");
 await db.get("connections.max");
 ```
 
-ZincDB tries to take this a step further by providing built-in support for record hierarchies, and checks and enforces their definitions and usage. However, instead of encoding and decoding this information through prefixes, it accepts arrays of strings as keys, for example:
+ZincDB adopts this approach but tries to take this a step further by providing built-in support for record hierarchies, as well as checking and enforcing their definitions and usage. However, instead of encoding and decoding this information through prefixes, it accepts arrays of strings as keys (which are eventually serialized to plain strings), for example:
 
 ```ts
 await db.put(["permissions", "read", "allowed"], true);
@@ -66,7 +66,7 @@ await db.put(["users", "johndoe", "profile"], "visitor");
 await db.get(["connections", "max"]);
 ```
 
-The resulting structure is very "tree-like". For example, a key like `["permissions", "read", "allowed"]` implies the intermediate paths `["permissions"]` or `["permissions", "read"]`, as addressing "branch" nodes and the entire sequence, i.e. `["permissions", "read", "allowed"]` as representing a "leaf" node (note this also lends itself to the empty array `[]` as representing the top or "root" node - which is supported by the library in lookup operations as well).
+The overall resulting structure is very "tree-like". For example, a key like `["permissions", "read", "allowed"]` implies the intermediate paths `["permissions"]` or `["permissions", "read"]`, as addressing "branch" nodes and the entire sequence, i.e. `["permissions", "read", "allowed"]` as representing a "leaf" node (note this also lends itself to the empty array `[]` as representing the top or "root" node - which is supported by the library in lookup operations as well).
 
 One way this differs from a more traditional tree structure, however, is that intermediate nodes are defined _ad-hoc_, i.e. they are introduced on the basis of first-usage alone and do not require any explicit prior declaration. For example, since `["permissions"]` has already been used as an intermediate path (i.e. a "branch" node), trying to subsequently assign it its own value would result in an error:
 
@@ -74,7 +74,18 @@ One way this differs from a more traditional tree structure, however, is that in
 wait put(["permissions"], "hi"); // <-- Error here
 ```
 
-Values can contain most basic Javascript value types. This includes strings, numbers, booleans, objects and arrays. Additionally, typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` objects are supported as well, including when deeply nested in objects or arrays. Objects including circular references are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype(s).
+Values can contain most basic Javascript value types. This includes strings, numbers, booleans, objects and arrays. Additionally, typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` objects are supported as well, including when deeply nested in objects or arrays. Objects including circular references are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype chain.
+
+Note that when plain strings are used as specifiers, e.g.:
+
+```ts
+await db.get("accounts");
+```
+the key is internally converted to a single node path, with the given key as the first specifier, e.g. the above is exactly identical to:
+
+```ts
+await db.get(["accounts"]);
+```
 
 ## `put()`
 
