@@ -56,7 +56,7 @@ await db.put("users.johndoe.profile", "visitor");
 await db.get("connections.max");
 ```
 
-ZincDB adopts this approach but tries to take it a step further by providing built-in support for _paths_, which are sequences of identifiers that allow to define groupings and hierarchies. However, instead of encoding and decoding this information through prefixes, it accepts arrays of strings (which are eventually serialized to plain strings internally), for example:
+ZincDB adopts this approach but tries to take it a step further by providing built-in support for _paths_, which are sequences of identifiers that allow to define groupings and hierarchies. However, instead of encoding and decoding this information through prefixes, it accepts arrays of strings (which are eventually serialized to plain strings internally) in place of string keys, for example:
 
 ```ts
 await db.put(["permissions", "read", "allowed"], true);
@@ -68,13 +68,11 @@ await db.get(["connections", "max"]);
 
 The overall resulting structure is very "tree-like". For example, if a path like `["permissions", "read", "allowed"]` is assigned a value it tends to resemble a "leaf" node. This also suggests the intermediate paths `["permissions"]` or `["permissions", "read"]`, would specify something akin to "branch" nodes, and the empty array `[]` as representing the top or "root" node - which is in fact supported by the library in lookup operations as well.
 
-One way this differs from a more traditional tree structures, however, is that intermediate nodes are defined _ad-hoc_, i.e. they are introduced on the basis of first-usage alone and do not require any explicit prior declaration. For example, since `["permissions"]` has already been used as an intermediate path (i.e. a "branch" node), trying to subsequently assign it its own value would result in an error:
+One way this differs from more traditional tree structures, however, is that intermediate nodes are defined _ad-hoc_, i.e. they are introduced on the basis of first-usage alone and do not require any explicit prior declaration. For example, since `["permissions"]` has already been used as an intermediate path (i.e. a "branch" node), trying to subsequently assign it its own value would result in an error:
 
 ```ts
-wait put(["permissions"], "hi"); // <-- Error here
+await put(["permissions"], "hi"); // <-- Error here
 ```
-
-Values can contain most basic Javascript value types. This includes strings, numbers, booleans, objects and arrays. Additionally, typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` objects are supported as well, including when deeply nested in objects or arrays. Objects including circular references are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype chain.
 
 Note that plain strings can still be used as specifiers, e.g.:
 
@@ -87,6 +85,8 @@ However, the key is internally converted to a single specifier path, with the gi
 ```ts
 await db.get(["accounts"]);
 ```
+
+Values can contain most basic Javascript value types. This includes strings, numbers, booleans, objects and arrays. Additionally, typed arrays (`ArrayBuffer`, `Uint8Array`, `Int16Array` etc.), `Date` and `RegExp` objects are supported as well, including when deeply nested in objects or arrays. Objects including circular references are not supported and would result in an error when stored. Objects having prototypes other than `Object` would be simplified to basic objects, ignoring any properties originating from their prototype chain.
 
 ## `put()`
 
