@@ -46,27 +46,27 @@ await db.has("key2");
 await db.update("key3", [3,2,1]);
 ```
 
-For many applications, that may be sufficient. However, for many others, there might be a need to define "classes" or "tables" so that keys can be partitioned into separate groups. One common approach to extend a "flat" key-value store to a more structured one, is to add prefixes to keys, which results in a "registry-like" layout, e.g.:
+For many applications, that may be sufficient (if that is the case for your particular needs, feel free to lightly skim over this article). However, for many others, there might be a need to define "classes" or "tables" so that keys can be partitioned into separate groups. One common approach to extend a "flat" key-value store to a more structured one, is to add prefixes to keys, which results in a "registry-like" layout, e.g.:
 
 ```ts
 await db.put("permissions.read.allowed", true);
 await db.put("permissions.write.allowed", false);
 await db.put("connections.max", 12);
-await db.put("users.johndoe.profile", "visitor");
+await db.put("users.johndoe.profileName", "visitor");
 await db.get("connections.max");
 ```
 
-ZincDB adopts this approach but tries to take it a step further by providing built-in support for _paths_, which are sequences of identifiers that allow to define groupings and hierarchies between records. However, instead of encoding and decoding this information through prefixes, it accepts arrays of strings (which are eventually serialized to plain strings internally) in place of string keys, for example:
+ZincDB adopts this general approach, and tries to take it a step further by providing built-in support for _paths_, which are sequences of identifiers that describe groupings and hierarchies between records. However, instead of encoding this information within strings, it accepts arrays of strings (which are eventually internally serialized to plain strings), for example:
 
 ```ts
 await db.put(["permissions", "read", "allowed"], true);
 await db.put(["permissions", "write", "allowed"], false);
 await db.put(["connections", "max"], 12);
-await db.put(["users", "johndoe", "profile"], "visitor");
+await db.put(["users", "johndoe", "profileName"], "visitor");
 await db.get(["connections", "max"]);
 ```
 
-The overall resulting structure is very "tree-like". For example, if a path like `["permissions", "read", "allowed"]` is assigned a value it tends to resemble a "leaf" node. This also suggests the intermediate paths `["permissions"]` and `["permissions", "read"]`, would specify something akin to "branch" nodes, and the empty array `[]` as representing the top or "root" node - which is in fact supported by the library in lookup operations as well. This terminology (i.e. "root", "branch", "leaf" nodes) is frequently used throughout this document as well as within the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md).
+The overall resulting structure is very "tree-like". For example, if a path like `["permissions", "read", "allowed"]` is assigned a value it tends to resemble a "leaf" node. This also suggests the intermediate paths `["permissions"]` and `["permissions", "read"]`, would reference something akin to "branch" nodes, and the empty array `[]` as representing the top or "root" node - which is in fact supported by the library in lookup operations as well. This terminology (i.e. "root", "branch", "leaf" nodes) is frequently used throughout this document as well as within the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md).
 
 One way this differs from more traditional tree structures, however, is that intermediate nodes are defined _ad-hoc_, i.e. they are introduced on the basis of first-usage alone and do not require any explicit prior declaration. For example, since `["permissions"]` has already been used as an intermediate path (i.e. a "branch" node), trying to subsequently assign it its own value would result in an error:
 
@@ -74,13 +74,13 @@ One way this differs from more traditional tree structures, however, is that int
 await put(["permissions"], "hi"); // <-- Error here
 ```
 
-Note that plain strings can still be used as specifiers, e.g.:
+Note that plain strings can still be used as keys, e.g.:
 
 ```ts
 await db.get("accounts");
 ```
 
-However, the key is internally converted to a single specifier path, with the given key as the first specifier, e.g. the above is exactly identical to:
+However, the key is internally converted to a single specifier path, with the given string as the first specifier, thus is exactly identical to:
 
 ```ts
 await db.get(["accounts"]);
@@ -96,7 +96,7 @@ The `put()` operation creates a new leaf node or replaces the value of an existi
 await db.put(["a", "b", "c"], 54);
 ```
 
-Only nodes without children (also called "leaf" nodes) can be assigned values. A path can be used to address a leaf node as long as it has never been used as a prefix to another path, and doesn't extend an existing path already used as a leaf node. For example:
+Only nodes without children (also called "leaf" nodes) can be assigned values. A path can be used for a leaf node as long as it has never been used as a prefix to another path, and doesn't extend an existing path already used as a leaf node. For example:
 
 Attempting to assign any value to the path `["a", "b"]` would now fail:
 
@@ -141,7 +141,7 @@ returns:
 
 In contrast to `put()`, `get()` is more permissive and is not only limited to leaf nodes:
 
-The value of the root node itself can be retrieved, where its children and their descendants would be rendered as object properties.
+The value of the root node itself can be retrieved, where its children and their descendants would be rendered as nested object properties.
 
 ```ts
 await db.get([]);
@@ -238,20 +238,20 @@ false
 
 ## `getMulti()` and `hasMulti()`
 
-These allow to get or check for the existence of multiple paths. Please see the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md) for additional information.
+These methods allow to get or check for the existence of multiple paths. Please see the [API Reference](https://github.com/zincbase/zincdb/blob/master/docs/API%20Reference.md) for additional information.
 
 ## `subscribe()` and `observe()`
 
-Any path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`. The two methods are identical except `observe` also includes the updated value within its change event:
+Any path that can be retrieved using `get()` can also be subscribed for updates using `subscribe()` or `observe()`. The two methods are identical except `observe` also includes the updated value (`newValue` property) within its change event:
 
 ```ts
-await db.subscribe(["a", "b"], (changeEvent) => {
+db.subscribe(["a", "b"], (changeEvent) => {
 	console.log("Some changes occurred:", changeEvent.changes);
 });
 ```
 
 ```ts
-await db.observe(["a", "b", "c", "Hello World", 1], (changeEvent) => {
+db.observe(["a", "b", "c", "Hello World", 1], (changeEvent) => {
 	console.log("The value has changed to " + changeEvent.newValue + "!");
 });
 ```
@@ -276,7 +276,13 @@ await db.update(["a", "b"], {
 })
 ```
 
-The root node itself:
+Properties of leaf values:
+
+```ts
+await db.update(["a", "b", "c", "Hello World", 1], "yo")
+```
+
+Or even the root node itself:
 
 ```ts
 await db.update([], {
@@ -290,12 +296,6 @@ await db.update([], {
 		}
 	}
 })
-```
-
-Properties of leaf values:
-
-```ts
-await db.update(["a", "b", "c", "Hello World", 1], "yo")
 ```
 
 However it doesn't allow adding new leaf nodes:
@@ -314,6 +314,17 @@ await db.update(["a", "b"], {
 // The supplied branch object contained a descendant object whose path could
 // not be matched in the database. To create new leaf nodes please use 'put' instead.
 ```
+
+In practice, it is most convenient to use `update()` after modifying a value acquired using `get()`:
+
+```ts
+const b = await db.get(["a", "b"]);
+b.c["Hello World"][0] = 99;
+// ... more updates ...
+await db.update(["a", "b"], b)
+```
+
+The `update()` operation would internally compare the new value with the current one and would compile the minimal set of `put` operations needed to transform the old value to the new one.
 
 ## `delete()`
 
@@ -370,7 +381,7 @@ t.addListItem(["My list"], "Sara");
 To finalize (or _commit_) the transaction, use `commit()`:
 
 ```ts
-await b.commit();
+await t.commit();
 ```
 
 The transaction's methods can also be chained, so that the above can be expressed in a single expression:
@@ -387,7 +398,7 @@ await db.transaction()
 	.commit();
 ```
 
-(Note that `appendListItem` is used here, instead of `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing transaction object instead of the generated identifier, so it can be used within a chain).
+(Note that `appendListItem` is used here instead of `addListItem`. The two methods are functionally identical, except that `appendListItem` returns the containing transaction object instead of the generated identifier, so it can be used within a chain).
 
 ## Setting up a server
 
