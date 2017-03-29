@@ -22,6 +22,7 @@ namespace ZincDB {
 			webWorkerURI?: string;
 			verifyServerCertificate?: boolean;
 			storagePath?: string;
+			requestTimeout?: number;
 		}
 
 		export type ConflictInfo = {

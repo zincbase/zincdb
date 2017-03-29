@@ -39,14 +39,16 @@ namespace ZincDB {
 					pullAfterOpened: false,
 					webWorkerURI: undefined,
 					verifyServerCertificate: true,
-					storagePath: ""
+					storagePath: "",
+					requestTimeout: 3000,
 				}, customOptions);
 
 				this.syncClient = new Client<any>({
 					datastoreURL: this.options.remoteSyncURL,
 					accessKey: this.options.remoteAccessKey,
 					encryptionKey: this.options.encryptionKey,
-					verifyServerCertificate: this.options.verifyServerCertificate
+					verifyServerCertificate: this.options.verifyServerCertificate,
+					timeout: this.options.requestTimeout
 				});
 
 				if (this.options.useWorker && runningInNodeJS()) {

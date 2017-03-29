@@ -2,11 +2,12 @@ namespace ZincDB {
 	export namespace DB {
 		export type ClientOptions = {
 			datastoreURL: string;
-			encryptionKey?: string;
 			accessKey?: string;
+			encryptionKey?: string;
 			verifyServerCertificate?: boolean;
 			verifyChecksums?: boolean;
 			addChecksums?: boolean;
+			timeout?: number;
 		}
 
 		export type WriteResponseObject = {
@@ -22,6 +23,18 @@ namespace ZincDB {
 			private abortSignalSource = new SignalSource();
 
 			constructor(public options: ClientOptions) {
+				//if (!options || typeof options.datastoreURL !== "string" || options.datastoreURL === "")
+				//	throw new TypeError("Client constructor: options argument must be passed and specify a valid 'datastoreURL' property");
+
+				options = ObjectTools.override({
+					datastoreURL: "",
+					accessKey: undefined,
+					encryptionKey: undefined,
+					verifyServerCertificate: true,
+					verifyChecksums: false,
+					addChecksums: false,
+					timeout: 0,
+				}, options);
 			}
 
 			async read(options: { updatedAfter?: number, compactResults?: boolean, waitUntilNonempty?: boolean } = {}): Promise<EntryArray<V>> {
@@ -43,7 +56,8 @@ namespace ZincDB {
 					method: "GET",
 					responseType: "arraybuffer",
 					abortSignalSource: this.abortSignalSource,
-					verifyServerCertificate: this.options.verifyServerCertificate
+					verifyServerCertificate: this.options.verifyServerCertificate,
+					timeout: options.waitUntilNonempty === true ? 0 : this.options.timeout
 				});
 			}
 
@@ -64,7 +78,8 @@ namespace ZincDB {
 					method: "POST",
 					body: content,
 					abortSignalSource: this.abortSignalSource,
-					verifyServerCertificate: this.options.verifyServerCertificate
+					verifyServerCertificate: this.options.verifyServerCertificate,
+					timeout: this.options.timeout
 				})
 
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
@@ -86,7 +101,8 @@ namespace ZincDB {
 					method: "PUT",
 					body: content,
 					abortSignalSource: this.abortSignalSource,
-					verifyServerCertificate: this.options.verifyServerCertificate
+					verifyServerCertificate: this.options.verifyServerCertificate,
+					timeout: this.options.timeout
 				})
 
 				return Client.parseJSONObjectFromResponseBody<WriteResponseObject>(response);
@@ -97,7 +113,8 @@ namespace ZincDB {
 					url: this.buildRequestURL(),
 					method: "DELETE",
 					abortSignalSource: this.abortSignalSource,
-					verifyServerCertificate: this.options.verifyServerCertificate
+					verifyServerCertificate: this.options.verifyServerCertificate,
+					timeout: this.options.timeout
 				});
 			}
 

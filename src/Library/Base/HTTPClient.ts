@@ -8,7 +8,7 @@ namespace ZincDB {
 
 		let keepAliveNodeHTTPAgent: http.Agent;
 		let keepAliveNodeHTTPSAgent: https.Agent;
-		
+
 		export const requestAndErrorOnUnexpectedResponse = async function(options: OptionalizedHTTPRequestOptions): Promise<HTTPClientResponse> {
 			const response = await request(<any> options);
 
@@ -67,10 +67,10 @@ namespace ZincDB {
 		export const requestUsingXMLHttpRequest = async function(options: HTTPRequestOptions): Promise<HTTPClientResponse> {
 			const requestPromise = new OpenPromise<HTTPClientResponse>();
 			const httpRequest = new XMLHttpRequest();
-			
+
 			if (options.body != null && typeof options.body !== "string" && !(options.body instanceof Uint8Array))
 				requestPromise.reject(new Error("Only string and Uint8Array body types are supported at the browser platform"));
-			
+
 			httpRequest.open(options.method, options.url, true);
 			httpRequest.withCredentials = options.sendCrossDomainCredentials;
 			httpRequest.timeout = options.timeout;
@@ -287,8 +287,6 @@ namespace ZincDB {
 			abortSignalSource: SignalSource;
 			verifyServerCertificate: boolean;
 		}
-	
-	//export type Optionalize<T> = { [P in keyof T]?: T[P]; };
 
 	export type OptionalizedHTTPRequestOptions = Partial<HTTPRequestOptions>;
 

@@ -15,8 +15,11 @@ const client = new ZincDB.Client(options)
 
 * `remoteDatastoreURL` (string, required): the URL for the datastore.
 * `accessKey` (string, optional): an access key for the remote datastore, if needed. If specified, must be 40 lowercase hexadecimal characters (160 bits).
-* `encryptionKey` (string, optional): an encryption key to locally encrypt individual entries before submitting them to the server. The key would be used to decrypt any encrypted entry received. If provided, must be 32 lowercase hexadecimal characters (representing a 128 bit binary key). 
-* `verifyServerCertificate` (boolean, optional). verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.
+* `encryptionKey` (string, optional): an encryption key to locally encrypt individual entries before submitting them to the server. The key would be used to decrypt any encrypted entry received. If provided, must be 32 lowercase hexadecimal characters (representing a 128 bit binary key).
+* `verifyServerCertificate` (boolean, optional): verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.
+* `verifyChecksums` (boolean, optional). Verify checksums of serialized incoming data. Defaults to `false`.
+* `addChecksums` (boolean, optional). Add checksums when serializing outgoing data. Defaults to `false`.
+* `timeout` (number in milliseconds, optional): Timeout for HTTP(S) requests. Does not apply for WebSockets. Does not apply when calling `read` and `waitUntilNonempty` is set to `true`. Defaults to `0` (infinite).
 
 **Example**:
 
@@ -45,17 +48,17 @@ client.read(options?)
 * `options` is an object including the properties:
 	* `updatedAfter` (number, optional): Return entries updated after a given time (microsecond epoch time). Defaults to `0`.
 	* `compactResults` (boolean, optional): Compact results after they are received so only the latest revision to a key is included in the returned results. Defaults to `true`.
-	* `waitUntilNonempty` (boolean, optional): If no entries currently satisfy the request, ask the server to wait until at least one is available before returning. This is used to achieve the COMET pattern. Defaults to `false`.	 
+	* `waitUntilNonempty` (boolean, optional): If no entries currently satisfy the request, ask the server to wait until at least one is available before returning. This is used to achieve the COMET pattern. Defaults to `false`.
 
 **Returns:** A promise resolving to an array of entry objects, of the form:
 
 ```ts
 [
-	{ key: ..., value: ..., metadata: ... }, 
-	{ key: ..., value: ..., metadata: ... }, 
-	{ key: ..., value: ..., metadata: ... }, 
+	{ key: ..., value: ..., metadata: ... },
+	{ key: ..., value: ..., metadata: ... },
+	{ key: ..., value: ..., metadata: ... },
 	...
-] 
+]
 ```
 
 ## `readRaw`
@@ -70,11 +73,11 @@ Open a websocket to the server and receive current and future revisions.
 
 ```ts
 client.openWebsocketReader(options, resultsCallback)
-``` 
+```
 
 **Arguments:**
 
-* `options` is an object containing the properties: 
+* `options` is an object containing the properties:
 	* `updatedAfter` (number, optional): Return entries updated after a given time (microsecond epoch time). Defaults to `0`. This may include both future and past updates.
 	* `compactResults` (boolean, optional): Compact results after they are received so only the latest revision for each key is included in the returned results. Defaults to `true`.
 * `resultsCallback` is a function to be called whenever new results are available.
@@ -84,7 +87,7 @@ function resultsCallback(results) {
 	...
 }
 ```
-Where `results` is an entry object of the same form returned by the `read` method. 
+Where `results` is an entry object of the same form returned by the `read` method.
 
 The callback function can optionally return a promise to defer its resolution, e.g.:
 
@@ -98,7 +101,7 @@ function resultsCallback(results) {
 }
 ```
 
-If a promise is returned from the callback, subsequent callbacks are guaranteed to be executed serially. I.e. if an update has been received before the execution of a the previous callback has finished, the next one(s) would be queued. 
+If a promise is returned from the callback, subsequent callbacks are guaranteed to be executed serially. I.e. if an update has been received before the execution of a the previous callback has finished, the next one(s) would be queued.
 
 **Returns:**
 A promise that resolves when the websocket has been closed or rejects when an error occurred.
@@ -127,8 +130,8 @@ client.write(revisions)
 ```ts
 [
 	{ key: ..., value: ..., metadata: ... },
-	{ key: ..., value: ..., metadata: ... }, 
-	{ key: ..., value: ..., metadata: ... }, 
+	{ key: ..., value: ..., metadata: ... },
+	{ key: ..., value: ..., metadata: ... },
 	...
 ]
 ```
@@ -136,8 +139,8 @@ client.write(revisions)
 **Returns:** A promise resolving to a transaction response of object of the form:
 
 ```ts
-{ 
-	commitTimestamp: ... 
+{
+	commitTimestamp: ...
 }
 ```
 
@@ -172,7 +175,7 @@ Sends a `DELETE` request to the server, to permanently destroy the remote datast
 
 ```ts
 client.destroyRemoteData()
-``` 
+```
 
 **Returns:** A promise resolving when the operation has completed.
 
@@ -184,6 +187,6 @@ Abort all active requests made by this client object. This would also close any 
 
 ```ts
 client.abortActiveRequests()
-``` 
+```
 
-**Returns:** A promise resolving when the operation has completed. 
+**Returns:** A promise resolving when the operation has completed.

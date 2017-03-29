@@ -85,6 +85,4 @@ namespace ZincDB {
 
 		abstract getFloat(): number;
 	}
-
-
 }
