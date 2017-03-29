@@ -40,7 +40,7 @@ namespace ZincDB {
 					webWorkerURI: undefined,
 					verifyServerCertificate: true,
 					storagePath: "",
-					requestTimeout: 3000,
+					requestTimeout: 10000,
 				}, customOptions);
 
 				this.syncClient = new Client<any>({

@@ -58,7 +58,7 @@ ZincDB.open(name, options?);
 	* `webWorkerURI` (string, optional): A URI or relative script path to load a web worker from. If not specified, the current `document` would be searched for a script tag with an `id` of `zincdb` and its `src` attribute would be used. Only relevant when running in a browser, ignored in Node.js.
 	* `verifyServerCertificate` (boolean, optional). Verify the server's TLS certificate. This is only applicable when running in Node.js. Defaults to `true`.
 	* `storagePath` (string, optional). A storage directory path for SQLite and LevelDB databases. This is only applicable when running in Node.js and `storageMedium` is set to `"SQLite"`, `"LevelDB"` or `"OnDisk"`. Defaults to current working directory.
-	* `requestTimeout` (number in milliseconds, optional): Timeout for internal HTTP(S) requests. Does not apply when calling `pullRemoteChanges` and `continuous` is set to `true` (for which the timeout is infinite). Defaults to `3000`.
+	* `requestTimeout` (number in milliseconds, optional): Timeout for internal HTTP(S) requests. Does not apply when calling `pullRemoteChanges` and `continuous` is set to `true` (for which the timeout is infinite). Defaults to `10000` (10 seconds).
 
 **Return value**:
 
