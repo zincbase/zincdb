@@ -15,6 +15,10 @@ namespace ZincDB {
 		return typeof window === "undefined" && typeof self === "object" && typeof self.addEventListener === "function" && typeof self.close === "function";
 	}
 
+	export const runningInServiceWorker = function () {
+		return runningInWebWorker() && "clients" in self && "registration" in self && "skipWaiting" in self;
+	}
+
 	export const runningInNodeChildProcess = function () {
 		return runningInNodeJS() && typeof process.send === "function";
 	}

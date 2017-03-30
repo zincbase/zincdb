@@ -43,7 +43,7 @@ namespace ZincDB {
 		}
 
 		const initializeIfRunningInWebWorker = function () {
-			if (!runningInWebWorker())
+			if (!runningInWebWorker() || runningInServiceWorker())
 				return;
 
 			const targets: { [databaseName: string]: MethodDispatcher } = {};
