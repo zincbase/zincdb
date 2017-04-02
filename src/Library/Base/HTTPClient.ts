@@ -9,8 +9,8 @@ namespace ZincDB {
 		let keepAliveNodeHTTPAgent: http.Agent;
 		let keepAliveNodeHTTPSAgent: https.Agent;
 
-		export const requestAndErrorOnUnexpectedResponse = async function(options: OptionalizedHTTPRequestOptions): Promise<HTTPClientResponse> {
-			const response = await request(<any> options);
+		export const requestAndErrorOnUnexpectedResponse = async function (options: OptionalizedHTTPRequestOptions): Promise<HTTPClientResponse> {
+			const response = await request(<any>options);
 
 			if (response.statusCode >= 400) {
 				let body: string;
@@ -26,7 +26,7 @@ namespace ZincDB {
 			return response;
 		}
 
-		export const request = async function(options: HTTPRequestOptions): Promise<HTTPClientResponse> {
+		export const request = async function (options: HTTPRequestOptions): Promise<HTTPClientResponse> {
 			const defaultOptions: HTTPRequestOptions =
 				{
 					url: "",
@@ -56,15 +56,20 @@ namespace ZincDB {
 			if (options.method === "GET")
 				options.body = undefined;
 
+			if (typeof navigator === "object" && navigator.onLine === false)
+				throw new NetworkError(`Cannot connect to ${options.url}. No internet connection is available.`);
+
 			if (runningInNodeJS())
-				return await HTTPClient.requestUsingNodeHTTPModules(options);
+				return HTTPClient.requestUsingNodeHTTPModules(options);
 			else if (typeof XMLHttpRequest === "function" || typeof XMLHttpRequest === "object")
-				return await HTTPClient.requestUsingXMLHttpRequest(options);
+				return HTTPClient.requestUsingXMLHttpRequest(options);
+			else if (typeof fetch === "function" && typeof Request == "function" && typeof Response == "function" && typeof Headers === "function")
+				return HTTPClient.requestUsingFetch(options);
 			else
 				throw new Error(`No supported HTTP module found`);
 		}
 
-		export const requestUsingXMLHttpRequest = async function(options: HTTPRequestOptions): Promise<HTTPClientResponse> {
+		export const requestUsingXMLHttpRequest = async function (options: HTTPRequestOptions): Promise<HTTPClientResponse> {
 			const requestPromise = new OpenPromise<HTTPClientResponse>();
 			const httpRequest = new XMLHttpRequest();
 
@@ -108,14 +113,13 @@ namespace ZincDB {
 				else
 					responseBody = httpRequest.response;
 
-				const responseObject: HTTPClientResponse =
-					{
-						headers: responseHeaders,
-						body: responseBody,
-						responseType: <any>httpRequest.responseType,
-						statusCode: httpRequest.status,
-						statusText: httpRequest.statusText,
-					};
+				const responseObject: HTTPClientResponse = {
+					headers: responseHeaders,
+					body: responseBody,
+					responseType: <any>httpRequest.responseType,
+					statusCode: httpRequest.status,
+					statusText: httpRequest.statusText,
+				};
 
 				requestPromise.resolve(responseObject);
 			});
@@ -147,7 +151,60 @@ namespace ZincDB {
 			return requestPromise;
 		}
 
-		export const requestUsingNodeHTTPModules = async function(options: HTTPRequestOptions): Promise<HTTPClientResponse> {
+		export const requestUsingFetch = async function (options: HTTPRequestOptions): Promise<HTTPClientResponse> {
+			const fetchRequestHeaders = new Headers();
+
+			for (const key in options.requestHeaders) {
+				fetchRequestHeaders.set(key, options.requestHeaders[key]);
+			}
+
+			if (options.body instanceof Uint8Array) {
+				fetchRequestHeaders.set("Content-Type", "multipart/form-data");
+			}
+
+			let fetchResponse: Response;
+
+			try {
+				fetchResponse = await fetch(options.url, {
+					//mode: "cors",
+					method: options.method,
+					headers: fetchRequestHeaders,
+					body: options.body,
+				});
+			}
+			catch (e) {
+				throw new NetworkError(`${options.method} request to '${options.url}' encountered a network error: ${createErrorMessage(e)}`);
+			}
+
+			const responseHeaders: { [key: string]: string } = {};
+			const fetchResponseHeaders = fetchResponse.headers;
+
+			if (fetchResponseHeaders.forEach) {
+				fetchResponseHeaders.forEach((value, key) => {
+					responseHeaders[key] = value;
+				});
+			}
+
+			let responseBody: string | Uint8Array;
+
+			if (options.responseType === "text") {
+				responseBody = await fetchResponse.text()
+			} else {
+				responseBody = new Uint8Array(await fetchResponse.arrayBuffer());
+			}
+
+			const responseObject: HTTPClientResponse = {
+				headers: responseHeaders,
+				body: responseBody,
+				responseType: <any>options.responseType,
+				statusCode: fetchResponse.status,
+				statusText: fetchResponse.statusText,
+			};
+
+			return responseObject;
+		}
+
+		export const requestUsingNodeHTTPModules = async function (options: HTTPRequestOptions): Promise<HTTPClientResponse> {
 			if (!keepAliveNodeHTTPAgent)
 				keepAliveNodeHTTPAgent = new NodeHTTP.Agent({ keepAlive: true });
 
@@ -290,7 +347,7 @@ namespace ZincDB {
 
 	export type OptionalizedHTTPRequestOptions = Partial<HTTPRequestOptions>;
 
-	export interface HTTPClientResponse {
+	export type HTTPClientResponse = {
 		httpVersion?: string;
 		statusCode: number;
 		statusText: string;

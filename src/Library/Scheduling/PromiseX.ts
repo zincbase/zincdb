@@ -42,7 +42,7 @@ namespace ZincDB {
 			resolveFunc = resolve;
 			rejectFunc = reject;
 		});
-		
+
 		newPromise.resolve = resolveFunc;
 		newPromise.reject = rejectFunc;
 		newPromise.cancel = () => newPromise.reject(new PromiseCanceledError());
