@@ -10,6 +10,7 @@ namespace ZincDB {
 			protected readonly operations: Dispatcher<LocalDBOperationsSchema>;
 			protected readonly subscriberEntries: Map<string, SubscriptionTarget> = new StringMap<SubscriptionTarget>();
 			isClosed: boolean = false;
+			continuousRemoteChangesSyncRunning: boolean = false;
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// Initialization operations
@@ -326,6 +327,12 @@ namespace ZincDB {
 				options = ObjectTools.override({ continuous: false, useWebSocket: webSocketsAvailable() }, options);
 
 				if (options.continuous) {
+					if (this.continuousRemoteChangesSyncRunning) {
+						throw new Error("Continuous remote changes sync is already running");
+					}
+
+					this.continuousRemoteChangesSyncRunning = true;
+
 					if (options.useWebSocket && webSocketsAvailable())
 						await this.startWebsocketRemoteChangesSync();
 					else
