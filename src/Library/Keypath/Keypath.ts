@@ -3,7 +3,7 @@ namespace ZincDB {
 		//const getObjectType = (o: any): string => Object.prototype.toString.call(o);
 
 		export type Keypath = (string | number)[];
-		export type EntityPath = Keypath;		
+		export type EntityPath = Keypath;
 		export type KeypathAndValue = { path: Keypath, value: any };
 		export type NodePath = string[];
 
@@ -12,10 +12,10 @@ namespace ZincDB {
 		export const parse = function(keypathString: string): Keypath {
 			if (typeof keypathString !== "string")
 				throw new Error("Keypath argument is missing or not a string");
-			
+
 			if (keypathString === "")
 				return [];
-				
+
 			const parsedKeypath: Keypath = [];
 
 			let remainderString = keypathString;
@@ -23,10 +23,10 @@ namespace ZincDB {
 
 			while (remainderString.length > 0) {
 				const match = specifierRegExp.exec(remainderString);
-				
+
 				if (match == null)
 					throw new Error(`Invalid keypath '${keypathString}'. Parser error at offset ${offset}. No match found.`);
-				
+
 				const matchLength = match[0].length;
 
 				if (match[0][1] === "'") {
@@ -60,10 +60,10 @@ namespace ZincDB {
 		export const stringify = function(keypath: Keypath): string {
 			if (!Array.isArray(keypath))
 				throw new TypeError("The given argument is not an array");
-			
+
 			if (keypath.length === 0)
 				return "";
-				
+
 			let result = "";
 
 			for (const key of keypath) {
@@ -165,17 +165,31 @@ namespace ZincDB {
 			const key = keypath[keypathOffset];
 
 			if (typeof key === "number") {
-				if (!(obj instanceof Array))
+				if (!(obj instanceof Array)) {
+					if (value === undefined)
+						return obj;
+
 					obj = [];
+				}
 			} else {
-				if (typeof obj !== "object" || obj instanceof Array)
+				if (typeof obj !== "object" || obj instanceof Array) {
+					if (value === undefined)
+						return obj;
+
 					obj = {};
+				}
 			}
 
+			const currentValue = obj[key];
+			let newValue: any;
+
 			if (keypathOffset === keypathLength - 1)
-				obj[key] = value;
+				newValue = value;
 			else
-				obj[key] = patchObject(obj[key], keypath, value, keypathOffset + 1);
+				newValue = patchObject(currentValue, keypath, value, keypathOffset + 1);
+
+			if (newValue !== undefined || currentValue !== undefined)
+				obj[key] = newValue;
 
 			return obj;
 		}
@@ -189,22 +203,38 @@ namespace ZincDB {
 			const key = keypath[keypathOffset];
 
 			if (typeof key === "number") {
-				if (!(obj instanceof Array))
+				if (!(obj instanceof Array)) {
+					if (value === undefined)
+						return obj;
+
 					obj = [];
-				else
+				}
+				else {
 					obj = obj.slice(0);
+				}
 			} else {
-				if (typeof obj !== "object" || obj instanceof Array)
+				if (typeof obj !== "object" || obj instanceof Array) {
+					if (value === undefined)
+						return obj;
+
 					obj = {};
-				else
+				}
+				else {
 					obj = { ...obj };
+				}
 			}
 
-			if (keypathOffset === keypathLength - 1)
-				obj[key] = value;
-			else
-				obj[key] = patchImmutableObject(obj[key], keypath, value, keypathOffset + 1);
+			const currentValue = obj[key];
+			let newValue: any;
 
+			if (keypathOffset === keypathLength - 1)
+				newValue = value;
+			else
+				newValue = patchImmutableObject(currentValue, keypath, value, keypathOffset + 1);
+
+			if (newValue !== undefined || currentValue !== undefined)
+				obj[key] = newValue;
+				
 			return obj;
 		}
 
@@ -250,10 +280,10 @@ namespace ZincDB {
 			const compareElements = (count: number) => {
 				for (let i = 0; i < count; i++) {
 					if (keypath1[i] !== keypath2[i])
-						return false;			
+						return false;
 				}
 
-				return true;	
+				return true;
 			}
 
 			// Note the arguments are not checked to be valid encoded keypaths
@@ -274,7 +304,7 @@ namespace ZincDB {
 					return Relationship.None;
 			}
 		}
-		
+
 		export const determineStringRelationship = function(keypath1: string, keypath2: string): Relationship {
 			// Note the arguments are not checked to be valid encoded keypaths
 			if (keypath1.length === keypath2.length) {
@@ -298,7 +328,7 @@ namespace ZincDB {
 		export const areEqual = function(keypath1: Keypath, keypath2: Keypath): boolean {
 			if (keypath1 === keypath2)
 				return true;
-				 
+
 			if (keypath1.length !== keypath2.length)
 				return false;
 
@@ -314,7 +344,7 @@ namespace ZincDB {
 			// If one specifier is number and the other is string, the number is always considered greater.
 			// This is to be consistent with the lexicographical sort of the string encoding:
 			// The character ' is smaller than all numberic digits, e.g:
-			// ['hello'] 
+			// ['hello']
 			// <
 			// [0]
 

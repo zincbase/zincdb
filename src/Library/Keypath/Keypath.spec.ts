@@ -302,6 +302,18 @@ namespace ZincDB {
 
 					expect(patch(obj, [1, "ccc", 0, "YO"], "HI")).toEqual(expectedObj);
 				});
+
+				it("Doesn't create intermediate object trees if the eventual value is undefined", () => {
+					const obj = {
+						abcd: 534,
+						aaa: {
+							bbb: "hello"
+						}
+					}
+
+					expect(patch(obj, ["aaa", "ccc"], undefined)).toEqual(obj);
+					expect(patch(obj, [12, "ccc"], undefined)).toEqual(obj);
+				});
 			}
 
 			describe("Patch mutable object", () => {
