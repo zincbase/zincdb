@@ -422,6 +422,30 @@ namespace ZincDB {
 								.toEqual([true, true, true, false, true, false]);
 						});
 
+						it("Gets a list of all leaf paths", async () => {
+							await db.transaction()
+								.put(["a", "b"], { x: "baba" })
+								.put(["a", "c"], [44, 55, 66])
+								.put(["d", "v", "u"], [44, 55, 66])
+								.commit();
+
+							expect(await db.getLeafPaths()).toEqual([["a", "b"], ["a", "c"], ["d", "v", "u"]]);
+						});
+
+						it("Gets a list of all leaf paths descendants of a particular base node path", async () => {
+							await db.transaction()
+								.put(["a", "b"], { x: "baba" })
+								.put(["a", "c"], [44, 55, 66])
+								.put(["d", "v", "u"], [44, 55, 66])
+								.commit();
+
+							expect(await db.getLeafPaths(["a"])).toEqual([["a", "b"], ["a", "c"]]);
+							expect(await db.getLeafPaths(["d"])).toEqual([["d", "v", "u"]]);
+							expect(await db.getLeafPaths(["e"])).toEqual([]);
+							expect(await db.getLeafPaths(["a", "c"])).toEqual([]);
+							expect(await db.getLeafPaths(["a", "c", "g"])).toEqual([]);
+						});
+
 						it("Observes and notifies on changes", () => {
 							return new Promise((resolve) => {
 								let observersNotified = 0;

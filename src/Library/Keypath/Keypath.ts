@@ -234,7 +234,7 @@ namespace ZincDB {
 
 			if (newValue !== undefined || currentValue !== undefined)
 				obj[key] = newValue;
-				
+
 			return obj;
 		}
 
@@ -392,7 +392,7 @@ namespace ZincDB {
 
 			let result = obj;
 			for (const specifier of keypath) {
-				if (typeof result !== "object")
+				if (result == null || typeof result !== "object")
 					return undefined;
 
 				if (Array.isArray(result)) {

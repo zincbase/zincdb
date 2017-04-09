@@ -199,8 +199,12 @@ namespace ZincDB {
 				return this.exec("getAll", []);
 			}
 
+			async getLeafPaths(basePath: NodePath = []): Promise<NodePath[]> {
+				return this.exec("getLeafPaths", [basePath]);
+			}
+
 			////////////////////////////////////////////////////////////////////////////////////////////////
-			// Watch operations
+			// Subscriber operations
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			subscribe(path: EntityPath | string, handler: SubscriberHandler) {
 				return this.subscribeOrObserve(path, handler, false);

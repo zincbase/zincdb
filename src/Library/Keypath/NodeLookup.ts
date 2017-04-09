@@ -49,7 +49,7 @@ namespace ZincDB {
 
 				const currentNode = parentNode[specifier];
 
-				if (currentNode === undefined) { // if the current node does not exist 
+				if (currentNode === undefined) { // if the current node does not exist
 					return { matchType: MatchType.None, paths: [] }
 				} else if (currentNode === null) { // if the current node is a leaf
 					if (i === path.length - 1) // if the whole path has been traversed, it is an exact match
@@ -62,6 +62,14 @@ namespace ZincDB {
 			}
 
 			return { matchType: MatchType.Descendants, paths: NodeLookup.getDescendantPaths(parentNode, <NodePath>path) }
+		}
+
+		getDescendantPaths(basePath: NodePath = []): NodePath[] {
+			const baseObject = Keypath.getValueByKeypath(this.root, basePath);
+			if (baseObject == null)
+				return [];
+
+			return NodeLookup.getDescendantPaths(baseObject, basePath);
 		}
 
 		delete(path: EntityPath) {
@@ -84,7 +92,7 @@ namespace ZincDB {
 
 				if (!ObjectTools.objectHasAtLeastOneDefinedProperty(baseNode[childNodeName])) {
 					baseNode[childNodeName] = undefined;
-				}				
+				}
 			}
 		}
 

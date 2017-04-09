@@ -228,6 +228,10 @@ namespace ZincDB {
 				return allEntries.map((entry) => { return { path: <NodePath>Keypath.parse(entry.key), value: entry.value, metadata: entry.metadata } });
 			}
 
+			async getLeafPaths(basePath: NodePath = []): Promise<NodePath[]> {
+				return this.nodeLookup.getDescendantPaths(basePath);
+			}
+
 			async hasEntity(path: EntityPath): Promise<boolean> {
 				return (await this.getEntity(path)) !== undefined;
 			}
@@ -942,6 +946,7 @@ namespace ZincDB {
 			getAllEntries: { Args: undefined[]; ReturnValue: EntryArray<any> };
 			getAllKeys: { Args: undefined[]; ReturnValue: string[] };
 			getAll: { Args: undefined[]; ReturnValue: PathEntries };
+			getLeafPaths: { Args: [NodePath]; ReturnValue: NodePath[] };
 			hasEntity: { Args: [EntityPath]; ReturnValue: boolean };
 			getLatestServerMetadata: { Args: undefined[]; ReturnValue: ServerMetadata };
 			discardLocalEntryKeys: { Args: [string[]]; ReturnValue: EntryArray<any> };
