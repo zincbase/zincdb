@@ -20,7 +20,6 @@ db.get(path)
 db.getMulti(paths)
 db.has(path)
 db.hasMulti(paths)
-db.getLeafPaths(basePath?)
 db.subscribe(path, handler)
 db.observe(path, handler)
 db.unsubscribe(handler)
@@ -35,6 +34,7 @@ db.discardLocalChanges(path?)
 db.destroyLocalData()
 db.close()
 ```
+<!--db.getLeafPaths(basePath?)-->
 
 ## `ZincDB.open`
 
