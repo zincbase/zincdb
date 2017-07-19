@@ -51,8 +51,8 @@ namespace ZincDB {
 			throw new Error(`transform: Unsafe operation - use map instead`);
 		}
 
-		map(transformFunc: (item: T) => T): ValueSet<T> {
-			return new ValueSet<T>(super.map(transformFunc).elements);
+		map<R = T>(transformFunc: (item: T) => R): ValueSet<R> {
+			return new ValueSet<R>(super.map<R>(transformFunc).elements);
 		}
 
 		clone(): ValueSet<T> {

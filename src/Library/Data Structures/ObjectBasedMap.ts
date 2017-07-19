@@ -39,13 +39,13 @@ namespace ZincDB {
 			this.size = 0;
 		}
 
-		forEach(func: (value: V, key: string | number) => void, thisArg?: any) {
+		forEach(func: (value: V, key: any, map: this) => void, thisArg?: any) {
 			if (typeof func !== "function")
 				throw new Error("Missing or invalid callback received");
 
 			for (const key in this.obj)
 				if (this.obj[key] !== undefined)
-					func(<any> this.obj[key], key);
+					func(<any> this.obj[key], key, this);
 		}
 		/*
 		entries(): IterableIterator<[any, V]> {
@@ -59,7 +59,7 @@ namespace ZincDB {
 		values(): IterableIterator<V> {
 			throw "Not implemented";
 		}
-		
+
 		[Symbol.iterator](): IterableIterator<[string, V]>
 		{
 			throw "Not implemented";
@@ -77,7 +77,7 @@ namespace ZincDB {
 		NumberMap = Map;
 	}
 	else {
-		StringMap = ObjectBasedMap;
-		NumberMap = ObjectBasedMap;
+		StringMap = <any> ObjectBasedMap;
+		NumberMap = <any> ObjectBasedMap;
 	}
 }

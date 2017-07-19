@@ -4,6 +4,8 @@
 [![npm version](https://badge.fury.io/js/zincdb.svg)](https://badge.fury.io/js/zincdb)
 [![Chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zincbase/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
+_Please note this project should mostly be seen as experimental, and is expected to remain so for the foreseeable future. Also, due to the challenge of maintaining such a large code base on my free time (~16,000 LOC client + ~6,000 LOC server including tests), I'm currently somewhat hesitant at encouraging developers to use it._
+
 ZincDB is a database and synchronization library for Javascript applications. Together with [ZincServer](https://github.com/zincbase/zincserver), it aims to provide a comprehensive solution for the storage and management of in-application data. It can also be used on its own: as an in-browser, offline, or as a standalone embedded Node.js database.
 
 Some of its features:

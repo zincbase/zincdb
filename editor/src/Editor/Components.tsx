@@ -14,7 +14,7 @@ namespace ZincDB {
 
 		export class EntryValueCell extends React.Component<{ row: ViewState["rows"][0] }, {}> {
 			isEditable = false;
-			element: HTMLSpanElement;
+			element: HTMLDivElement;
 
 			shouldComponentUpdate(nextProps: this["props"]) {
 				const nextValueJSON = nextProps.row.formattedValue;
@@ -36,11 +36,11 @@ namespace ZincDB {
 			render() {
 				const row = this.props.row;
 
-				return (<div spellCheck={false} ref={(element) => { this.element = element; }}
+				return (<div spellCheck={false} ref={(element) => { this.element = element!; }}
 					onMouseEnter={(event) => {
 						if (this.isEditable)
 							return;
-						
+
 						if (row.entry.value instanceof Uint8Array)
 							return;
 
@@ -81,7 +81,7 @@ namespace ZincDB {
 					commitTimeString = new Date(commitTime / 1000).toLocaleString();
 				else
 					commitTimeString = "";
-			
+
 				return (
 					<tr>
 						<td key="0" title={JSON.stringify(updateTime)}>{updateTimeString}</td>
@@ -118,9 +118,9 @@ namespace ZincDB {
 				const loadDatastore = async () => {
 					try {
 						await reloadDatastoreAndRender();
-					} 
+					}
 					catch(e) {
-						if (typeof e.message === "string" && 
+						if (typeof e.message === "string" &&
 							e.message.indexOf("response code 404") >= 0) {
 							if (window.confirm("The specified datastore wasn't found on the server, would you like to create it?\n\n (this would require the relevant permissions for the access key provided)")) {
 								await createDatastore(this.props.topBarState.datastoreURL, this.props.topBarState.accessKey);
@@ -143,10 +143,10 @@ namespace ZincDB {
 										spellCheck={false}
 										onChange={(event) => updateDatastoreURLField(event.target["value"])}
 										onKeyPress={(event) => { if (event.key === "Enter") { loadDatastore() } }} /></td>
-									<td>Access key: <input 
+									<td>Access key: <input
 										type="password"
 										title="Press enter to load target datastore"
-										value={this.props.topBarState.accessKey} 
+										value={this.props.topBarState.accessKey}
 										onChange={(event) => updateAccessKeyField(event.target["value"])}
 										onKeyPress={(event) => { if (event.key === "Enter") { loadDatastore() } }} />
 									</td>
@@ -156,10 +156,10 @@ namespace ZincDB {
 							</tbody>
 						</table>
 						<table>
-							<tbody>						
+							<tbody>
 								<tr>
-								<td>Add new path: <input 
-								type="text" 
+								<td>Add new path: <input
+								type="text"
 								title="Press enter to add new path"
 								placeholder='["branch", "leaf"]'
 								value={this.props.topBarState.newEntryPath}

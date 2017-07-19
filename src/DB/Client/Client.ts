@@ -118,7 +118,7 @@ namespace ZincDB {
 				});
 			}
 
-			async openRawWebsocketReader(options: { updatedAfter?: number }, callback: (message: Uint8Array) => Promise<void>): Promise<void> {
+			async openRawWebsocketReader(options: { updatedAfter?: number, compactResults?: boolean }, callback: (message: Uint8Array) => Promise<void>): Promise<void> {
 				options = ObjectTools.override({
 					compactResults: true,
 				}, options);
