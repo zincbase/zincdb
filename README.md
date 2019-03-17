@@ -1,6 +1,6 @@
 # ZincDB
 
-[![Build status](https://travis-ci.org/zincbase/zincdb.svg?branch=master)](https://travis-ci.org/zincbase/zincdb)
+<!--[![Build status](https://travis-ci.org/zincbase/zincdb.svg?branch=master)](https://travis-ci.org/zincbase/zincdb)-->
 [![npm version](https://badge.fury.io/js/zincdb.svg)](https://badge.fury.io/js/zincdb)
 [![Chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zincbase/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
