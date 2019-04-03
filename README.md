@@ -19,7 +19,7 @@ Learn more about the ZincBase framework's client and server design, capabilities
 
 ## Status
 
-The library is mostly feature complete, but still at an alpha level of stability, and is not ready for production use just yet. Breaking changes are still introduced quite frequently, both to the API and the underlying storage formats. If you choose to experiment with it, please report any unexpected error or behavior on the [issue tracker](https://github.com/zincbase/zincdb/issues). Your feedback would be highly appreciated!
+The library remains in an early experimental stage, though there is an extensive (passing) test suite embedded in the code. Note that **development has discontinued** due to time constraints and not expected to be resumed any time soon. However it's possible some of the code would be reused in the future for a simpler, less ambitious reboot of the library, but currently there is no schedule for when that might happen.
 
 ## Platform compatibility
 
