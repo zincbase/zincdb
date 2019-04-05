@@ -4,7 +4,7 @@
 [![npm version](https://badge.fury.io/js/zincdb.svg)](https://badge.fury.io/js/zincdb)
 [![Chat on Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zincbase/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
-<!--_Please note this project should mostly be seen as experimental, and is expected to remain so for the foreseeable future. Also, due to the challenge of maintaining such a large code base on my free time (~16,000 LOC client + ~6,000 LOC server including tests), I'm currently somewhat hesitant at encouraging developers to use it._-->
+_Note: this library is frozen at an alpha stage, and its **development has been discontinued**._
 
 ZincDB is a database and synchronization library for Javascript applications. Together with [ZincServer](https://github.com/zincbase/zincserver), it aims to provide a comprehensive solution for the storage and management of in-application data. It can also be used on its own: as an in-browser, offline, or as a standalone embedded Node.js database.
 
@@ -19,7 +19,9 @@ Learn more about the ZincBase framework's client and server design, capabilities
 
 ## Status
 
-The library remains in an early experimental stage, though there is an extensive (passing) test suite embedded in the code. Note that **development has discontinued** due to time constraints and not expected to be resumed any time soon. However it's possible some of the code would be reused in the future for a simpler, less ambitious reboot of the library, but currently there is no schedule for when that might happen.
+The library and its API remain at an experimental stage, though there is an extensive (passing) test suite embedded in the code. Note that **development has been discontinued** due to time constraints and not expected to be resumed any time soon. However it's possible some of the code would be reused in the future for a simpler, less ambitious reboot of the library, but currently there is no schedule for when that might happen.
+
+Note: the bundled test suite only runs correctly on Node.js v4.0 to v6.0.
 
 ## Platform compatibility
 
